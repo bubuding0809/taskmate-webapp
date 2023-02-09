@@ -13,7 +13,6 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import { TransitionGroup } from "react-transition-group";
-import NaturalDragAnimation from "natural-drag-animation-rbdnd";
 
 const emptyBoardData: BoardType = {
   todoTasks: {},
@@ -62,8 +61,8 @@ const BoardView = () => {
 
       // Delete all tasks and subtasks in panel
       [...newPanels[panelId].active, ...newPanels[panelId].completed].forEach(
-        (taskId) => {
-          newTodoTasks[taskId].subtasks.forEach((subtaskId) => {
+        (taskId: string) => {
+          newTodoTasks[taskId].subtasks.forEach((subtaskId: string) => {
             delete newTodoTasks[subtaskId];
           });
           delete newTodoTasks[taskId];
