@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, CSSProperties } from "react";
 import { Collapse, IconButton, Typography } from "@mui/material";
 import { TransitionGroup } from "react-transition-group";
 import { BoardType, PanelType, TaskType } from "../utils/types";
@@ -9,6 +9,8 @@ import {
   DraggableStateSnapshot,
   DroppableStateSnapshot,
   Droppable,
+  DraggingStyle,
+  NotDraggingStyle,
 } from "react-beautiful-dnd";
 import { TodoTask } from "./TodoTask";
 import autoAnimate from "@formkit/auto-animate";
@@ -21,7 +23,7 @@ interface TodoItemProps {
   panelData: PanelType;
   provided: DraggableProvided;
   snapshot: DraggableStateSnapshot;
-  style: any;
+  style: DraggingStyle | NotDraggingStyle | undefined;
   handleDeleteTask: (taskId: string, panelId: string) => void;
   handleUnappendSubtask: (taskId: string, panelId: string) => void;
   handleToggleTask: (taskId: string, panelId: string) => void;
@@ -89,7 +91,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
         provided={provided}
         handleToggle={handleToggleTask}
         handleDelete={handleDeleteTask}
-        handleRemoveDateTime={() => {}}
+        handleRemoveDateTime={() => console.log("yet to be implemented")}
         handleUnappendSubtask={handleUnappendSubtask}
       />
 
@@ -153,7 +155,9 @@ export const TodoItem: React.FC<TodoItemProps> = ({
                                 snapshot={snapshot}
                                 handleToggle={handleToggleTask}
                                 handleDelete={handleDeleteTask}
-                                handleRemoveDateTime={() => {}}
+                                handleRemoveDateTime={() =>
+                                  console.log("yet to be implemented")
+                                }
                                 handleUnappendSubtask={handleUnappendSubtask}
                               />
                             </div>

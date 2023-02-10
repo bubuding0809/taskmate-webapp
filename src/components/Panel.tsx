@@ -9,10 +9,15 @@ import { Entry, BoardType } from "../utils/types";
 import { TodoEntryForm } from "./TodoEntryForm";
 import { TodoMain } from "./TodoMain";
 import { PanelType } from "../utils/types";
-import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
+import {
+  DraggableProvided,
+  DraggableStateSnapshot,
+  DraggingStyle,
+  NotDraggingStyle,
+} from "react-beautiful-dnd";
 
 interface PanelProps {
-  style: any;
+  style: DraggingStyle | NotDraggingStyle | undefined;
   provided: DraggableProvided;
   snapshot: DraggableStateSnapshot;
   panelData: PanelType;

@@ -26,7 +26,10 @@ const BoardView = () => {
   const [isItemCombineEnabled, setIsItemCombineEnabled] = useState(false);
 
   useEffect(() => {
-    const localBoardData = getLocalStorage("boardData", emptyBoardData);
+    const localBoardData: BoardType = getLocalStorage(
+      "boardData",
+      emptyBoardData
+    );
     setBoardData(localBoardData);
   }, []);
 
@@ -273,7 +276,7 @@ const BoardView = () => {
     },
     handleUnappendSubtask: (taskId: string, panelId: string) => {
       const parentId = boardData.todoTasks[taskId]!.parent!;
-      const newParentTask = { ...boardData.todoTasks[parentId!]! };
+      const newParentTask = { ...boardData.todoTasks[parentId]! };
       newParentTask.subtasks.splice(newParentTask.subtasks.indexOf(taskId), 1);
 
       const newActive = boardData.panels[panelId]!.active.reduce(
@@ -291,7 +294,7 @@ const BoardView = () => {
           ...prevState,
           todoTasks: {
             ...prevState.todoTasks,
-            [parentId!]: newParentTask,
+            [parentId]: newParentTask,
             [taskId]: {
               ...prevState.todoTasks[taskId]!,
               parent: null,

@@ -52,6 +52,7 @@ export const TodoList: React.FC<TodoListProps> = ({
           ) {
             return "bg-[#eefffd] shadow-inner";
           }
+          return "";
         };
 
         return (

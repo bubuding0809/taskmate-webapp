@@ -69,7 +69,6 @@ const Home: NextPage = () => {
                   <a
                     className="text-[hsl(280,100%,70%)]"
                     href="https://nextjs.org/"
-                    target="_blank"
                   >
                     Next.js
                   </a>{" "}
@@ -77,7 +76,6 @@ const Home: NextPage = () => {
                   <a
                     className="text-[hsl(280,100%,70%)]"
                     href="https://trpc.io/"
-                    target="_blank"
                   >
                     tRPC
                   </a>{" "}

@@ -65,7 +65,7 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
   return (
     <div
       className={`
-      relative flex justify-between items-center 
+      relative flex items-center justify-between 
       px-1 py-1 
       ${draggedStyle()}
     `}
@@ -73,9 +73,9 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
       onMouseLeave={() => setIsHover(false)}
     >
       {/* todo item content */}
-      <div className="flex flex-col items-stretch w-full mr-4">
+      <div className="mr-4 flex w-full flex-col items-stretch">
         {/* CheckBox and task title */}
-        <div className="flex justify-start items-start gap-1">
+        <div className="flex items-start justify-start gap-1">
           <BpCheckBox
             className="self-start"
             name={task.id}
@@ -96,15 +96,15 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
                 task={task}
                 panelData={panelData}
                 boardData={boardData}
-                handleUnappend={handleUnappendSubtask}
                 handleDelete={handleDelete}
+                handleUnappend={handleUnappendSubtask}
               />
             </div>
           )}
         </div>
 
         {/* Task details: description, time, etc... */}
-        <div ref={parent} className="flex flex-col gap-1 ml-6 items-start">
+        <div ref={parent} className="ml-6 flex flex-col items-start gap-1">
           {task.description && (
             <div className="flex gap-1">
               <DescriptionIcon

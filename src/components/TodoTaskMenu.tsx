@@ -12,8 +12,8 @@ interface TodoTaskMenuProps {
   task: TaskType;
   panelData: PanelType;
   boardData: BoardType;
-  handleDelete: any;
-  handleUnappend: any;
+  handleDelete: (taskId: string, panelId: string) => void;
+  handleUnappend: (taskId: string, panelId: string) => void;
 }
 
 export const TodoTaskMenu: React.FC<TodoTaskMenuProps> = ({
