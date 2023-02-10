@@ -6,7 +6,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import ClearIcon from "@mui/icons-material/Clear";
 import SubdirectoryArrowLeftIcon from "@mui/icons-material/SubdirectoryArrowLeft";
-import { BoardType, PanelType, TaskType, Todo } from "../utils/types";
+import { BoardType, PanelType, TaskType } from "../utils/types";
 
 interface TodoTaskMenuProps {
   task: TaskType;
