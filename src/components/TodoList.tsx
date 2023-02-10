@@ -69,7 +69,7 @@ export const TodoList: React.FC<TodoListProps> = ({
                     <Draggable draggableId={taskId} index={index}>
                       {(provided, snapshot) => (
                         <TodoItem
-                          task={boardData.todoTasks[taskId]}
+                          task={boardData.todoTasks[taskId]!}
                           style={provided.draggableProps.style}
                           boardData={boardData}
                           panelData={panelData}

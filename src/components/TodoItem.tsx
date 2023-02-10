@@ -126,9 +126,9 @@ export const TodoItem: React.FC<TodoItemProps> = ({
                 >
                   <TransitionGroup className="flex flex-col">
                     {task.subtasks.map((subtask, index) => (
-                      <Collapse key={boardData.todoTasks[subtask].id}>
+                      <Collapse key={boardData.todoTasks[subtask]!.id}>
                         <Draggable
-                          draggableId={boardData.todoTasks[subtask].id}
+                          draggableId={boardData.todoTasks[subtask]!.id}
                           index={index}
                         >
                           {(provided, snapshot) => (
@@ -146,7 +146,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
                                 />
                               )}
                               <TodoTask
-                                task={boardData.todoTasks[subtask]}
+                                task={boardData.todoTasks[subtask]!}
                                 panelData={panelData}
                                 boardData={boardData}
                                 provided={provided}

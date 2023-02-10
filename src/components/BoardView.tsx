@@ -60,9 +60,9 @@ const BoardView = () => {
       const newPanels = { ...prevState.panels };
 
       // Delete all tasks and subtasks in panel
-      [...newPanels[panelId].active, ...newPanels[panelId].completed].forEach(
+      [...newPanels[panelId]!.active, ...newPanels[panelId]!.completed].forEach(
         (taskId: string) => {
-          newTodoTasks[taskId].subtasks.forEach((subtaskId: string) => {
+          newTodoTasks[taskId]!.subtasks.forEach((subtaskId: string) => {
             delete newTodoTasks[subtaskId];
           });
           delete newTodoTasks[taskId];
@@ -85,7 +85,7 @@ const BoardView = () => {
     const { draggableId, source, type } = initial;
 
     if (type === "panel-active") {
-      if (boardData.todoTasks[draggableId].subtasks.length === 0) {
+      if (boardData.todoTasks[draggableId]!.subtasks.length === 0) {
         setIsItemCombineEnabled(true);
       } else {
         setIsItemCombineEnabled(false);
@@ -107,23 +107,24 @@ const BoardView = () => {
       const newPanels = { ...boardData.panels };
 
       // splice out source draggable from source panel
-      const [newSubtaskId] = newPanels[
-        source.droppableId.replace("-active", "")
-      ].active.splice(source.index, 1);
+      const key = source.droppableId.replace("-active", "");
+      const [newSubtaskId] = newPanels[key]!.active.splice(source.index, 1) as [
+        string
+      ];
 
       setBoardData((prevState) => ({
         ...prevState,
         todoTasks: {
           ...prevState.todoTasks,
           [combine.draggableId]: {
-            ...prevState.todoTasks[combine.draggableId],
+            ...prevState.todoTasks[combine.draggableId]!,
             subtasks: [
-              ...prevState.todoTasks[combine.draggableId].subtasks,
+              ...prevState.todoTasks[combine.draggableId]!.subtasks,
               newSubtaskId,
             ],
           },
           [newSubtaskId]: {
-            ...prevState.todoTasks[newSubtaskId],
+            ...prevState.todoTasks[newSubtaskId]!,
             parent: combine.draggableId,
           },
         },
@@ -168,13 +169,13 @@ const BoardView = () => {
       const newPanels = { ...boardData.panels };
 
       // splice the dragged item from the source panel task array
-      newPanels[source.droppableId.replace("-active", "")].active.splice(
+      newPanels[source.droppableId.replace("-active", "")]!.active.splice(
         source.index,
         1
       );
 
       // splice the dragged item into the destination panel task array
-      newPanels[destination.droppableId.replace("-active", "")].active.splice(
+      newPanels[destination.droppableId.replace("-active", "")]!.active.splice(
         destination.index,
         0,
         draggableId
@@ -196,17 +197,17 @@ const BoardView = () => {
         const newTodoTasks = { ...prevState.todoTasks };
 
         // Remove the subtask from the parent task
-        newTodoTasks[source.droppableId].subtasks.splice(source.index, 1);
+        newTodoTasks[source.droppableId]!.subtasks.splice(source.index, 1);
 
         // Add the subtask to the destination task
-        newTodoTasks[destination.droppableId].subtasks.splice(
+        newTodoTasks[destination.droppableId]!.subtasks.splice(
           destination.index,
           0,
           draggableId
         );
 
         // Update the subtask parent
-        newTodoTasks[draggableId].parent = destination.droppableId;
+        newTodoTasks[draggableId]!.parent = destination.droppableId;
 
         return {
           ...prevState,
@@ -218,16 +219,16 @@ const BoardView = () => {
 
   const taskProps = {
     handleDeleteTask: (taskId: string, panelId: string) => {
-      const task = boardData.todoTasks[taskId];
+      const task = boardData.todoTasks[taskId]!;
       // If task has no parent, remove entire item from the panel
       if (!task.parent) {
         setBoardData((prevState) => {
           const taskIdsforDeletion = [...task.subtasks, task.id];
           const newTodoTasks = { ...prevState.todoTasks };
-          const newActive = prevState.panels[panelId].active.filter(
+          const newActive = prevState.panels[panelId]!.active.filter(
             (id) => id !== taskId
           );
-          const newCompleted = prevState.panels[panelId].completed.filter(
+          const newCompleted = prevState.panels[panelId]!.completed.filter(
             (id) => id !== taskId
           );
 
@@ -243,7 +244,7 @@ const BoardView = () => {
             panels: {
               ...prevState.panels,
               [panelId]: {
-                ...prevState.panels[panelId],
+                ...prevState.panels[panelId]!,
                 active: newActive,
                 completed: newCompleted,
               },
@@ -260,8 +261,8 @@ const BoardView = () => {
             todoTasks: {
               ...newTodoTasks,
               [task.parent!]: {
-                ...prevState.todoTasks[task.parent!],
-                subtasks: newTodoTasks[task.parent!].subtasks.filter(
+                ...prevState.todoTasks[task.parent!]!,
+                subtasks: newTodoTasks[task.parent!]!.subtasks.filter(
                   (id) => id !== task.id
                 ),
               },
@@ -271,11 +272,11 @@ const BoardView = () => {
       }
     },
     handleUnappendSubtask: (taskId: string, panelId: string) => {
-      const parentId = boardData.todoTasks[taskId].parent;
-      const newParentTask = { ...boardData.todoTasks[parentId!] };
+      const parentId = boardData.todoTasks[taskId]!.parent!;
+      const newParentTask = { ...boardData.todoTasks[parentId!]! };
       newParentTask.subtasks.splice(newParentTask.subtasks.indexOf(taskId), 1);
 
-      const newActive = boardData.panels[panelId].active.reduce(
+      const newActive = boardData.panels[panelId]!.active.reduce(
         (newActive: string[], currTaskId: string) => {
           if (currTaskId === parentId) {
             return [...newActive, currTaskId, taskId];
@@ -292,14 +293,14 @@ const BoardView = () => {
             ...prevState.todoTasks,
             [parentId!]: newParentTask,
             [taskId]: {
-              ...prevState.todoTasks[taskId],
+              ...prevState.todoTasks[taskId]!,
               parent: null,
             },
           },
           panels: {
             ...prevState.panels,
             [panelId]: {
-              ...prevState.panels[panelId],
+              ...prevState.panels[panelId]!,
               active: newActive,
             },
           },
@@ -307,30 +308,30 @@ const BoardView = () => {
       });
     },
     handleToggleTask: (taskId: string, panelId: string) => {
-      const { parent, isCompleted } = boardData.todoTasks[taskId];
+      const { parent, isCompleted } = boardData.todoTasks[taskId]!;
 
       // If tasks is a subtask and is completed and parent is also completed
       // then move the entire item to active and set target to active
-      if (parent && boardData.todoTasks[parent].isCompleted) {
+      if (parent && boardData.todoTasks[parent]!.isCompleted) {
         setBoardData((prevState) => {
-          const newPanel = { ...boardData.panels[panelId] };
+          const newPanel = { ...boardData.panels[panelId]! };
           return {
             ...prevState,
             todoTasks: {
               ...prevState.todoTasks,
               [parent]: {
-                ...prevState.todoTasks[parent],
+                ...prevState.todoTasks[parent]!,
                 isCompleted: false,
               },
               [taskId]: {
-                ...prevState.todoTasks[taskId],
+                ...prevState.todoTasks[taskId]!,
                 isCompleted: false,
               },
             },
             panels: {
               ...prevState.panels,
               [panelId]: {
-                ...prevState.panels[panelId],
+                ...prevState.panels[panelId]!,
                 active: [...newPanel.active, parent],
                 completed: newPanel.completed.filter((id) => id !== parent),
               },
@@ -341,14 +342,14 @@ const BoardView = () => {
       }
 
       // If task is a subtask and parent is not completed, just check/uncheck the task
-      if (parent && !boardData.todoTasks[parent].isCompleted) {
+      if (parent && !boardData.todoTasks[parent]!.isCompleted) {
         setBoardData((prevState) => ({
           ...prevState,
           todoTasks: {
             ...prevState.todoTasks,
             [taskId]: {
-              ...prevState.todoTasks[taskId],
-              isCompleted: !prevState.todoTasks[taskId].isCompleted,
+              ...prevState.todoTasks[taskId]!,
+              isCompleted: !prevState.todoTasks[taskId]!.isCompleted,
             },
           },
         }));
@@ -358,12 +359,12 @@ const BoardView = () => {
       // If task is top level item and is not completed, move to completed
       if (!parent && !isCompleted) {
         setBoardData((prevState) => {
-          const newPanel = { ...prevState.panels[panelId] };
+          const newPanel = { ...prevState.panels[panelId]! };
           const newTodoTasks = { ...prevState.todoTasks };
-          newTodoTasks[taskId].subtasks.forEach((subtaskId) => {
-            newTodoTasks[subtaskId].isCompleted = true;
+          newTodoTasks[taskId]!.subtasks.forEach((subtaskId) => {
+            newTodoTasks[subtaskId]!.isCompleted = true;
           });
-          newTodoTasks[taskId].isCompleted = true;
+          newTodoTasks[taskId]!.isCompleted = true;
 
           return {
             ...prevState,
@@ -371,7 +372,7 @@ const BoardView = () => {
             panels: {
               ...prevState.panels,
               [panelId]: {
-                ...prevState.panels[panelId],
+                ...prevState.panels[panelId]!,
                 active: newPanel.active.filter((id) => id !== taskId),
                 completed: [...newPanel.completed, taskId],
               },
@@ -383,20 +384,20 @@ const BoardView = () => {
       // If task is top level item and is completed, move to active
       if (!parent && isCompleted) {
         setBoardData((prevState) => {
-          const newPanel = { ...prevState.panels[panelId] };
+          const newPanel = { ...prevState.panels[panelId]! };
           return {
             ...prevState,
             todoTasks: {
               ...prevState.todoTasks,
               [taskId]: {
-                ...prevState.todoTasks[taskId],
+                ...prevState.todoTasks[taskId]!,
                 isCompleted: false,
               },
             },
             panels: {
               ...prevState.panels,
               [panelId]: {
-                ...prevState.panels[panelId],
+                ...prevState.panels[panelId]!,
                 active: [...newPanel.active, taskId],
                 completed: newPanel.completed.filter((id) => id !== taskId),
               },
@@ -442,7 +443,7 @@ const BoardView = () => {
                             style={provided.draggableProps.style}
                             provided={provided}
                             snapshot={snapshot}
-                            panelData={boardData.panels[panelId]}
+                            panelData={boardData.panels[panelId]!}
                             boardData={boardData}
                             setBoardData={setBoardData}
                             newPanel={newPanel}

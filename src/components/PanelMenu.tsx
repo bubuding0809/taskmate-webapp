@@ -12,11 +12,7 @@ interface PanelMenuProps {
   handleDelete: any;
 }
 
-export const PanelMenu = ({
-  panelData,
-  boardData,
-  handleDelete,
-}: PanelMenuProps) => {
+export const PanelMenu = ({ panelData, handleDelete }: PanelMenuProps) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {

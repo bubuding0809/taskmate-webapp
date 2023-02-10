@@ -61,7 +61,7 @@ export const TodoTaskMenu: React.FC<TodoTaskMenuProps> = ({
           horizontal: "left",
         }}
       >
-        {(!task.parent || !boardData.todoTasks[task.parent].isCompleted) && (
+        {(!task.parent || !boardData.todoTasks[task.parent]!.isCompleted) && (
           <Tooltip
             title="Delete task permanently"
             placement="right-start"
