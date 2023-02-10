@@ -1,9 +1,4 @@
-import React, {
-  CSSProperties,
-  FormEventHandler,
-  useEffect,
-  useState,
-} from "react";
+import React, { FormEventHandler, useEffect, useState } from "react";
 import { nanoid } from "nanoid";
 import { Entry, BoardType } from "../utils/types";
 import { TodoEntryForm } from "./TodoEntryForm";

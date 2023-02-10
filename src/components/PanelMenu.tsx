@@ -9,7 +9,7 @@ import { MoreHoriz } from "@mui/icons-material";
 interface PanelMenuProps {
   panelData: PanelType;
   boardData: BoardType;
-  handleDelete: any;
+  handleDelete: (panelId: string) => void;
 }
 
 export const PanelMenu = ({ panelData, handleDelete }: PanelMenuProps) => {

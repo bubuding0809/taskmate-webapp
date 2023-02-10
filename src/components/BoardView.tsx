@@ -29,7 +29,7 @@ const BoardView = () => {
     const localBoardData: BoardType = getLocalStorage(
       "boardData",
       emptyBoardData
-    );
+    ) as BoardType;
     setBoardData(localBoardData);
   }, []);
 
