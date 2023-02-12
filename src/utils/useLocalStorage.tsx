@@ -1,4 +1,7 @@
-export const getLocalStorage = (key: string, defaultValue: any): any => {
+export const getLocalStorage = (
+  key: string,
+  defaultValue: any
+): string | any => {
   const item = localStorage.getItem(key);
   if (item !== null) {
     return JSON.parse(item);
