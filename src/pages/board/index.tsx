@@ -1,5 +1,5 @@
 import Link from "next/link";
-import BoardView from "../../components/BoardView";
+import BoardView from "../../components/Board/BoardView";
 
 const BoardPage: React.FC = () => {
   return (

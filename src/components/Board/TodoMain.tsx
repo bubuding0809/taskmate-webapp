@@ -1,10 +1,10 @@
-import { TaskType, BoardType, PanelType } from "../utils/types";
+import { BoardType, PanelType } from "../../utils/types";
 import React, { useEffect, useState, useRef } from "react";
 import autoAnimate from "@formkit/auto-animate";
 import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
 import { TodoPanelDivider } from "./TodoPanelDivider";
 import { TodoList } from "./TodoList";
-import { Save, MoreHoriz } from "@mui/icons-material";
+import { Save } from "@mui/icons-material";
 import { PanelMenu } from "./PanelMenu";
 import {
   Typography,
@@ -97,7 +97,7 @@ export const TodoMain: React.FC<TodoListProps> = ({
       return;
     }
 
-    setBoardData(prevState => ({
+    setBoardData((prevState) => ({
       ...prevState,
       panels: {
         ...prevState.panels,
@@ -116,7 +116,7 @@ export const TodoMain: React.FC<TodoListProps> = ({
   };
 
   const handleReveal: React.ChangeEventHandler<HTMLInputElement> = () => {
-    setIsReveal(prevState => {
+    setIsReveal((prevState) => {
       return !prevState;
     });
   };
@@ -139,7 +139,7 @@ export const TodoMain: React.FC<TodoListProps> = ({
       {/* Panel header */}
       <div
         {...provided.dragHandleProps}
-        className="flex items-center justify-between pl-3 pr-2 pt-2 rounded-t"
+        className="flex items-center justify-between rounded-t pl-3 pr-2 pt-2"
       >
         {!isEditPanelTitle ? (
           <Tooltip title="Double-click to edit" placement="top-start">
@@ -155,7 +155,7 @@ export const TodoMain: React.FC<TodoListProps> = ({
           </Tooltip>
         ) : (
           <form
-            className={`w-full animate__animated ${
+            className={`animate__animated w-full ${
               isAnimateError ? "animate__headShake" : ""
             }`}
             onSubmit={handleSavePanelTitle}
@@ -166,8 +166,8 @@ export const TodoMain: React.FC<TodoListProps> = ({
               type="text"
               fullWidth
               value={panelTitle}
-              onChange={e => setPanelTitle(e.target.value)}
-              onFocus={e => e.target.select()}
+              onChange={(e) => setPanelTitle(e.target.value)}
+              onFocus={(e) => e.target.select()}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">

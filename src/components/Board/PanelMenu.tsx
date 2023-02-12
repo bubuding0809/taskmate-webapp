@@ -3,7 +3,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { IconButton, Tooltip, Typography, Fade, Button } from "@mui/material";
 import { Clear, Delete } from "@mui/icons-material";
-import { BoardType, PanelType } from "../utils/types";
+import { BoardType, PanelType } from "../../utils/types";
 import { MoreHoriz } from "@mui/icons-material";
 
 interface PanelMenuProps {

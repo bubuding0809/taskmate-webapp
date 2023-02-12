@@ -1,9 +1,9 @@
 import React, { FormEventHandler, useEffect, useState } from "react";
 import { nanoid } from "nanoid";
-import { Entry, BoardType } from "../utils/types";
+import { Entry, BoardType } from "../../utils/types";
 import { TodoEntryForm } from "./TodoEntryForm";
 import { TodoMain } from "./TodoMain";
-import { PanelType } from "../utils/types";
+import { PanelType } from "../../utils/types";
 import {
   DraggableProvided,
   DraggableStateSnapshot,

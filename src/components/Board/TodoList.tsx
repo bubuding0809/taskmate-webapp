@@ -1,7 +1,7 @@
 import autoAnimate from "@formkit/auto-animate";
 import React, { useRef, useEffect, useState } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
-import { BoardType, PanelType, Todo } from "../utils/types";
+import { BoardType, PanelType, Todo } from "../../utils/types";
 import { TodoItem } from "./TodoItem";
 import { TransitionGroup } from "react-transition-group";
 import { Collapse } from "@mui/material";

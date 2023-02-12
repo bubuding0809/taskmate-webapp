@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect } from "react";
-import { BoardType, PanelType, TaskType } from "../utils/types";
+import { BoardType, PanelType, TaskType } from "../../utils/types";
 import { Chip, Typography } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import DescriptionIcon from "@mui/icons-material/Description";
 import autoAnimate from "@formkit/auto-animate";
 import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
 import { TodoTaskMenu } from "./TodoTaskMenu";
-import { BpCheckBox } from "./custom/BpCheckBox";
+import { BpCheckBox } from "../custom/BpCheckBox";
 
 interface TodoTaskProps {
   task: TaskType;

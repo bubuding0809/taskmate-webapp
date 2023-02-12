@@ -15,7 +15,7 @@ import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { FlagCircle } from "@mui/icons-material";
-import { Entry } from "../utils/types";
+import { Entry } from "../../utils/types";
 import { Moment } from "moment";
 
 interface NewEntryConfigProps {

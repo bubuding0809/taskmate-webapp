@@ -1,10 +1,10 @@
 import { Button, Collapse } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { BoardType } from "../utils/types";
+import { BoardType } from "../../utils/types";
 import Panel from "./Panel";
 import AddIcon from "@mui/icons-material/Add";
 import { nanoid } from "nanoid";
-import { getLocalStorage, setLocalStorage } from "../utils/useLocalStorage";
+import { getLocalStorage, setLocalStorage } from "../../utils/useLocalStorage";
 import {
   DragDropContext,
   Draggable,

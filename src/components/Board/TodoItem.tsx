@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, CSSProperties } from "react";
 import { Collapse, IconButton, Typography } from "@mui/material";
 import { TransitionGroup } from "react-transition-group";
-import { BoardType, PanelType, TaskType } from "../utils/types";
+import { BoardType, PanelType, TaskType } from "../../utils/types";
 import { Divider } from "@mui/material";
 import {
   Draggable,

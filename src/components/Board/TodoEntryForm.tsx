@@ -10,7 +10,7 @@ import autoAnimate from "@formkit/auto-animate";
 import { Paper, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { ClickAwayListener } from "@mui/base";
-import { Entry } from "../utils/types";
+import { Entry } from "../../utils/types";
 import { NewEntryConfig } from "./TodoEntryFormConfig";
 
 interface TodoEntryFormProps {

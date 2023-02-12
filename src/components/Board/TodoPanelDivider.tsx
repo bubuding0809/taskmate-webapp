@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material";
-import { AntSwitch } from "./custom/AntSwitch";
+import { AntSwitch } from "../custom/AntSwitch";
 import TaskIcon from "@mui/icons-material/Task";
-import BorderLinearProgress from "./custom/BorderedLinearProgress";
+import BorderLinearProgress from "../custom/BorderedLinearProgress";
 
 interface TodoPanelDividerProps {
   activeCount: number;
@@ -23,7 +23,7 @@ export const TodoPanelDivider: React.FC<TodoPanelDividerProps> = ({
   return (
     <div
       className={`
-            bg-[#55605F] text-white h-10 p-3 flex justify-between items-center gap-2
+            flex h-10 items-center justify-between gap-2 bg-[#55605F] p-3 text-white
             ${!isReveal ? "rounded-b" : ""}
           `}
     >
