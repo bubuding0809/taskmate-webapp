@@ -1,6 +1,6 @@
 import React, { FormEventHandler, useEffect, useState } from "react";
 import { nanoid } from "nanoid";
-import { Entry, BoardType } from "../../utils/types";
+import { EntryType, BoardType } from "../../utils/types";
 import { TodoEntryForm } from "./TodoEntryForm";
 import { TodoMain } from "./TodoMain";
 import { PanelType } from "../../utils/types";
@@ -44,7 +44,7 @@ const Panel = ({
 }: PanelProps): JSX.Element => {
   const { active: activeList, completed: completedList } = panelData;
 
-  const [newEntry, setNewEntry] = useState<Entry>({
+  const [newEntry, setNewEntry] = useState<EntryType>({
     todoMessage: "",
     todoDateTime: null,
     todoDescription: "",

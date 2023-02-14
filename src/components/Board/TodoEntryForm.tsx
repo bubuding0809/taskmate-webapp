@@ -10,13 +10,13 @@ import autoAnimate from "@formkit/auto-animate";
 import { Paper, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { ClickAwayListener } from "@mui/base";
-import { Entry } from "../../utils/types";
+import { EntryType } from "../../utils/types";
 import { NewEntryConfig } from "./TodoEntryFormConfig";
 
 interface TodoEntryFormProps {
   handleNewEntry: FormEventHandler<HTMLFormElement>;
-  newEntry: Entry;
-  setNewEntry: React.Dispatch<React.SetStateAction<Entry>>;
+  newEntry: EntryType;
+  setNewEntry: React.Dispatch<React.SetStateAction<EntryType>>;
 }
 
 const StyledTextField = styled(TextField)({
@@ -59,7 +59,7 @@ export const TodoEntryForm: React.FC<TodoEntryFormProps> = ({
     HTMLInputElement | HTMLTextAreaElement
   > = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name } = e.target;
-    setNewEntry(prevState => ({
+    setNewEntry((prevState) => ({
       ...prevState,
       [name]: e.target.value,
     }));
@@ -71,7 +71,7 @@ export const TodoEntryForm: React.FC<TodoEntryFormProps> = ({
         <form
           ref={parent}
           onSubmit={handleNewEntry}
-          className="px-2 pb-2 pt-1 w-full"
+          className="w-full px-2 pb-2 pt-1"
         >
           {/* New entry message */}
           <StyledTextField

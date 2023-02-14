@@ -15,12 +15,12 @@ import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { FlagCircle } from "@mui/icons-material";
-import { Entry } from "../../utils/types";
+import { EntryType } from "../../utils/types";
 import { Moment } from "moment";
 
 interface NewEntryConfigProps {
-  newEntry: Entry;
-  setNewEntry: React.Dispatch<React.SetStateAction<Entry>>;
+  newEntry: EntryType;
+  setNewEntry: React.Dispatch<React.SetStateAction<EntryType>>;
   handleEntryChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
   isOpenDateTime: boolean;
   setIsOpenDateTime: React.Dispatch<React.SetStateAction<boolean>>;
@@ -44,25 +44,25 @@ export const NewEntryConfig: React.FC<NewEntryConfigProps> = ({
   }, [parent]);
 
   const handleEntryDateTimeChange = (value: Moment | null) => {
-    setNewEntry(prevState => ({
+    setNewEntry((prevState) => ({
       ...prevState,
       todoDateTime: value,
     }));
   };
 
   const handleEntryDateTimeDelete = () => {
-    setNewEntry(prevState => ({
+    setNewEntry((prevState) => ({
       ...prevState,
       todoDateTime: null,
     }));
   };
 
   return (
-    <div ref={parent} className="flex flex-col mt-2 gap-1">
+    <div ref={parent} className="mt-2 flex flex-col gap-1">
       {/* Description field */}
       {isRevealDescription && (
         <TextareaAutosize
-          className="p-3 bg-transparent focus:outline-none resize-none focus:resize-none"
+          className="resize-none bg-transparent p-3 focus:resize-none focus:outline-none"
           placeholder="Description..."
           name="todoDescription"
           value={newEntry.todoDescription}
@@ -84,14 +84,14 @@ export const NewEntryConfig: React.FC<NewEntryConfigProps> = ({
         />
       )}
 
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         {/* datetime picker */}
         <LocalizationProvider dateAdapter={AdapterMoment}>
           <MobileDateTimePicker
             label="Set a deadline"
             value={newEntry.todoDateTime}
             onChange={handleEntryDateTimeChange}
-            renderInput={params => (
+            renderInput={(params) => (
               <TextField
                 sx={{
                   display: "none",
@@ -130,7 +130,7 @@ export const NewEntryConfig: React.FC<NewEntryConfigProps> = ({
                   color: "#3A5A40",
                 },
               }}
-              onClick={() => setIsRevealDescription(prevState => !prevState)}
+              onClick={() => setIsRevealDescription((prevState) => !prevState)}
             >
               <DescriptionIcon
                 sx={{

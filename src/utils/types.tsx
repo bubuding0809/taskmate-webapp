@@ -1,22 +1,15 @@
 import { Moment } from "moment";
 
-export type Todo = {
-  readonly id: string;
-  readonly message: string;
-  readonly date: string | null;
-  readonly time: string | null;
-  readonly description: string | null;
-  readonly subTasks: Todo[];
-  readonly isTopLevelItem: boolean;
-  readonly isChecked: boolean;
-};
-
-export type Entry = {
+// Type definition for a new entry to be added to the todo list
+// A new entry is a collection of content that is to be turned into a task
+export type EntryType = {
   readonly todoMessage: string;
   readonly todoDateTime: Moment | null;
   readonly todoDescription: string;
 };
 
+// Type definition for a task
+// A task is a collection of content
 export type TaskType = {
   id: string;
   parent: string | null;
@@ -28,10 +21,14 @@ export type TaskType = {
   isCompleted: boolean;
 };
 
+// Type definition for a list of tasks
+// A list of tasks is a collection of tasks
 export type TasksType = {
   [key: string]: TaskType;
 };
 
+// Type definition for a panel
+// A panel is a collection of tasks
 export type PanelType = {
   id: string;
   title: string;
@@ -39,14 +36,16 @@ export type PanelType = {
   completed: string[];
 };
 
+// Type definition for a list of panels
+// A list of panels is a collection of panels
 export type PanelsType = {
   [key: string]: PanelType;
 };
 
-export type PanelOrderType = string[];
-
+// Type definition for the board
+// A board is a collection of panels
 export type BoardType = {
   todoTasks: TasksType;
   panels: PanelsType;
-  panelOrder: PanelOrderType;
+  panelOrder: string[];
 };

@@ -10,7 +10,7 @@ const Home: NextPage = () => {
   const hello = api.example.hello.useQuery({
     text: `from ${sessionData?.user.name ?? "your mom"}`,
   });
-  const { data: exampleData } = api.example.getAll.useQuery();
+  const { data: exampleData } = api.example.getAllUsers.useQuery();
   console.log(exampleData);
   return (
     <>
@@ -84,12 +84,18 @@ const Home: NextPage = () => {
               </div>
               <div>
                 {exampleData &&
-                  exampleData.map((item, idx) => (
-                    <div key={item.id} className="font-bold">
-                      {idx + 1}. {item.id}
+                  exampleData.map((user, idx) => (
+                    <div key={user.id} className="font-bold">
+                      {idx + 1}. {user.id}
                       <div className="flex gap-3 font-normal">
-                        <p>{new Date(item.createdAt).toISOString()}</p>
-                        <p>{item.content}</p>
+                        <img
+                          src={user.image!}
+                          alt="user image"
+                          className="w-8 rounded-full"
+                        />
+                        <p>
+                          {user.name}, {user.email}
+                        </p>
                       </div>
                     </div>
                   ))}
