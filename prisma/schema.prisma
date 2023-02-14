@@ -14,14 +14,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    content   String
-}
-
-// Necessary for Next auth
 model Account {
     id                String  @id @default(cuid())
     userId            String
@@ -38,6 +30,7 @@ model Account {
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
+    @@index([userId], map: "Account_userId_fkey")
 }
 
 model Session {
@@ -46,16 +39,28 @@ model Session {
     userId       String
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId], map: "Session_userId_fkey")
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
+    id                 String               @id @default(cuid())
+    name               String?
+    email              String?              @unique
+    emailVerified      DateTime?
+    image              String?
+    accounts           Account[]
+    Attachment         Attachment[]
+    Board              Board[]
+    Board_Collaborator Board_Collaborator[]
+    Board_Message      Board_Message[]
+    Folder             Folder[]
+    Label              Label[]
+    sessions           Session[]
+    Tag                Tag[]
+    Task_Activity      Task_Activity[]
+    Task_Assign        Task_Assign[]
+    Team               Team[]
 }
 
 model VerificationToken {
@@ -64,4 +69,253 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Board {
+    id                 String               @id @default(dbgenerated("(uuid())"))
+    user_id            String
+    folder_id          String?
+    board_title        String?
+    board_description  String?              @db.VarChar(500)
+    panelOrder         String?              @db.VarChar(1000)
+    visibility         Board_visibility     @default(PRIVATE)
+    background_image   String?
+    background_color   String?              @db.VarChar(6)
+    cover_image        String?
+    thumbnail_image    String?
+    created_at         DateTime             @default(now()) @db.DateTime(0)
+    updated_at         DateTime             @default(now()) @db.DateTime(0)
+    user               User                 @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Board_ibfk_1")
+    folder             Folder?              @relation(fields: [folder_id], references: [id], map: "Board_ibfk_2")
+    Board_Collaborator Board_Collaborator[]
+    Board_Message      Board_Message[]
+    Board_Tag          Board_Tag[]
+    Panel              Panel[]
+    Team_Board_Rel     Team_Board_Rel[]
+
+    @@index([folder_id], map: "folder_id")
+    @@index([user_id], map: "user_id")
+}
+
+model Folder {
+    id              String  @id @default(dbgenerated("(uuid())"))
+    folder_name     String
+    thumbnail_image String?
+    collapsed       Boolean @default(dbgenerated("(false)"))
+    board_order     String? @db.VarChar(1000)
+    user_id         String
+    boards          Board[]
+    user            User    @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Folder_ibfk_1")
+
+    @@index([user_id], map: "user_id")
+}
+
+model Board_Collaborator {
+    id         String                        @id @default(dbgenerated("(uuid())"))
+    permission Board_Collaborator_permission @default(READ)
+    user_id    String
+    board_id   String
+    User       User                          @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Board_Collaborator_ibfk_1")
+    Board      Board                         @relation(fields: [board_id], references: [id], onDelete: Cascade, map: "Board_Collaborator_ibfk_2")
+
+    @@index([board_id], map: "board_id")
+    @@index([user_id], map: "user_id")
+}
+
+model Board_Message {
+    id         String   @id @default(dbgenerated("(uuid())"))
+    message    String   @db.VarChar(1000)
+    created_at DateTime @default(now()) @db.DateTime(0)
+    updated_at DateTime @default(now()) @db.DateTime(0)
+    user_id    String
+    board_id   String
+    User       User     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Board_Message_ibfk_1")
+    Board      Board    @relation(fields: [board_id], references: [id], onDelete: Cascade, map: "Board_Message_ibfk_2")
+
+    @@index([board_id], map: "board_id")
+    @@index([user_id], map: "user_id")
+}
+
+model Attachment {
+    id              String                     @id
+    attachment_url  String
+    attachment_type Attachment_attachment_type
+    is_cover_image  Boolean                    @default(dbgenerated("(false)"))
+    user_id         String
+    task_id         String
+    User            User                       @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Attachment_ibfk_1")
+    Task            Task                       @relation(fields: [task_id], references: [id], onDelete: Cascade, map: "Attachment_ibfk_2")
+
+    @@index([task_id], map: "task_id")
+    @@index([user_id], map: "user_id")
+}
+
+model Board_Tag {
+    tag_name String
+    board_id String
+    Board    Board  @relation(fields: [board_id], references: [id], onDelete: Cascade, map: "Board_Tag_ibfk_1")
+    Tag      Tag    @relation(fields: [tag_name], references: [id], onDelete: Cascade, map: "Board_Tag_ibfk_2")
+
+    @@id([tag_name, board_id])
+    @@index([board_id], map: "board_id")
+}
+
+model Label {
+    id             String           @id @default(dbgenerated("(uuid())"))
+    label_name     String
+    label_color    String           @db.VarChar(6)
+    user_id        String
+    board_id       String
+    User           User             @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Label_ibfk_1")
+    Task_Label_Rel Task_Label_Rel[]
+
+    @@index([user_id], map: "user_id")
+}
+
+model Panel {
+    id                   String  @id
+    panel_title          String?
+    task_order           String? @db.VarChar(1000)
+    is_visible           Boolean @default(dbgenerated("(true)"))
+    panel_color          String? @db.VarChar(6)
+    show_completed_tasks Boolean @default(dbgenerated("(false)"))
+    board_id             String
+    Board                Board   @relation(fields: [board_id], references: [id], onDelete: Cascade, map: "Panel_ibfk_1")
+    Task                 Task[]
+
+    @@index([board_id], map: "Panel_ibfk_1")
+}
+
+model Sub_Task_Rel {
+    parent_task_id                         String
+    sub_task_id                            String
+    Task_Sub_Task_Rel_parent_task_idToTask Task   @relation("Sub_Task_Rel_parent_task_idToTask", fields: [parent_task_id], references: [id], onDelete: Cascade, map: "Sub_Task_Rel_ibfk_1")
+    Task_Sub_Task_Rel_sub_task_idToTask    Task   @relation("Sub_Task_Rel_sub_task_idToTask", fields: [sub_task_id], references: [id], onDelete: Cascade, map: "Sub_Task_Rel_ibfk_2")
+
+    @@id([parent_task_id, sub_task_id])
+    @@index([sub_task_id], map: "sub_task_id")
+}
+
+model Tag {
+    id        String      @id @default(dbgenerated("(uuid())"))
+    tag_name  String
+    user_id   String
+    Board_Tag Board_Tag[]
+    User      User        @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Tag_ibfk_1")
+
+    @@index([user_id], map: "user_id")
+}
+
+model Task {
+    id                                             String           @id
+    task_title                                     String?
+    task_details                                   String?          @db.VarChar(500)
+    subtask_order                                  String?          @db.VarChar(1000)
+    start_datetime                                 DateTime?        @db.DateTime(0)
+    end_datetime                                   DateTime?        @db.DateTime(0)
+    is_completed                                   Boolean          @default(dbgenerated("(false)"))
+    panel_id                                       String
+    Attachment                                     Attachment[]
+    Sub_Task_Rel_Sub_Task_Rel_parent_task_idToTask Sub_Task_Rel[]   @relation("Sub_Task_Rel_parent_task_idToTask")
+    Sub_Task_Rel_Sub_Task_Rel_sub_task_idToTask    Sub_Task_Rel[]   @relation("Sub_Task_Rel_sub_task_idToTask")
+    Panel                                          Panel            @relation(fields: [panel_id], references: [id], onDelete: Cascade, map: "Task_ibfk_1")
+    Task_Activity                                  Task_Activity[]
+    Task_Assign                                    Task_Assign[]
+    Task_Label_Rel                                 Task_Label_Rel[]
+
+    @@index([panel_id], map: "panel_id")
+}
+
+model Task_Activity {
+    id               String                      @id @default(dbgenerated("(uuid())"))
+    activity_type    Task_Activity_activity_type
+    activity_details String?                     @db.VarChar(500)
+    created_at       DateTime                    @default(now()) @db.DateTime(0)
+    updated_at       DateTime                    @default(now()) @db.DateTime(0)
+    user_id          String
+    task_id          String
+    User             User                        @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Task_Activity_ibfk_1")
+    Task             Task                        @relation(fields: [task_id], references: [id], onDelete: Cascade, map: "Task_Activity_ibfk_2")
+
+    @@index([task_id], map: "task_id")
+    @@index([user_id], map: "user_id")
+}
+
+model Task_Assign {
+    task_id String
+    user_id String
+    Task    Task   @relation(fields: [task_id], references: [id], onDelete: Cascade, map: "Task_Assign_ibfk_1")
+    User    User   @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Task_Assign_ibfk_2")
+
+    @@id([task_id, user_id])
+    @@index([user_id], map: "user_id")
+}
+
+model Task_Label_Rel {
+    task_id  String
+    label_id String
+    Task     Task   @relation(fields: [task_id], references: [id], onDelete: Cascade, map: "Task_Label_Rel_ibfk_1")
+    Label    Label  @relation(fields: [label_id], references: [id], onDelete: Cascade, map: "Task_Label_Rel_ibfk_2")
+
+    @@id([task_id, label_id])
+    @@index([label_id], map: "label_id")
+}
+
+model Team {
+    id               String           @id @default(dbgenerated("(uuid())"))
+    team_name        String
+    team_description String?          @db.VarChar(500)
+    thumbnail_image  String?
+    user_id          String
+    User             User             @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "Team_ibfk_1")
+    Team_Board_Rel   Team_Board_Rel[]
+
+    @@index([user_id], map: "user_id")
+}
+
+model Team_Board_Rel {
+    team_id    String
+    board_id   String
+    CREATED_AT DateTime @default(now()) @db.DateTime(0)
+    UPDATED_AT DateTime @default(now()) @db.DateTime(0)
+    Team       Team     @relation(fields: [team_id], references: [id], onDelete: Cascade, map: "Team_Board_Rel_ibfk_1")
+    Board      Board    @relation(fields: [board_id], references: [id], onDelete: Cascade, map: "Team_Board_Rel_ibfk_2")
+
+    @@id([team_id, board_id])
+    @@index([board_id], map: "board_id")
+}
+
+enum Board_visibility {
+    PUBLIC
+    TEAM
+    PRIVATE
+}
+
+enum Board_Collaborator_permission {
+    READ
+    WRITE
+    ADMIN
+}
+
+enum Task_Activity_activity_type {
+    CREATE
+    UPDATE
+    DELETE
+    ASSIGN
+    UNASSIGN
+    COMPLETE
+    UNCOMPLETE
+    ATTACH
+    UNATTACH
+    COMMENT
+    SUBTASK_CREATE
+    SUBTASK_UPDATE
+    SUBTASK_DELETE
+    SUBTASK_COMPLETE
+    SUBTASK_UNCOMPLETE
+}
+
+enum Attachment_attachment_type {
+    IMAGE
+    FILE
 }
