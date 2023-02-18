@@ -37,29 +37,29 @@ UserBoardPage.getLayout = (page: ReactElement) => {
   return <AppLayout title="Test Board">{page}</AppLayout>;
 };
 
-// export const getServerSideProps: GetServerSideProps = async (context) => {
-//   const session = await getServerSession(context.req, context.res, authOptions);
-//   const { bid } = context.query;
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  // const session = await getServerSession(context.req, context.res, authOptions);
+  const { bid } = context.query;
 
-//   if (typeof bid !== "string" || bid.length === 0) {
-//     return {
-//       notFound: true,
-//     };
-//   }
+  if (typeof bid !== "string" || bid.length === 0) {
+    return {
+      notFound: true,
+    };
+  }
 
-//   if (!session) {
-//     return {
-//       redirect: {
-//         destination: "/api/auth/signin",
-//         permanent: false,
-//       },
-//     };
-//   }
+  // if (!session) {
+  //   return {
+  //     redirect: {
+  //       destination: "/api/auth/signin",
+  //       permanent: false,
+  //     },
+  //   };
+  // }
 
-//   return {
-//     props: {
-//       // session,
-//       bid,
-//     },
-//   };
-// };
+  return {
+    props: {
+      // session,
+      bid,
+    },
+  };
+};

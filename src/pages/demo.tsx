@@ -1,8 +1,8 @@
-import { GetServerSideProps } from "next";
-import { getServerSession } from "next-auth";
+// import { GetServerSideProps } from "next";
+// import { getServerSession } from "next-auth";
+// import { authOptions } from "../server/auth";
 import Link from "next/link";
 import BoardView from "../components/Board/BoardView";
-import { authOptions } from "../server/auth";
 
 const DemoPage: React.FC = () => {
   return (
