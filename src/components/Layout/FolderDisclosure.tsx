@@ -2,6 +2,7 @@ import { Disclosure } from "@headlessui/react";
 import { useRef, useEffect } from "react";
 import autoAnimate from "@formkit/auto-animate";
 import { classNames } from "../../utils/helper";
+import Link from "next/link";
 
 interface FolderDisclosureProps {
   item: {
@@ -62,22 +63,26 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
           {sidebarExpanded && (
             <Disclosure.Panel className="space-y-1">
               {item.children.map((subItem) => (
-                <button
-                  key={subItem.name}
-                  className="group flex w-full items-center justify-start rounded-md py-2 pl-11 pr-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none"
-                >
-                  <span
-                    className={classNames(
-                      sidebarExpanded ? "mr-3" : "mr-0",
-                      "text-xl"
-                    )}
+                <Link href={`/board/${subItem.name}`}>
+                  <button
+                    key={subItem.name}
+                    className="group flex w-full items-center justify-start rounded-md py-2 pl-11 pr-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none"
                   >
-                    {subItem.icon}
-                  </span>
-                  {sidebarExpanded && (
-                    <p className="flex-1 truncate text-start">{subItem.name}</p>
-                  )}
-                </button>
+                    <span
+                      className={classNames(
+                        sidebarExpanded ? "mr-3" : "mr-0",
+                        "text-xl"
+                      )}
+                    >
+                      {subItem.icon}
+                    </span>
+                    {sidebarExpanded && (
+                      <p className="flex-1 truncate text-start">
+                        {subItem.name}
+                      </p>
+                    )}
+                  </button>
+                </Link>
               ))}
               <a onClick={(e) => e.preventDefault()}></a>
             </Disclosure.Panel>
