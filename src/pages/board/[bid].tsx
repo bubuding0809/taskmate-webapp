@@ -39,7 +39,7 @@ UserBoardPage.getLayout = (page: ReactElement) => {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   // const session = await getServerSession(context.req, context.res, authOptions);
-  const { bid } = context.query;
+  const bid = context.params?.bid as string;
 
   if (typeof bid !== "string" || bid.length === 0) {
     return {
@@ -50,8 +50,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   // use timeout to simulate slow network
   const session = await new Promise((resolve) => {
     setTimeout(() => {
-      return "test";
-    }, 1000);
+      return resolve("Session");
+    }, 500);
   });
 
   if (!session) {
@@ -65,6 +65,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   return {
     props: {
+      bid,
       session,
     },
   };
