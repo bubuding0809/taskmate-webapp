@@ -5,16 +5,31 @@ import AppLayout from "../../components/Layout/AppLayout";
 import BoardView from "../../components/Board/BoardView";
 import { getServerSession, Session } from "next-auth";
 import { authOptions } from "../../server/auth";
+import { useSession } from "next-auth/react";
 
 interface UserBoardPageProps {
-  session: Session;
+  // session: Session;
   bid: string;
 }
 const UserBoardPage: NextPageWithLayout<UserBoardPageProps> = ({
-  session,
+  // session,
   bid,
 }) => {
-  return <BoardView bid={bid} />;
+  const { data: sessionData } = useSession();
+
+  return (
+    <>
+      {sessionData ? (
+        <BoardView bid={bid} />
+      ) : (
+        <div className="flex h-screen flex-col items-center justify-center">
+          <h1 className="text-4xl font-bold text-white">
+            Please sign in to view this board
+          </h1>
+        </div>
+      )}
+    </>
+  );
 };
 export default UserBoardPage;
 
@@ -22,29 +37,29 @@ UserBoardPage.getLayout = (page: ReactElement) => {
   return <AppLayout title="Test Board">{page}</AppLayout>;
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getServerSession(context.req, context.res, authOptions);
-  const { bid } = context.query;
+// export const getServerSideProps: GetServerSideProps = async (context) => {
+//   const session = await getServerSession(context.req, context.res, authOptions);
+//   const { bid } = context.query;
 
-  if (typeof bid !== "string" || bid.length === 0) {
-    return {
-      notFound: true,
-    };
-  }
+//   if (typeof bid !== "string" || bid.length === 0) {
+//     return {
+//       notFound: true,
+//     };
+//   }
 
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/api/auth/signin",
-        permanent: false,
-      },
-    };
-  }
+//   if (!session) {
+//     return {
+//       redirect: {
+//         destination: "/api/auth/signin",
+//         permanent: false,
+//       },
+//     };
+//   }
 
-  return {
-    props: {
-      // session,
-      bid,
-    },
-  };
-};
+//   return {
+//     props: {
+//       // session,
+//       bid,
+//     },
+//   };
+// };
