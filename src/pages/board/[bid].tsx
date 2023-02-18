@@ -1,5 +1,5 @@
 import type { NextPageWithLayout } from "../_app";
-import { ReactElement } from "react";
+import { ReactElement, useEffect, useState } from "react";
 import { GetServerSideProps } from "next";
 import AppLayout from "../../components/Layout/AppLayout";
 import BoardView from "../../components/Board/BoardView";
@@ -15,21 +15,24 @@ const UserBoardPage: NextPageWithLayout<UserBoardPageProps> = ({
   session,
   bid,
 }) => {
-  const { data: sessionData } = useSession();
+  const [showBoard, setShowBoard] = useState(false);
+
+  // Add a mandatory delay below rendering board to prevent Vercel Serverless Function from timing out
+  useEffect(() => {
+    const timeOut = setTimeout(() => {
+      setShowBoard(true);
+    }, 500);
+    return () => clearTimeout(timeOut);
+  }, []);
 
   return (
     <>
-      {sessionData ? (
-        // <BoardView bid={bid} />
-        <div className="flex h-screen flex-col items-center justify-center">
-          <h1 className="text-4xl font-bold text-white">
-            {sessionData.user.email}
-          </h1>
-        </div>
+      {showBoard ? (
+        <BoardView bid={bid} />
       ) : (
         <div className="flex h-screen flex-col items-center justify-center">
           <h1 className="text-w<BoardView bid={bid} />hite text-4xl font-bold">
-            Please sign in to view this board
+            Loading...
           </h1>
         </div>
       )}
