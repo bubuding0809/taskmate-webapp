@@ -23,7 +23,7 @@ const UserBoardPage: NextPageWithLayout<UserBoardPageProps> = ({
         <BoardView bid={bid} />
       ) : (
         <div className="flex h-screen flex-col items-center justify-center">
-          <h1 className="text-4xl font-bold text-white">
+          <h1 className="text-w<BoardView bid={bid} />hite text-4xl font-bold">
             Please sign in to view this board
           </h1>
         </div>
