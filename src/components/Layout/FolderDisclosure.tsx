@@ -63,11 +63,8 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
           {sidebarExpanded && (
             <Disclosure.Panel className="space-y-1">
               {item.children.map((subItem) => (
-                <Link href={`/board/${subItem.name}`}>
-                  <button
-                    key={subItem.name}
-                    className="group flex w-full items-center justify-start rounded-md py-2 pl-11 pr-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none"
-                  >
+                <Link href={`/board/${subItem.name}`} key={subItem.name}>
+                  <button className="group flex w-full items-center justify-start rounded-md py-2 pl-11 pr-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none">
                     <span
                       className={classNames(
                         sidebarExpanded ? "mr-3" : "mr-0",

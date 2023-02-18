@@ -29,4 +29,4 @@ const MyApp = ({
   );
 };
 
-export default api.withTRPC(MyApp);
+export default api.withTRPC(MyApp as AppType);
