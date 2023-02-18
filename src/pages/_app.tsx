@@ -17,14 +17,13 @@ type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
 
-// @ts-nocheck
 const MyApp = ({
   Component,
-  pageProps: { session, ...pageProps },
+  pageProps: { session: Session, ...pageProps },
 }: AppPropsWithLayout) => {
   const getLayout = Component.getLayout ?? ((page) => page);
   return (
-    <SessionProvider session={session}>
+    <SessionProvider session={pageProps.session}>
       {getLayout(<Component {...pageProps} />)}
     </SessionProvider>
   );
