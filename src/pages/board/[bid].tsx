@@ -5,13 +5,14 @@ import { getSession } from "next-auth/react";
 import AppLayout from "../../components/Layout/AppLayout";
 import BoardView from "../../components/Board/BoardView";
 import { Session } from "next-auth";
+import { useRouter } from "next/router";
 
 interface UserBoardPageProps {
-  // session: Session;
+  session: Session;
   bid: string;
 }
 const UserBoardPage: NextPageWithLayout<UserBoardPageProps> = ({
-  // session,
+  session,
   bid,
 }) => {
   return <BoardView bid={bid} />;
@@ -23,7 +24,7 @@ UserBoardPage.getLayout = (page: ReactElement) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  // const session = await getSession(context);
+  const session = await getSession(context);
   const { bid } = context.query;
 
   // if (typeof bid !== "string" || bid.length === 0) {
@@ -32,14 +33,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   //   };
   // }
 
-  // if (!session) {
-  //   return {
-  //     redirect: {
-  //       destination: "/api/auth/signin",
-  //       permanent: false,
-  //     },
-  //   };
-  // }
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/api/auth/signin",
+        permanent: false,
+      },
+    };
+  }
 
   return {
     props: {
