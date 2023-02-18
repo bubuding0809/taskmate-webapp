@@ -89,7 +89,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   useEffect(() => {
     if (sessionStatus === "unauthenticated") {
       const timeOut = setTimeout(() => {
-        router.push("/api/auth/signin");
+        router
+          .push("/api/auth/signin")
+          .then(() => console.log("Redirected to signin page"))
+          .catch((err) => console.log(err));
       }, 500);
       return () => clearTimeout(timeOut);
     }
@@ -419,14 +422,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                                   active ? "bg-gray-100" : "",
                                   "block px-4 py-2 text-sm text-gray-700"
                                 )}
-                                onClick={async (e) => {
+                                onClick={(e) => {
                                   e.preventDefault();
                                   if (item.name === "Sign out") {
-                                    const data = await signOut({
+                                    signOut({
                                       redirect: false,
                                       callbackUrl: "/",
-                                    });
-                                    router.push(data.url);
+                                    })
+                                      .then((data) => router.push(data.url))
+                                      .catch((err) => console.log(err));
                                   }
                                 }}
                               >
