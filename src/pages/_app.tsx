@@ -15,8 +15,8 @@ export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
 
 type AppPropsWithLayout = {
   Component: NextPageWithLayout;
-  pageProps: { session: Session; pageProps: {} };
-} & AppProps;
+  pageProps: { session: Session; pageProps: object };
+};
 
 const MyApp = ({
   Component,
@@ -30,4 +30,4 @@ const MyApp = ({
   );
 };
 
-export default api.withTRPC(MyApp as AppType);
+export default api.withTRPC(MyApp);
