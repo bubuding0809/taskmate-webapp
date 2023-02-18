@@ -17,6 +17,7 @@ type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
 
+// @ts-nocheck
 const MyApp = ({
   Component,
   pageProps: { session, ...pageProps },
