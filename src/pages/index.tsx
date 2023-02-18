@@ -24,84 +24,29 @@ const Home: NextPage = () => {
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             Task <span className="text-[hsl(280,100%,70%)]">mate</span>
           </h1>
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="/board"
-          >
-            <h3 className="text-2xl font-bold">Kanban Board→</h3>
-            <div className="text-lg">
-              Demo of a Kanban board with tRPC and Next.js
-            </div>
-          </Link>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Link
               className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
+              href="/board"
             >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
+              <h3 className="text-2xl font-bold">Live Demo→</h3>
               <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
+                Demo of a Kanban board made with react-beautiful-dnd
               </div>
             </Link>
-            <Link
+            <button
               className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
+              onClick={
+                sessionData
+                  ? () => void signOut()
+                  : () => void signIn(undefined, { callbackUrl: "/dashboard" })
+              }
             >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
+              <h3 className="text-2xl font-bold">Start Here→</h3>
+              <div className="text-start text-lg">
+                Click here to sign in and get started with your boards
               </div>
-            </Link>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-            </p>
-            <div className="flex max-w-xl flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20">
-              <h3 className="text-2xl font-bold">Next.js + tRPC</h3>
-              <div className="text-lg">
-                <p>
-                  This is a{" "}
-                  <a
-                    className="text-[hsl(280,100%,70%)]"
-                    href="https://nextjs.org/"
-                  >
-                    Next.js
-                  </a>{" "}
-                  app with{" "}
-                  <a
-                    className="text-[hsl(280,100%,70%)]"
-                    href="https://trpc.io/"
-                  >
-                    tRPC
-                  </a>{" "}
-                  for data fetching.
-                </p>
-              </div>
-              <div>
-                {exampleData &&
-                  exampleData.map((user, idx) => (
-                    <div key={user.id} className="font-bold">
-                      {idx + 1}. {user.id}
-                      <div className="flex gap-3 font-normal">
-                        <img
-                          src={user.image!}
-                          alt="user image"
-                          className="w-8 rounded-full"
-                        />
-                        <p>
-                          {user.name}, {user.email}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-            <AuthShowcase />
+            </button>
           </div>
         </div>
       </main>
