@@ -51,7 +51,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await new Promise((resolve) => {
     setTimeout(() => {
       return resolve("Session");
-    }, 500);
+    }, 1);
   });
 
   if (!session) {
