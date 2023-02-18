@@ -20,7 +20,12 @@ const UserBoardPage: NextPageWithLayout<UserBoardPageProps> = ({
   return (
     <>
       {sessionData ? (
-        <BoardView bid={bid} />
+        // <BoardView bid={bid} />
+        <div className="flex h-screen flex-col items-center justify-center">
+          <h1 className="text-4xl font-bold text-white">
+            {sessionData.user.email}
+          </h1>
+        </div>
       ) : (
         <div className="flex h-screen flex-col items-center justify-center">
           <h1 className="text-w<BoardView bid={bid} />hite text-4xl font-bold">
