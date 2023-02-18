@@ -14,7 +14,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { classNames } from "../../utils/helper";
 import FolderDisclosure from "../../components/Layout/FolderDisclosure";
 import Head from "next/head";
-import { signOut, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
 const navigation = [
@@ -89,10 +89,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   useEffect(() => {
     if (sessionStatus === "unauthenticated") {
       const timeOut = setTimeout(() => {
-        router
-          .push("/api/auth/signin")
-          .then(() => console.log("Redirected to signin page"))
-          .catch((err) => console.log(err));
+        signIn(undefined, {
+          callbackUrl: router.asPath,
+        }).then(() => {
+          console.log("Redirected to login page");
+        });
       }, 500);
       return () => clearTimeout(timeOut);
     }
