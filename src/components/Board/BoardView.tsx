@@ -20,7 +20,10 @@ const emptyBoardData: BoardType = {
   panelOrder: [],
 };
 
-const BoardView = () => {
+interface BoardViewProps {
+  bid: string;
+}
+const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
   const [boardData, setBoardData] = useState<BoardType>(emptyBoardData);
   const [newPanel, setNewPanel] = useState("");
   const [isItemCombineEnabled, setIsItemCombineEnabled] = useState(false);
@@ -412,81 +415,90 @@ const BoardView = () => {
   };
 
   return (
-    <div
-      className="
+    <>
+      <div className="min-w-max rounded-md border bg-white px-4 py-2 text-xl font-bold shadow-md">
+        {bid} board
+      </div>
+      <div
+        className="
       flex h-full items-start gap-3 overflow-auto
       bg-green-image bg-cover p-4
       "
-    >
-      <DragDropContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
-        <Droppable droppableId="board" type="board" direction="horizontal">
-          {(provided, snapshot) => {
-            const dropZoneStyle = snapshot.isDraggingOver
-              ? "bg-slate-200/30 shadow-md border-slate-200/20"
-              : "";
-            return (
-              <div
-                className="h-full"
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-              >
-                <TransitionGroup
-                  className={`flex gap-4 rounded pb-2 ${dropZoneStyle}
-                  transition-all duration-500 ease-in-out`}
-                >
-                  {boardData.panelOrder.map((panelId, index) => (
-                    <Collapse
-                      key={panelId}
-                      orientation="horizontal"
-                      timeout={100}
-                    >
-                      <Draggable draggableId={panelId} index={index}>
-                        {(provided, snapshot) => (
-                          <Panel
-                            style={provided.draggableProps.style}
-                            provided={provided}
-                            snapshot={snapshot}
-                            panelData={boardData.panels[panelId]!}
-                            boardData={boardData}
-                            setBoardData={setBoardData}
-                            newPanel={newPanel}
-                            setNewPanel={setNewPanel}
-                            handleDeletePanel={handleDeletePanel}
-                            isItemCombineEnabled={isItemCombineEnabled}
-                            {...taskProps}
-                          />
-                        )}
-                      </Draggable>
-                    </Collapse>
-                  ))}
-                  {provided.placeholder}
-                </TransitionGroup>
-              </div>
-            );
-          }}
-        </Droppable>
-      </DragDropContext>
-
-      {/* Create new panel button */}
-      <Button
-        sx={{
-          backgroundColor: "rgba(220, 220, 220, 0.6)",
-          border: "1px solid rgba(175, 175, 175, 0.36)",
-          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(5px)",
-          WebkitBackdropFilter: "blur(5px)",
-          borderRadius: "4px",
-          maxWidth: "40px",
-          maxHeight: "40px",
-          minWidth: "40px",
-          minHeight: "40px",
-        }}
-        color="success"
-        onClick={handleCreateNewPanel}
       >
-        <AddIcon color="action" />
-      </Button>
-    </div>
+        {/* Board drag/drop zone */}
+        <DragDropContext
+          onDragEnd={handleDragEnd}
+          onDragStart={handleDragStart}
+        >
+          <Droppable droppableId="board" type="board" direction="horizontal">
+            {(provided, snapshot) => {
+              const dropZoneStyle = snapshot.isDraggingOver
+                ? "bg-slate-200/30 shadow-md border-slate-200/20"
+                : "";
+              return (
+                <div
+                  className="h-full"
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  <TransitionGroup
+                    className={`flex gap-4 rounded pb-2 ${dropZoneStyle}
+                  transition-all duration-500 ease-in-out`}
+                  >
+                    {boardData.panelOrder.map((panelId, index) => (
+                      <Collapse
+                        key={panelId}
+                        orientation="horizontal"
+                        timeout={100}
+                      >
+                        <Draggable draggableId={panelId} index={index}>
+                          {(provided, snapshot) => (
+                            <Panel
+                              style={provided.draggableProps.style}
+                              provided={provided}
+                              snapshot={snapshot}
+                              panelData={boardData.panels[panelId]!}
+                              boardData={boardData}
+                              setBoardData={setBoardData}
+                              newPanel={newPanel}
+                              setNewPanel={setNewPanel}
+                              handleDeletePanel={handleDeletePanel}
+                              isItemCombineEnabled={isItemCombineEnabled}
+                              {...taskProps}
+                            />
+                          )}
+                        </Draggable>
+                      </Collapse>
+                    ))}
+                    {provided.placeholder}
+                  </TransitionGroup>
+                </div>
+              );
+            }}
+          </Droppable>
+        </DragDropContext>
+
+        {/* Create new panel button */}
+        <Button
+          sx={{
+            backgroundColor: "rgba(220, 220, 220, 0.6)",
+            border: "1px solid rgba(175, 175, 175, 0.36)",
+            boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
+            backdropFilter: "blur(5px)",
+            WebkitBackdropFilter: "blur(5px)",
+            borderRadius: "4px",
+            maxWidth: "40px",
+            maxHeight: "40px",
+            minWidth: "40px",
+            minHeight: "40px",
+          }}
+          color="success"
+          onClick={handleCreateNewPanel}
+        >
+          <AddIcon color="action" />
+        </Button>
+      </div>
+    </>
   );
 };
 
