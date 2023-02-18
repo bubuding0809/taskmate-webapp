@@ -7,11 +7,11 @@ import BoardView from "../../components/Board/BoardView";
 import { Session } from "next-auth";
 
 interface UserBoardPageProps {
-  session: Session;
+  // session: Session;
   bid: string;
 }
 const UserBoardPage: NextPageWithLayout<UserBoardPageProps> = ({
-  session,
+  // session,
   bid,
 }) => {
   return <BoardView bid={bid} />;
@@ -23,28 +23,27 @@ UserBoardPage.getLayout = (page: ReactElement) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context);
+  // const session = await getSession(context);
   const { bid } = context.query;
-  console.log(bid);
 
-  if (typeof bid !== "string" || bid.length === 0) {
-    return {
-      notFound: true,
-    };
-  }
+  // if (typeof bid !== "string" || bid.length === 0) {
+  //   return {
+  //     notFound: true,
+  //   };
+  // }
 
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/api/auth/signin",
-        permanent: false,
-      },
-    };
-  }
+  // if (!session) {
+  //   return {
+  //     redirect: {
+  //       destination: "/api/auth/signin",
+  //       permanent: false,
+  //     },
+  //   };
+  // }
 
   return {
     props: {
-      session,
+      // session,
       bid,
     },
   };
