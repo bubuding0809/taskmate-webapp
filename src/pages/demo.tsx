@@ -1,7 +1,8 @@
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
 import Link from "next/link";
 import BoardView from "../components/Board/BoardView";
+import { authOptions } from "../server/auth";
 
 const DemoPage: React.FC = () => {
   return (
@@ -17,13 +18,7 @@ const DemoPage: React.FC = () => {
 export default DemoPage;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context);
-
-  // if (typeof bid !== "string" || bid.length === 0) {
-  //   return {
-  //     notFound: true,
-  //   };
-  // }
+  const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session) {
     return {

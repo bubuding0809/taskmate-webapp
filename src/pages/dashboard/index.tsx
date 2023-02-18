@@ -3,6 +3,8 @@ import { ReactElement } from "react";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import AppLayout from "../../components/Layout/AppLayout";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../server/auth";
 
 const DashboardPage: NextPageWithLayout = () => {
   return (
@@ -18,7 +20,7 @@ DashboardPage.getLayout = (page: ReactElement) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context);
+  const session = await getServerSession(context.req, context.res, authOptions);
 
   if (!session) {
     return {
