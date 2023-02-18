@@ -27,13 +27,6 @@ export const TodoList: React.FC<TodoListProps> = ({
   handleUnappendSubtask,
   handleToggleTask,
 }: TodoListProps) => {
-  // Set up autoAnimation of div element
-  const parent = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    parent.current && autoAnimate(parent.current);
-  }, [parent]);
-
   return (
     <Droppable
       droppableId={`${panelData.id}-${type}`}
