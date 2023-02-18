@@ -8,11 +8,11 @@ import { authOptions } from "../../server/auth";
 import { useSession } from "next-auth/react";
 
 interface UserBoardPageProps {
-  // session: Session;
+  session: string;
   bid: string;
 }
 const UserBoardPage: NextPageWithLayout<UserBoardPageProps> = ({
-  // session,
+  session,
   bid,
 }) => {
   const { data: sessionData } = useSession();
@@ -47,19 +47,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  // if (!session) {
-  //   return {
-  //     redirect: {
-  //       destination: "/api/auth/signin",
-  //       permanent: false,
-  //     },
-  //   };
-  // }
+  // use timeout to simulate slow network
+  const session = await new Promise((resolve) => {
+    setTimeout(() => {
+      return "test";
+    }, 1000);
+  });
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/api/auth/signin",
+        permanent: false,
+      },
+    };
+  }
 
   return {
     props: {
-      // session,
-      bid,
+      session,
     },
   };
 };
