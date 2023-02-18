@@ -13,17 +13,18 @@ export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
 
-type AppPropsWithLayout = AppProps & {
+type AppPropsWithLayout = {
   Component: NextPageWithLayout;
-};
+  pageProps: { session: Session; pageProps: {} };
+} & AppProps;
 
 const MyApp = ({
   Component,
-  pageProps: { session: Session, ...pageProps },
+  pageProps: { session, ...pageProps },
 }: AppPropsWithLayout) => {
   const getLayout = Component.getLayout ?? ((page) => page);
   return (
-    <SessionProvider session={pageProps.session}>
+    <SessionProvider session={session}>
       {getLayout(<Component {...pageProps} />)}
     </SessionProvider>
   );
