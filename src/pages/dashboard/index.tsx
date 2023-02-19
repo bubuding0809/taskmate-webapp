@@ -1,7 +1,6 @@
 import type { NextPageWithLayout } from "../_app";
 import { ReactElement } from "react";
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
 import AppLayout from "../../components/Layout/AppLayout";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../server/auth";
