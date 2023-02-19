@@ -91,9 +91,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
       const timeOut = setTimeout(() => {
         signIn(undefined, {
           callbackUrl: router.asPath,
-        }).then(() => {
-          console.log("Redirected to login page");
-        });
+        })
+          .then(() => {
+            console.log("Redirected to login page");
+          })
+          .catch((err) => {
+            console.log("Error redirecting to login page: ", err);
+          });
       }, 500);
       return () => clearTimeout(timeOut);
     }
