@@ -1,37 +1,30 @@
 import type { NextPageWithLayout } from "../_app";
 import { ReactElement, useEffect, useState } from "react";
-import { GetServerSideProps } from "next";
 import AppLayout from "../../components/Layout/AppLayout";
 import BoardView from "../../components/Board/BoardView";
-import { getServerSession, Session } from "next-auth";
-import { authOptions } from "../../server/auth";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
 const UserBoardPage: NextPageWithLayout = () => {
-  const { data: sessionData, status } = useSession();
+  const { data: sessionData, status } = useSession({
+    required: true,
+  });
   const router = useRouter();
   const { bid } = router.query as { bid: string };
 
-  return (
-    <>
-      {sessionData && status === "authenticated" && <BoardView bid={bid} />}
-      {status === "unauthenticated" && (
-        <div className="flex h-screen flex-col items-center justify-center">
-          <h1 className="text-w<BoardView bid={bid} />hite text-4xl font-bold">
-            You must be signed in to view this page.
-          </h1>
-        </div>
-      )}
-      {status === "loading" && (
-        <div className="flex h-screen flex-col items-center justify-center">
-          <h1 className="text-w<BoardView bid={bid} />hite text-4xl font-bold">
-            Loading...
-          </h1>
-        </div>
-      )}
-    </>
-  );
+  // Return loading screen while session is loading
+  if (status === "loading") {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center">
+        <h1 className="text-w<BoardView bid={bid} />hite text-4xl font-bold">
+          Loading...
+        </h1>
+      </div>
+    );
+  }
+
+  // Only allow the user to view their own boards when logged in
+  return <BoardView bid={bid} />;
 };
 export default UserBoardPage;
 
