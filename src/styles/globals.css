@@ -11,12 +11,12 @@ html {
 body {
   /* Use tailwind css here */
   @apply h-full;
-  overflow: overlay;
 }
 
 *::-webkit-scrollbar {
   display: block;
   width: 10px;
+  height: 10px;
 }
 
 *::-webkit-scrollbar-button {
