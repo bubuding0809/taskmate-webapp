@@ -58,6 +58,7 @@ export const folderRouter = createTRPCRouter({
   createFolder: protectedProcedure
     .input(
       z.object({
+        folderId: z.string(),
         name: z.string(),
         userId: z.string(),
         currentFolderOrder: z.array(z.string()),
@@ -66,6 +67,7 @@ export const folderRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const newFolder = await ctx.prisma.folder.create({
         data: {
+          id: input.folderId,
           folder_name: input.name,
           thumbnail_image: "📂",
           user: {

@@ -8,7 +8,7 @@ const useCreateFolder = () => {
 
   return api.folder.createFolder.useMutation({
     onMutate: async (newFolder) => {
-      const { name, userId } = newFolder;
+      const { name, userId, folderId } = newFolder;
 
       const queryKey = getQueryKey(
         api.folder.getAllUserFolders,
@@ -32,12 +32,11 @@ const useCreateFolder = () => {
       };
 
       // Optimistically update to the new value
-      const tempFolderId = Math.random().toString(36).substr(2, 9);
       queryClient.setQueryData(queryKey, {
         folders: {
           ...oldFolderData.folders,
-          [tempFolderId]: {
-            id: tempFolderId,
+          [folderId]: {
+            id: folderId,
             folder_name: name,
             thumbnail_image: "📂",
             user_id: userId,
@@ -45,7 +44,7 @@ const useCreateFolder = () => {
             collapsed: false,
           },
         },
-        folderOrder: [...oldFolderData.folderOrder, tempFolderId],
+        folderOrder: [...oldFolderData.folderOrder, folderId],
       });
 
       return { oldFolderData, queryKey };
