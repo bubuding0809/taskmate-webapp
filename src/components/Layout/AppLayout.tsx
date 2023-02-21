@@ -21,7 +21,6 @@ import { api } from "@/utils/api";
 import Link from "next/link";
 import autoAnimate from "@formkit/auto-animate";
 import useCreateFolder from "@/utils/mutations/useCreateFolder";
-import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
@@ -48,7 +47,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Get all folders for the user
   const { data: folderData } = api.folder.getAllUserFolders.useQuery(
     {
-      userId: sessionData!.user.id,
+      userId: sessionData?.user.id ?? "",
     },
     {
       enabled: !!sessionData && sessionData.user.id !== undefined,
@@ -59,7 +58,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   const { data: boardsWithoutFolderData } =
     api.board.getUserBoardWithoutFolder.useQuery(
       {
-        userId: sessionData!.user.id,
+        userId: sessionData?.user.id ?? "",
       },
       {
         enabled: !!sessionData && sessionData.user.id !== undefined,

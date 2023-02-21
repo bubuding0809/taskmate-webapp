@@ -6,7 +6,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
 const UserBoardPage: NextPageWithLayout = () => {
-  const { status } = useSession({ required: true });
+  const { status } = useSession({
+    required: true,
+  });
   const router = useRouter();
   const { bid } = router.query as { bid: string };
 
