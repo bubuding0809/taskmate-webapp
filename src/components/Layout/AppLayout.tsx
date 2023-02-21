@@ -21,6 +21,7 @@ import { api } from "@/utils/api";
 import Link from "next/link";
 import autoAnimate from "@formkit/auto-animate";
 import useCreateFolder from "@/utils/mutations/useCreateFolder";
+import { nanoid } from "nanoid";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
@@ -74,11 +75,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Set up sidebar expand state
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
-  // Set up autoAnimation of list element
-  const projectsRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    projectsRef.current && autoAnimate(projectsRef.current);
-  }, [projectsRef]);
+  // // Set up autoAnimation of list element
+  // const projectsRef = useRef<HTMLDivElement>(null);
+  // useEffect(() => {
+  //   projectsRef.current && autoAnimate(projectsRef.current);
+  // }, [projectsRef]);
 
   // Return loading screen while session is loading
   if (sessionStatus === "loading") {
@@ -283,7 +284,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                   Projects
                 </h3>
                 <div
-                  ref={projectsRef}
+                  // ref={projectsRef}
                   className="overlay w-full space-y-1"
                   role="group"
                   aria-labelledby="projects-headline"
@@ -359,6 +360,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                   className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                   onClick={() => {
                     createFolder({
+                      folderId: nanoid(),
                       name: "New Folder",
                       userId: sessionData.user.id,
                       currentFolderOrder: folderData!.folderOrder,
