@@ -31,11 +31,11 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
     folderItem.folder_name
   );
 
-  // Set up autoAnimation of list element
-  const parent = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    parent.current && autoAnimate(parent.current);
-  }, [parent]);
+  // // Set up autoAnimation of list element
+  // const parent = useRef<HTMLDivElement>(null);
+  // useEffect(() => {
+  //   parent.current && autoAnimate(parent.current);
+  // }, [parent]);
 
   // Effect for setting rename input value to folder name when clicked away
   useEffect(() => {
@@ -77,12 +77,15 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
       onMouseLeave={() => !dropDownMenuOpen && setmenuButtonVisible(false)}
     >
       {({ open }) => (
-        <div ref={parent}>
+        <div
+          className="relative"
+          // ref={parent}
+        >
           {/* Folder name input form*/}
           {folderRenameInputVisible && (
             <div
               ref={wrapperRef}
-              className="form-input fixed z-20 w-60 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus-within:border-indigo-600 focus-within:ring-1 focus-within:ring-indigo-600"
+              className="form-input absolute z-30 w-60 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus-within:border-indigo-600 focus-within:ring-1 focus-within:ring-indigo-600"
             >
               <label
                 htmlFor="name"
@@ -119,13 +122,15 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
             </div>
           )}
           {menuButtonVisible && sidebarExpanded && (
-            <DropDownMenu
-              folder_id={folderItem.id}
-              user_id={folderItem.user_id}
-              folder_order={folder_order}
-              setDropDownMenuOpen={setDropDownMenuOpen}
-              setFolderRenameInputVisible={setFolderRenameInputVisible}
-            />
+            <div className="absolute right-8 top-3">
+              <DropDownMenu
+                folder_id={folderItem.id}
+                user_id={folderItem.user_id}
+                folder_order={folder_order}
+                setDropDownMenuOpen={setDropDownMenuOpen}
+                setFolderRenameInputVisible={setFolderRenameInputVisible}
+              />
+            </div>
           )}
 
           {/* Folder main */}

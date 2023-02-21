@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useRef, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils/helper";
@@ -20,17 +20,22 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
   setDropDownMenuOpen,
   setFolderRenameInputVisible,
 }) => {
+  // Keep track of mouse position state to position the menu
+  const [mousePostion, setMousePosition] = useState({ x: 0, y: 0 });
   // Mutation to delete a folder
   const { mutate: deleteFolder } = useDeleteFolder();
-
   return (
-    <Menu as="div" className="absolute right-7 top-3 text-left">
-      <div>
-        <Menu.Button className="flex items-center rounded-full bg-transparent text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100">
-          <span className="sr-only">Open options</span>
-          <EllipsisVerticalIcon className="h-5 w-5" aria-hidden="true" />
-        </Menu.Button>
-      </div>
+    <Menu as="div" className="relative text-left">
+      <Menu.Button
+        className="flex items-center rounded-full bg-transparent text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+          const { x, y } = e.currentTarget.getBoundingClientRect();
+          setMousePosition({ x, y });
+        }}
+      >
+        <span className="sr-only">Open options</span>
+        <EllipsisVerticalIcon className="h-5 w-5" aria-hidden="true" />
+      </Menu.Button>
 
       <Transition
         as={Fragment}
@@ -41,7 +46,13 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items className="fixed z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <Menu.Items
+          className={`fixed z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}
+          style={{
+            left: mousePostion.x,
+            top: mousePostion.y,
+          }}
+        >
           {({ open }) => {
             setDropDownMenuOpen(open);
             return (
