@@ -361,8 +361,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                   onClick={() => {
                     createFolder({
                       name: "New Folder",
-                      userId: sessionData?.user.id,
-                      currentFolderOrder: folderData?.folderOrder!,
+                      userId: sessionData.user.id,
+                      currentFolderOrder: folderData!.folderOrder,
                     });
                   }}
                 >

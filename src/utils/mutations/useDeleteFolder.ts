@@ -7,8 +7,8 @@ const useDeleteFolder = () => {
   const queryClient = useQueryClient();
 
   return api.folder.deleteFolder.useMutation({
-    onMutate: (folder) => {
-      const { folderId, userId, folderOrder } = folder;
+    onMutate: async (folder) => {
+      const { folderId, userId } = folder;
 
       // Create query key to access the query data
       const queryKey = getQueryKey(
@@ -18,7 +18,7 @@ const useDeleteFolder = () => {
       );
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      queryClient.cancelQueries({
+      await queryClient.cancelQueries({
         queryKey,
       });
 
@@ -44,13 +44,13 @@ const useDeleteFolder = () => {
 
       return { oldFolderData, queryKey };
     },
-    onError: (error, variables, ctx) => {
+    onError: (_error, _variables, ctx) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       queryClient.setQueryData(ctx?.queryKey!, ctx?.oldFolderData);
     },
-    onSettled(data, error, variables, ctx) {
+    onSettled: async (_data, _error, _variables, ctx) => {
       // Always refetch query after error or success to make sure the server state is correct
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: ctx?.queryKey,
       });
     },
