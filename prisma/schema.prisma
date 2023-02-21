@@ -49,6 +49,7 @@ model User {
     email              String?              @unique
     emailVerified      DateTime?
     image              String?
+    folder_order       String?              @db.VarChar(1000)
     accounts           Account[]
     Attachment         Attachment[]
     Board              Board[]
