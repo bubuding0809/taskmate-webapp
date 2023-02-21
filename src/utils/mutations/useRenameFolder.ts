@@ -51,7 +51,7 @@ const useRenameFolder = () => {
     },
     onError: (_error, _variables, ctx) => {
       // If the mutation fails, use the context returned from onMutate to roll back
-      queryClient.setQueryData(ctx?.queryKey!, ctx?.oldFolderData);
+      queryClient.setQueryData(ctx!.queryKey, ctx!.oldFolderData);
     },
     onSettled: async (_data, _error, _variables, ctx) => {
       // Always refetch query after error or success to make sure the server state is correct
