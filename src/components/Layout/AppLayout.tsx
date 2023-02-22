@@ -129,7 +129,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
       reorderFolder({
         folderId: draggableId,
         folderOrder: newFolderorder,
-        userId: sessionData!.user.id,
+        userId: sessionData.user.id,
       });
     }
   };
