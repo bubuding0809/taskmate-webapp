@@ -4,6 +4,7 @@ import { EllipsisVerticalIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils/helper";
 import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
 import { PencilIcon } from "@heroicons/react/24/outline";
+import useClickAway from "@/utils/hooks/useClickAway";
 
 interface DropDownMenuProps {
   folder_id: string;
@@ -11,6 +12,7 @@ interface DropDownMenuProps {
   folder_order: string[];
   setDropDownMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setFolderRenameInputVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setmenuButtonVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const DropDownMenu: React.FC<DropDownMenuProps> = ({
@@ -19,15 +21,22 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
   folder_order,
   setDropDownMenuOpen,
   setFolderRenameInputVisible,
+  setmenuButtonVisible,
 }) => {
+  // Ref for detecting click outside of drop down menu
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  useClickAway(wrapperRef, () => setmenuButtonVisible(false));
+
   // Keep track of mouse position state to position the menu
   const [mousePostion, setMousePosition] = useState({ x: 0, y: 0 });
+
   // Mutation to delete a folder
   const { mutate: deleteFolder } = useDeleteFolder();
+
   return (
     <Menu as="div" className="relative text-left">
       <Menu.Button
-        className="flex items-center rounded-full bg-transparent text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+        className="flex items-center rounded-md bg-transparent text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100"
         onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
           const { x, y } = e.currentTarget.getBoundingClientRect();
           setMousePosition({ x, y });
@@ -39,7 +48,7 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
 
       <Transition
         as={Fragment}
-        enter="transition ease-out duration-100"
+        enter="transition ease-out duration-100 "
         enterFrom="transform opacity-0 scale-95"
         enterTo="transform opacity-100 scale-100"
         leave="transition ease-in duration-75"
@@ -47,6 +56,7 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
         leaveTo="transform opacity-0 scale-95"
       >
         <Menu.Items
+          ref={wrapperRef}
           className={`fixed z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}
           style={{
             left: mousePostion.x,

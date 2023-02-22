@@ -44,7 +44,6 @@ const useRenameFolder = () => {
         folderOrder: oldFolderData.folderOrder,
       };
 
-      console.log("newFolderData", newFolderData);
       queryClient.setQueryData(queryKey, newFolderData);
 
       return { oldFolderData, queryKey };

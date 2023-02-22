@@ -1,16 +1,17 @@
-import { Disclosure, Popover } from "@headlessui/react";
+import { Disclosure } from "@headlessui/react";
 import { useRef, useEffect, useState } from "react";
-import autoAnimate from "@formkit/auto-animate";
 import { classNames } from "../../utils/helper";
 import Link from "next/link";
 import { Board, Folder } from "@prisma/client";
 import DropDownMenu from "./DropDownMenu";
-import { api } from "@/utils/api";
-import { useQueryClient } from "@tanstack/react-query";
-import { getQueryKey } from "@trpc/react-query";
 import useRenameFolder from "@/utils/mutations/useRenameFolder";
+import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
+import useClickAway from "@/utils/hooks/useClickAway";
+import { Bars2Icon } from "@heroicons/react/24/outline";
 
 interface FolderDisclosureProps {
+  provided: DraggableProvided;
+  snapshot: DraggableStateSnapshot;
   folderItem: Folder & {
     boards: Board[];
   };
@@ -19,6 +20,8 @@ interface FolderDisclosureProps {
 }
 
 const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
+  provided,
+  snapshot,
   folderItem,
   sidebarExpanded,
   folder_order,
@@ -31,56 +34,34 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
     folderItem.folder_name
   );
 
-  // // Set up autoAnimation of list element
-  // const parent = useRef<HTMLDivElement>(null);
-  // useEffect(() => {
-  //   parent.current && autoAnimate(parent.current);
-  // }, [parent]);
-
   // Effect for setting rename input value to folder name when clicked away
   useEffect(() => {
     setRenameInputValue(folderItem.folder_name);
   }, [folderRenameInputVisible, folderItem.folder_name]);
 
-  // Hook to detect click outside of rename input form
-  function useOutsideAlerter(ref: React.RefObject<HTMLDivElement>) {
-    useEffect(() => {
-      /**
-       * Alert if clicked on outside of element
-       */
-      function handleClickOutside(event: MouseEvent) {
-        const target = event.target as Node;
-        if (ref.current && !ref.current.contains(target)) {
-          setFolderRenameInputVisible(false);
-        }
-      }
-      // Bind the event listener
-      document.addEventListener("mousedown", handleClickOutside);
-
-      return () => {
-        // Unbind the event listener on clean up
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, [ref]);
-  }
+  // Click away effect for folder rename input form
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  useOutsideAlerter(wrapperRef);
+  useClickAway(wrapperRef, () => setFolderRenameInputVisible(false));
 
+  // Rename folder mutation
   const { mutate: renameFolder } = useRenameFolder();
 
   return (
     <Disclosure
       as="div"
       key={folderItem.id}
-      className="space-y-1"
+      className={classNames(
+        snapshot.isDragging &&
+          "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-small shadow-gray-900",
+        "space-y-1"
+      )}
       onMouseEnter={() => setmenuButtonVisible(true)}
       onMouseLeave={() => !dropDownMenuOpen && setmenuButtonVisible(false)}
+      ref={provided.innerRef}
+      {...provided.draggableProps}
     >
-      {({ open }) => (
-        <div
-          className="relative"
-          // ref={parent}
-        >
+      {({ open, close }) => (
+        <div className="relative">
           {/* Folder name input form*/}
           {folderRenameInputVisible && (
             <div
@@ -121,23 +102,13 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
               />
             </div>
           )}
-          {menuButtonVisible && sidebarExpanded && (
-            <div className="absolute right-8 top-3">
-              <DropDownMenu
-                folder_id={folderItem.id}
-                user_id={folderItem.user_id}
-                folder_order={folder_order}
-                setDropDownMenuOpen={setDropDownMenuOpen}
-                setFolderRenameInputVisible={setFolderRenameInputVisible}
-              />
-            </div>
-          )}
 
           {/* Folder main */}
-          <Disclosure.Button className="group flex w-full flex-col items-center rounded-md p-2 text-left text-sm font-medium text-gray-300  hover:bg-gray-700 hover:text-white focus:outline-none">
+          <Disclosure.Button
+            as="div"
+            className="group flex w-full flex-col items-center rounded-md p-2 text-left text-sm font-medium  text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none"
+          >
             <div className="flex w-full items-center justify-center">
-              {/* Fixed position dropdown menu button */}
-
               {/* Folder thumbnail image */}
               <span
                 className={classNames(
@@ -151,11 +122,44 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
               {/* Folder Name */}
               {sidebarExpanded && (
                 <>
-                  <p className="flex-1 truncate">{folderItem.folder_name}</p>
+                  <p
+                    className={classNames(
+                      snapshot.isDragging && "text-white",
+                      "flex-1 truncate"
+                    )}
+                  >
+                    {folderItem.folder_name}
+                  </p>
+                  {/* Fixed position dropdown menu button */}
+                  {sidebarExpanded && (
+                    <div
+                      className={classNames(
+                        menuButtonVisible ? "visible" : "invisible",
+                        "flex"
+                      )}
+                    >
+                      <DropDownMenu
+                        folder_id={folderItem.id}
+                        user_id={folderItem.user_id}
+                        folder_order={folder_order}
+                        setDropDownMenuOpen={setDropDownMenuOpen}
+                        setFolderRenameInputVisible={
+                          setFolderRenameInputVisible
+                        }
+                        setmenuButtonVisible={setmenuButtonVisible}
+                      />
+                      <div {...provided.dragHandleProps}>
+                        <Bars2Icon
+                          className="h-5 w-5 text-gray-400"
+                          onMouseDown={() => close()}
+                        />
+                      </div>
+                    </div>
+                  )}
                   <svg
                     className={classNames(
                       open ? "rotate-90 text-gray-400" : "text-gray-300",
-                      "ml-3 h-5 w-5 flex-shrink-0 transform transition-colors duration-150 ease-in-out group-hover:text-gray-400"
+                      "ml-2 h-5 w-5 flex-shrink-0 transform cursor-pointer transition-colors duration-150 ease-in-out group-hover:text-gray-400"
                     )}
                     viewBox="0 0 20 20"
                     aria-hidden="true"
@@ -170,7 +174,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
           {/* Children projects */}
           {sidebarExpanded && (
             <Disclosure.Panel className="space-y-1">
-              {folderItem.boards.map((board) => (
+              {folderItem.boards?.map((board) => (
                 <Link href={`/board/${board.id}`} key={board.id}>
                   <button className="group flex w-full items-center justify-start rounded-md py-2 pl-11 pr-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none">
                     <span

@@ -1,4 +1,4 @@
-import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
+import { Fragment, ReactNode, useState } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
   Bars3BottomLeftIcon,
@@ -19,9 +19,17 @@ import Head from "next/head";
 import { signOut, useSession } from "next-auth/react";
 import { api } from "@/utils/api";
 import Link from "next/link";
-import autoAnimate from "@formkit/auto-animate";
 import useCreateFolder from "@/utils/mutations/useCreateFolder";
 import { nanoid } from "nanoid";
+import {
+  DragDropContext,
+  Draggable,
+  DragStart,
+  Droppable,
+  DropResult,
+  resetServerContext,
+} from "react-beautiful-dnd";
+import useUpdateFolderOrder from "@/utils/mutations/useUpdateFolderOrder";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
@@ -41,6 +49,8 @@ type AppLayoutProps = {
 };
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
+  // Use resetServerContext to prevent react-beautiful-dnd from crashing
+  resetServerContext();
   const { data: sessionData, status: sessionStatus } = useSession({
     required: true,
   });
@@ -69,17 +79,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Create folder mutation hooks
   const { mutate: createFolder } = useCreateFolder();
 
+  // Create folder reorder mutation hooks
+  const { mutate: reorderFolder } = useUpdateFolderOrder();
+
   // Set up sidebar open state
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Set up sidebar expand state
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
-
-  // // Set up autoAnimation of list element
-  // const projectsRef = useRef<HTMLDivElement>(null);
-  // useEffect(() => {
-  //   projectsRef.current && autoAnimate(projectsRef.current);
-  // }, [projectsRef]);
 
   // Return loading screen while session is loading
   if (sessionStatus === "loading") {
@@ -89,6 +96,47 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
       </div>
     );
   }
+
+  const onDragEnd = (result: DropResult) => {
+    const { destination, source, draggableId, type, combine } = result;
+
+    // Handle combining of board to a folder
+    if (combine) {
+      // TODO: Combine board to folder
+    }
+
+    // if there is no destination, return
+    if (!destination) return;
+
+    // If draggable is dropped in the same location, return
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    )
+      return;
+
+    // Handle reordering of a folder
+    if (type === "folder") {
+      const newFolderorder = [...folderData!.folderOrder];
+
+      // Remove the folder from the old position
+      newFolderorder.splice(source.index, 1);
+
+      // Insert the folder to the new position
+      newFolderorder.splice(destination.index, 0, draggableId);
+
+      // Mutate the folder order
+      reorderFolder({
+        folderId: draggableId,
+        folderOrder: newFolderorder,
+        userId: sessionData!.user.id,
+      });
+    }
+  };
+
+  const onDragStart = (initial: DragStart) => {
+    // console.log(initial);
+  };
 
   // Only show the layout if the user is logged in
   return (
@@ -220,9 +268,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
             )}
           </button>
 
-          {/* Sidebar content*/}
+          {/* Sidebar*/}
           <div className="flex min-h-0 flex-1 flex-col bg-gray-800">
-            {/* Logo area */}
+            {/* Sidebar logo*/}
             <div
               className={classNames(
                 sidebarExpanded ? "justify-start" : "justify-center",
@@ -236,9 +284,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
               />
             </div>
 
-            {/* Side Nav */}
+            {/* Sidebar main */}
             <nav className="flex flex-1 flex-col space-y-8 overflow-y-auto px-2 py-4">
-              {/* Navigation content */}
+              {/* Sidebar navigation content */}
               <div className="space-y-1">
                 {navigation.map((item) => (
                   <a
@@ -267,7 +315,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                 ))}
               </div>
 
-              {/* Projects content */}
+              {/* Sidebar projects and folders */}
               <div
                 className={classNames(
                   !sidebarExpanded && "items-center",
@@ -284,8 +332,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                   Projects
                 </h3>
                 <div
-                  // ref={projectsRef}
-                  className="overlay w-full space-y-1"
+                  className="overlay h-full w-full space-y-1"
                   role="group"
                   aria-labelledby="projects-headline"
                 >
@@ -313,90 +360,97 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                         )}
                       </Link>
                     ))}
-                  {folderData &&
-                    folderData.folderOrder.map((folderId) => {
-                      const folderItem = folderData.folders[folderId]!;
-                      return !folderItem.boards ? (
-                        <a
-                          key={folderItem.id}
-                          href="#"
+                  <DragDropContext
+                    onDragEnd={onDragEnd}
+                    onDragStart={onDragStart}
+                  >
+                    <Droppable droppableId="folders" type="folder">
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
                           className={classNames(
-                            !sidebarExpanded && "justify-center",
-                            "group flex items-center rounded-md px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                            snapshot.isDraggingOver &&
+                              "rounded border-2 border-gray-500 bg-gray-700 transition delay-150 duration-200"
                           )}
                         >
-                          <span
-                            className={classNames(
-                              sidebarExpanded ? "mr-3" : "mr-0",
-                              "text-xl"
-                            )}
-                          >
-                            {folderItem.thumbnail_image}
-                          </span>
-
-                          {sidebarExpanded && (
-                            <p className="truncate">{folderItem.folder_name}</p>
-                          )}
-                        </a>
-                      ) : (
-                        <FolderDisclosure
-                          key={folderItem.id}
-                          sidebarExpanded={sidebarExpanded}
-                          folderItem={folderItem}
-                          folder_order={folderData.folderOrder}
-                        />
-                      );
-                    })}
+                          {folderData &&
+                            folderData.folderOrder?.map((folderId, index) => {
+                              return (
+                                <Draggable
+                                  draggableId={folderId}
+                                  index={index}
+                                  key={folderId}
+                                >
+                                  {(provided, snapshot) => (
+                                    <FolderDisclosure
+                                      provided={provided}
+                                      snapshot={snapshot}
+                                      sidebarExpanded={sidebarExpanded}
+                                      folderItem={folderData.folders[folderId]!}
+                                      folder_order={folderData.folderOrder}
+                                    />
+                                  )}
+                                </Draggable>
+                              );
+                            })}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
                 </div>
               </div>
-              <span
-                className={classNames(
-                  sidebarExpanded ? "flex-row space-x-3" : "flex-col space-y-2",
-                  "isolate inline-flex justify-center rounded-md shadow-sm"
-                )}
-              >
-                <button
-                  type="button"
-                  className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  onClick={() => {
-                    createFolder({
-                      folderId: nanoid(),
-                      name: "New Folder",
-                      userId: sessionData.user.id,
-                      currentFolderOrder: folderData!.folderOrder,
-                    });
-                  }}
-                >
-                  {sidebarExpanded ? (
-                    <>
-                      <FolderPlusIcon
-                        className="mr-2 h-5 w-5"
-                        aria-hidden="true"
-                      />
-                      Folder
-                    </>
-                  ) : (
-                    <FolderPlusIcon className="h-6 w-6" aria-hidden="true" />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                  {sidebarExpanded ? (
-                    <>
-                      <DocumentPlusIcon
-                        className="mr-2 h-5 w-5"
-                        aria-hidden="true"
-                      />
-                      Board
-                    </>
-                  ) : (
-                    <DocumentPlusIcon className="h-6 w-6" aria-hidden="true" />
-                  )}
-                </button>
-              </span>
             </nav>
+
+            {/* Sidebar footer */}
+            <div
+              className={classNames(
+                sidebarExpanded ? "flex-row space-x-3" : "flex-col space-y-2",
+                "isolate inline-flex justify-center rounded-md p-2 shadow-sm"
+              )}
+            >
+              <button
+                type="button"
+                className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                onClick={() => {
+                  createFolder({
+                    folderId: nanoid(),
+                    name: "New Folder",
+                    userId: sessionData.user.id,
+                    currentFolderOrder: folderData?.folderOrder ?? [],
+                  });
+                }}
+              >
+                {sidebarExpanded ? (
+                  <>
+                    <FolderPlusIcon
+                      className="mr-2 h-5 w-5"
+                      aria-hidden="true"
+                    />
+                    Folder
+                  </>
+                ) : (
+                  <FolderPlusIcon className="h-6 w-6" aria-hidden="true" />
+                )}
+              </button>
+              <button
+                type="button"
+                className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                {sidebarExpanded ? (
+                  <>
+                    <DocumentPlusIcon
+                      className="mr-2 h-5 w-5"
+                      aria-hidden="true"
+                    />
+                    Board
+                  </>
+                ) : (
+                  <DocumentPlusIcon className="h-6 w-6" aria-hidden="true" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
 

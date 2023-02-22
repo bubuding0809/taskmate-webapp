@@ -3,12 +3,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { api } from "../api";
 
-const useDeleteFolder = () => {
+const useUpdateFolderOrder = () => {
   const queryClient = useQueryClient();
 
-  return api.folder.deleteFolder.useMutation({
+  return api.folder.updateFolderOrder.useMutation({
     onMutate: async (folder) => {
-      const { folderId, userId } = folder;
+      const { folderId, folderOrder, userId } = folder;
 
       // Create query key to access the query data
       const queryKey = getQueryKey(
@@ -19,7 +19,7 @@ const useDeleteFolder = () => {
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
-        queryKey,
+        queryKey: queryKey,
       });
 
       // Snapshot the previous value
@@ -33,14 +33,11 @@ const useDeleteFolder = () => {
       };
 
       // Optimistically update to the new value
-      queryClient.setQueryData(queryKey, {
-        folders: {
-          ...oldFolderData.folders,
-          // Remove the folder from the folders object
-          [folderId]: undefined,
-        },
-        folderOrder: oldFolderData.folderOrder.filter((id) => id !== folderId),
-      });
+      const newFolderData = {
+        ...oldFolderData,
+        folderOrder: folderOrder,
+      };
+      queryClient.setQueryData(queryKey, newFolderData);
 
       return { oldFolderData, queryKey };
     },
@@ -48,20 +45,13 @@ const useDeleteFolder = () => {
       // If the mutation fails, use the context returned from onMutate to roll back
       queryClient.setQueryData(ctx!.queryKey, ctx!.oldFolderData);
     },
-    onSettled: async (_data, _error, variables, ctx) => {
+    onSettled: async (_data, _error, _variables, ctx) => {
       // Always refetch query after error or success to make sure the server state is correct
-      await queryClient.invalidateQueries([
-        {
-          queryKey: ctx?.queryKey,
-        },
-        {
-          queryKey: getQueryKey(api.board.getUserBoardWithoutFolder, {
-            userId: variables.userId,
-          }),
-        },
-      ]);
+      await queryClient.invalidateQueries({
+        queryKey: ctx?.queryKey,
+      });
     },
   });
 };
 
-export default useDeleteFolder;
+export default useUpdateFolderOrder;

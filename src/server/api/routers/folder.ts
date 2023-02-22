@@ -152,4 +152,24 @@ export const folderRouter = createTRPCRouter({
         },
       });
     }),
+
+  // Mutation to update the folder order
+  updateFolderOrder: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        folderOrder: z.array(z.string()),
+        folderId: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await ctx.prisma.user.update({
+        where: {
+          id: input.userId,
+        },
+        data: {
+          folder_order: input.folderOrder.join(","),
+        },
+      });
+    }),
 });
