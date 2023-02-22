@@ -34,8 +34,8 @@ export const folderRouter = createTRPCRouter({
       });
 
       return {
-        folders: folderObj,
-        folderOrder: folderOrder?.folder_order!.split(",") || [],
+        folders: folderObj || {},
+        folderOrder: folderOrder!.folder_order?.split(",") || [],
       };
     }),
 
@@ -112,15 +112,16 @@ export const folderRouter = createTRPCRouter({
         },
       });
 
+      const newFolderOrder = input.folderOrder
+        .filter((folderId) => folderId !== input.folderId)
+        .join(",");
       // filder out the folder from the user's folder order
       await ctx.prisma.user.update({
         where: {
           id: input.userId,
         },
         data: {
-          folder_order: input.folderOrder
-            .filter((folderId) => folderId !== input.folderId)
-            .join(","),
+          folder_order: newFolderOrder.length > 0 ? newFolderOrder : null,
         },
       });
 
