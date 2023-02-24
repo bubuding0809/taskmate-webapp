@@ -1,6 +1,7 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 import { signIn, signOut, useSession } from "next-auth/react";
+import { animated } from "@react-spring/web";
 
 // TO BE DONE BY: Jannson
 // This is the landing page for the app. It should be the first page that the user sees when they visit the site.
@@ -15,9 +16,19 @@ const LandingPage: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="flex min-h-screen items-center justify-center ">
+      <div className="flex min-h-screen flex-col items-center justify-center">
         {/* YOUR CONTENT GOES BETWEEN HERE */}
         <p className="text-9xl">@Jann make nice nice</p>
+
+        {/* This is an example of how to use the react-spring library. You can use this to animate elements on the page. */}
+        <animated.div
+          style={{
+            width: 80,
+            height: 80,
+            background: "#ff6d6d",
+            borderRadius: 8,
+          }}
+        />
         {/* YOUR CONTENT GOES BETWEEN HERE */}
       </div>
     </>

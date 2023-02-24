@@ -1,3 +1,5 @@
+// You do not need to touch this page. Unless you want to make changes to the layout of the app.
+
 import { type AppType, AppProps } from "next/app";
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
