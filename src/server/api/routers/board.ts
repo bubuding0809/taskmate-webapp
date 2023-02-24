@@ -17,7 +17,27 @@ export const boardRouter = createTRPCRouter({
       });
     }),
 
-  getProtectedFolders: protectedProcedure.query(() => {
-    return "Protected folders yet to be implemented";
-  }),
+  addBoardToFolder: protectedProcedure
+    .input(
+      z.object({
+        boardId: z.string(),
+        folderId: z.string(),
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      // Update board to have folder_id
+      return await ctx.prisma.board.update({
+        where: {
+          id: input.boardId,
+        },
+        data: {
+          folder: {
+            connect: {
+              id: input.folderId,
+            },
+          },
+        },
+      });
+    }),
 });

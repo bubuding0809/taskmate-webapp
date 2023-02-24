@@ -51,6 +51,8 @@ type AppLayoutProps = {
 const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Use resetServerContext to prevent react-beautiful-dnd from crashing
   resetServerContext();
+
+  // Get session data
   const { data: sessionData, status: sessionStatus } = useSession({
     required: true,
   });
@@ -76,11 +78,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
       }
     );
 
-  // Create folder mutation hooks
+  // Mutation hooks
   const { mutate: createFolder } = useCreateFolder();
-
-  // Create folder reorder mutation hooks
   const { mutate: reorderFolder } = useUpdateFolderOrder();
+  const { mutate: addBoardToFolder } = api.board.addBoardToFolder.useMutation();
 
   // Set up sidebar open state
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -97,26 +98,45 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
     );
   }
 
+  // state to handle drop enabled or disabled for folders and boards
+  const [boardsDropDisabled, setBoardsDropDropDisabled] = useState(false);
+
   const onDragEnd = (result: DropResult) => {
     const { destination, source, draggableId, type, combine } = result;
 
-    // Handle combining of board to a folder
-    if (combine) {
-      // TODO: Combine board to folder
+    console.log(
+      "Drag end info: ",
+      combine,
+      source.droppableId,
+      destination?.droppableId
+    );
+    // * Handle combining of board to a folder
+    if (combine && source.droppableId === "boards") {
+      addBoardToFolder({
+        boardId: draggableId,
+        folderId: combine.draggableId,
+        userId: sessionData.user.id,
+      });
+
+      return;
     }
 
-    // if there is no destination, return
+    // * If there is no destination, return
     if (!destination) return;
 
-    // If draggable is dropped in the same location, return
+    // * If draggable is dropped in the same location, return
     if (
       destination.droppableId === source.droppableId &&
       destination.index === source.index
     )
       return;
 
-    // Handle reordering of a folder
-    if (type === "folder") {
+    // * Handle reordering of a sidebar folder
+    /* 
+      This includes reordering of folders and boards
+      Type of droppable zones must be the same for reordering to work
+    */
+    if (type === "sidebar" && source.droppableId === "folders") {
       const newFolderorder = [...folderData!.folderOrder];
 
       // Remove the folder from the old position
@@ -131,11 +151,25 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
         folderOrder: newFolderorder,
         userId: sessionData.user.id,
       });
+
+      return;
+    }
+
+    // * Handle reorder of a sidebar board
+    if (type === "sidebar" && source.droppableId === "boards") {
+      // TODO : Add board reorder logic
     }
   };
 
   const onDragStart = (initial: DragStart) => {
-    // console.log(initial);
+    // TODO : Add drag start logic
+    const { source, type, draggableId } = initial;
+
+    if (source.droppableId === "folders") {
+      setBoardsDropDropDisabled(true);
+    } else {
+      setBoardsDropDropDisabled(false);
+    }
   };
 
   // Only show the layout if the user is logged in
@@ -146,6 +180,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
         <meta name="description" content="WCard" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
       <div className="flex h-screen w-screen overflow-x-auto">
         {/* Dynamic side bar for mobile, able to show and hide*/}
         <Transition.Root show={sidebarOpen} as={Fragment}>
@@ -331,40 +366,81 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                 >
                   Projects
                 </h3>
+
+                {/* reorderable boards and folders */}
                 <div
                   className="overlay h-full w-full space-y-1"
                   role="group"
                   aria-labelledby="projects-headline"
                 >
-                  {boardsWithoutFolderData &&
-                    boardsWithoutFolderData.map((board) => (
-                      <Link
-                        key={board.id}
-                        href={`/board/${board.id}`}
-                        className={classNames(
-                          !sidebarExpanded && "justify-center",
-                          "group flex items-center rounded-md px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-                        )}
-                      >
-                        <span
-                          className={classNames(
-                            sidebarExpanded ? "mr-3" : "mr-0",
-                            "text-xl"
-                          )}
-                        >
-                          {board.thumbnail_image}
-                        </span>
-
-                        {sidebarExpanded && (
-                          <p className="truncate">{board.board_title}</p>
-                        )}
-                      </Link>
-                    ))}
                   <DragDropContext
                     onDragEnd={onDragEnd}
                     onDragStart={onDragStart}
                   >
-                    <Droppable droppableId="folders" type="folder">
+                    {/* Drop zone for projects only */}
+                    <Droppable
+                      droppableId="boards"
+                      type="sidebar"
+                      isDropDisabled={boardsDropDisabled}
+                    >
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          className={classNames(
+                            snapshot.isDraggingOver &&
+                              "rounded border-2 border-gray-500 bg-gray-700 transition delay-150 duration-200"
+                          )}
+                        >
+                          {boardsWithoutFolderData &&
+                            boardsWithoutFolderData.map((board, index) => (
+                              <Draggable
+                                key={board.id}
+                                draggableId={board.id}
+                                index={index}
+                              >
+                                {(provided, snapshot) => {
+                                  return (
+                                    <Link
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      href={`/board/${board.id}`}
+                                      className={classNames(
+                                        !sidebarExpanded && "justify-center",
+                                        "group flex items-center rounded-md px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                                      )}
+                                    >
+                                      <span
+                                        className={classNames(
+                                          sidebarExpanded ? "mr-3" : "mr-0",
+                                          "text-xl"
+                                        )}
+                                      >
+                                        {board.thumbnail_image}
+                                      </span>
+
+                                      {sidebarExpanded && (
+                                        <p className="truncate">
+                                          {board.board_title}
+                                        </p>
+                                      )}
+                                    </Link>
+                                  );
+                                }}
+                              </Draggable>
+                            ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+
+                    {/* Drop zone for folders only or combining of project with a folder */}
+                    <Droppable
+                      droppableId="folders"
+                      type="sidebar"
+                      isCombineEnabled={true}
+                    >
                       {(provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
@@ -375,25 +451,23 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                           )}
                         >
                           {folderData &&
-                            folderData.folderOrder?.map((folderId, index) => {
-                              return (
-                                <Draggable
-                                  draggableId={folderId}
-                                  index={index}
-                                  key={folderId}
-                                >
-                                  {(provided, snapshot) => (
-                                    <FolderDisclosure
-                                      provided={provided}
-                                      snapshot={snapshot}
-                                      sidebarExpanded={sidebarExpanded}
-                                      folderItem={folderData.folders[folderId]!}
-                                      folder_order={folderData.folderOrder}
-                                    />
-                                  )}
-                                </Draggable>
-                              );
-                            })}
+                            folderData.folderOrder?.map((folderId, index) => (
+                              <Draggable
+                                key={folderId}
+                                draggableId={folderId}
+                                index={index}
+                              >
+                                {(provided, snapshot) => (
+                                  <FolderDisclosure
+                                    provided={provided}
+                                    snapshot={snapshot}
+                                    sidebarExpanded={sidebarExpanded}
+                                    folderItem={folderData.folders[folderId]!}
+                                    folder_order={folderData.folderOrder}
+                                  />
+                                )}
+                              </Draggable>
+                            ))}
                           {provided.placeholder}
                         </div>
                       )}
@@ -454,7 +528,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
           </div>
         </div>
 
-        {/* Main content*/}
+        {/* Main */}
         <div className="flex flex-1 flex-col overflow-x-auto">
           {/* Top Nav */}
           <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white shadow">
