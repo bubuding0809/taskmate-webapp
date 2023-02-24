@@ -6,6 +6,7 @@ import { animated } from "@react-spring/web";
 // TO BE DONE BY: Jannson
 // This is the landing page for the app. It should be the first page that the user sees when they visit the site.
 // The page can be accessed at http://localhost:3000/landing
+// Look up documentation for Next.js pages to learn more about how to use them.
 
 const LandingPage: NextPage = () => {
   return (
