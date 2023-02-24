@@ -36,7 +36,9 @@ const SignIn: NextPage<
           <div key={provider.name}>
             <button
               className="rounded-md border-2 p-4 hover:bg-gray-300/50"
-              onClick={() => signIn(provider.id, { callbackUrl: "/dashboard" })}
+              onClick={() =>
+                void signIn(provider.id, { callbackUrl: "/dashboard" })
+              }
             >
               Sign in with {provider.name}
             </button>
