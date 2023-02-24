@@ -89,6 +89,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Set up sidebar expand state
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
+  // state to handle drop enabled or disabled for folders and boards
+  const [boardsDropDisabled, setBoardsDropDropDisabled] = useState(false);
+
   // Return loading screen while session is loading
   if (sessionStatus === "loading") {
     return (
@@ -97,9 +100,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
       </div>
     );
   }
-
-  // state to handle drop enabled or disabled for folders and boards
-  const [boardsDropDisabled, setBoardsDropDropDisabled] = useState(false);
 
   const onDragEnd = (result: DropResult) => {
     const { destination, source, draggableId, type, combine } = result;
