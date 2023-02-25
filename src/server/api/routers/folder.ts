@@ -25,16 +25,13 @@ export const folderRouter = createTRPCRouter({
         },
       });
 
-      const folderObj: {
-        [key: string]: Folder & { boards: Board[] };
-      } = {};
-
-      folders.forEach((folder) => {
-        folderObj[folder.id] = folder;
-      });
+      // Create a map of folder id to folder
+      const folderMap = new Map<string, Folder & { boards: Board[] }>(
+        folders.map((folder) => [folder.id, folder])
+      );
 
       return {
-        folders: folderObj || {},
+        folders: folderMap,
         folderOrder: folderOrder!.folder_order?.split(",") || [],
       };
     }),
@@ -50,6 +47,9 @@ export const folderRouter = createTRPCRouter({
       return ctx.prisma.folder.findUnique({
         where: {
           id: input.folderId,
+        },
+        include: {
+          boards: true,
         },
       });
     }),
@@ -99,37 +99,61 @@ export const folderRouter = createTRPCRouter({
         folderId: z.string(),
         userId: z.string(),
         folderOrder: z.array(z.string()),
+        boardOrder: z.array(z.string()),
+        boardIdsToBeUpdated: z.array(z.string()),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // Set all folder property of the boards in the folder to null
-      await ctx.prisma.board.updateMany({
-        where: {
-          folder_id: input.folderId,
-        },
-        data: {
-          folder_id: null,
-        },
-      });
+      // Use an interactive transaction to ensure that all operations are completed
+      return await ctx.prisma.$transaction(async (tx) => {
+        // Get all boards in the folder, these boards will be moved to the unorganized section
+        const boardIdsToBeUpdated = await tx.board.findMany({
+          where: {
+            folder_id: input.folderId,
+          },
+          select: {
+            id: true,
+          },
+        });
 
-      const newFolderOrder = input.folderOrder
-        .filter((folderId) => folderId !== input.folderId)
-        .join(",");
-      // filder out the folder from the user's folder order
-      await ctx.prisma.user.update({
-        where: {
-          id: input.userId,
-        },
-        data: {
-          folder_order: newFolderOrder.length > 0 ? newFolderOrder : null,
-        },
-      });
+        // Set all folder property of the boards in the folder to null
+        await tx.board.updateMany({
+          where: {
+            folder_id: input.folderId,
+          },
+          data: {
+            folder_id: null,
+          },
+        });
 
-      // Delete the folder
-      return await ctx.prisma.folder.delete({
-        where: {
-          id: input.folderId,
-        },
+        // filder out the folder from the user's folder order
+        const newFolderOrder = input.folderOrder
+          .filter((folderId) => folderId !== input.folderId)
+          .join(",");
+
+        // Update the user's folder order and board order
+        await tx.user.update({
+          where: {
+            id: input.userId,
+          },
+          data: {
+            folder_order: newFolderOrder.length > 0 ? newFolderOrder : null,
+            board_order:
+              boardIdsToBeUpdated.length > 0
+                ? [
+                    ...input.boardOrder,
+                    boardIdsToBeUpdated.map((item) => item.id),
+                  ].join(",")
+                : [...input.boardOrder].join(","),
+          },
+        });
+
+        // Delete the folder
+        return await tx.folder.delete({
+          where: {
+            id: input.folderId,
+          },
+        });
       });
     }),
 
@@ -159,7 +183,6 @@ export const folderRouter = createTRPCRouter({
       z.object({
         userId: z.string(),
         folderOrder: z.array(z.string()),
-        folderId: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {

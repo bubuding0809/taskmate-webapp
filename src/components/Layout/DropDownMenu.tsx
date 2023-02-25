@@ -5,11 +5,14 @@ import { classNames } from "@/utils/helper";
 import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
 import { PencilIcon } from "@heroicons/react/24/outline";
 import useClickAway from "@/utils/hooks/useClickAway";
+import { api } from "@/utils/api";
+import { Board } from "@prisma/client";
 
 interface DropDownMenuProps {
-  folder_id: string;
   user_id: string;
+  folder_id: string;
   folder_order: string[];
+  folder_boards: Board[];
   setDropDownMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setFolderRenameInputVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setmenuButtonVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -17,8 +20,9 @@ interface DropDownMenuProps {
 
 const DropDownMenu: React.FC<DropDownMenuProps> = ({
   folder_id,
-  user_id,
   folder_order,
+  folder_boards,
+  user_id,
   setDropDownMenuOpen,
   setFolderRenameInputVisible,
   setmenuButtonVisible,
@@ -29,6 +33,12 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
 
   // Keep track of mouse position state to position the menu
   const [mousePostion, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Query to get board order of boards without folder
+  const { data: boardsWithoutFolderData } =
+    api.board.getUserBoardWithoutFolder.useQuery({
+      userId: user_id,
+    });
 
   // Mutation to delete a folder
   const { mutate: deleteFolder } = useDeleteFolder();
@@ -101,6 +111,10 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
                           folderId: folder_id,
                           userId: user_id,
                           folderOrder: folder_order,
+                          boardOrder: boardsWithoutFolderData!.boardOrder,
+                          boardIdsToBeUpdated: folder_boards.map(
+                            (board) => board.id
+                          ),
                         });
                       }}
                     >

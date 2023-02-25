@@ -8,6 +8,7 @@ import useRenameFolder from "@/utils/mutations/useRenameFolder";
 import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
 import useClickAway from "@/utils/hooks/useClickAway";
 import { Bars2Icon } from "@heroicons/react/24/outline";
+import autoAnimate from "@formkit/auto-animate";
 
 interface FolderDisclosureProps {
   provided: DraggableProvided;
@@ -43,6 +44,12 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   useClickAway(wrapperRef, () => setFolderRenameInputVisible(false));
 
+  // Set up autoAnimation of folder boards element
+  const parent = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    parent.current && autoAnimate(parent.current);
+  }, [parent]);
+
   // Rename folder mutation
   const { mutate: renameFolder } = useRenameFolder();
 
@@ -62,7 +69,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
     >
       {({ open, close }) => (
         <div className="relative">
-          {/* Folder name input form*/}
+          {/* Folder name input form, is postioned fixed */}
           {folderRenameInputVisible && (
             <div
               ref={wrapperRef}
@@ -140,8 +147,9 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                     >
                       <DropDownMenu
                         folder_id={folderItem.id}
-                        user_id={folderItem.user_id}
                         folder_order={folder_order}
+                        folder_boards={folderItem.boards}
+                        user_id={folderItem.user_id}
                         setDropDownMenuOpen={setDropDownMenuOpen}
                         setFolderRenameInputVisible={
                           setFolderRenameInputVisible
@@ -173,7 +181,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
 
           {/* Children projects */}
           {sidebarExpanded && (
-            <Disclosure.Panel className="space-y-1">
+            <Disclosure.Panel className="space-y-1" ref={parent}>
               {folderItem.boards?.map((board) => (
                 <Link href={`/board/${board.id}`} key={board.id}>
                   <button className="group flex w-full items-center justify-start rounded-md py-2 pl-11 pr-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none">

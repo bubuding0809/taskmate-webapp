@@ -3,16 +3,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { api } from "../api";
 
-const useUpdateFolderOrder = () => {
+const useUpdateBoardOrder = () => {
   const queryClient = useQueryClient();
 
-  return api.folder.updateFolderOrder.useMutation({
-    onMutate: async (folder) => {
-      const { folderOrder, userId } = folder;
+  return api.board.updateBoardOrder.useMutation({
+    onMutate: async (board) => {
+      const { boardOrder, userId } = board;
 
       // Create query key to access the query data
       const queryKey = getQueryKey(
-        api.folder.getAllUserFolders,
+        api.board.getUserBoardWithoutFolder,
         { userId },
         "query"
       );
@@ -23,27 +23,23 @@ const useUpdateFolderOrder = () => {
       });
 
       // Snapshot the previous value
-      const oldFolderData = queryClient.getQueryData(queryKey) as {
-        folders: {
-          [key: string]: Folder & {
-            boards: Board[];
-          };
-        };
-        folderOrder: string[];
+      const oldBoardData = queryClient.getQueryData(queryKey) as {
+        boards: Map<string, Board>;
+        boardOrder: string[];
       };
 
       // Optimistically update to the new value
-      const optimistFolderData = {
-        ...oldFolderData,
-        folderOrder: folderOrder,
+      const optimistBoardData = {
+        ...oldBoardData,
+        boardOrder: boardOrder,
       };
-      queryClient.setQueryData(queryKey, optimistFolderData);
+      queryClient.setQueryData(queryKey, optimistBoardData);
 
-      return { oldFolderData, queryKey };
+      return { oldBoardData, queryKey };
     },
     onError: (_error, _variables, ctx) => {
       // If the mutation fails, use the context returned from onMutate to roll back
-      queryClient.setQueryData(ctx!.queryKey, ctx!.oldFolderData);
+      queryClient.setQueryData(ctx!.queryKey, ctx!.oldBoardData);
     },
     onSettled: async (_data, _error, _variables, ctx) => {
       // Always refetch query after error or success to make sure the server state is correct
@@ -54,4 +50,4 @@ const useUpdateFolderOrder = () => {
   });
 };
 
-export default useUpdateFolderOrder;
+export default useUpdateBoardOrder;

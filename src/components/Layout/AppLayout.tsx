@@ -1,4 +1,4 @@
-import { Fragment, ReactNode, useState } from "react";
+import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
   Bars3BottomLeftIcon,
@@ -30,6 +30,9 @@ import {
   resetServerContext,
 } from "react-beautiful-dnd";
 import useUpdateFolderOrder from "@/utils/mutations/useUpdateFolderOrder";
+import useUpdateBoardOrder from "@/utils/mutations/useUpdateBoardOrder";
+import useAddBoardToFolder from "@/utils/mutations/useAddBoardToFolder";
+import autoAnimate from "@formkit/auto-animate";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
@@ -81,7 +84,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Mutation hooks
   const { mutate: createFolder } = useCreateFolder();
   const { mutate: reorderFolder } = useUpdateFolderOrder();
-  const { mutate: addBoardToFolder } = api.board.addBoardToFolder.useMutation();
+  const { mutate: addBoardToFolder } = useAddBoardToFolder();
+  const { mutate: reorderBoard } = useUpdateBoardOrder();
 
   // Set up sidebar open state
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -92,6 +96,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // state to handle drop enabled or disabled for folders and boards
   const [boardsDropDisabled, setBoardsDropDropDisabled] = useState(false);
 
+  // Set up autoAnimation of folder boards element
+  const parent = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    parent.current && autoAnimate(parent.current);
+  }, [parent]);
+
   // Return loading screen while session is loading
   if (sessionStatus === "loading") {
     return (
@@ -101,21 +111,30 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
     );
   }
 
+  /* Drag and Drop handlers for Drag Drop Context */
   const onDragEnd = (result: DropResult) => {
     const { destination, source, draggableId, type, combine } = result;
 
+    // Debugging console log
     console.log(
       "Drag end info: ",
       combine,
       source.droppableId,
       destination?.droppableId
     );
+
     // * Handle combining of board to a folder
     if (combine && source.droppableId === "boards") {
+      const newBoardOrder = [...boardsWithoutFolderData!.boardOrder];
+
+      // Remove the board from the old position
+      newBoardOrder.splice(source.index, 1);
+
       addBoardToFolder({
         boardId: draggableId,
         folderId: combine.draggableId,
         userId: sessionData.user.id,
+        boardOrder: newBoardOrder,
       });
 
       return;
@@ -131,12 +150,31 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
     )
       return;
 
+    // * Handle reordering of a sidebar board
+    if (
+      source.droppableId === "boards" &&
+      destination?.droppableId === "boards"
+    ) {
+      const newBoardOrder = [...boardsWithoutFolderData!.boardOrder];
+
+      newBoardOrder.splice(source.index, 1);
+
+      newBoardOrder.splice(destination.index, 0, draggableId);
+
+      // Mutate the board order
+      reorderBoard({
+        boardOrder: newBoardOrder,
+        userId: sessionData.user.id,
+      });
+
+      return;
+    }
+
     // * Handle reordering of a sidebar folder
-    /* 
-      This includes reordering of folders and boards
-      Type of droppable zones must be the same for reordering to work
-    */
-    if (type === "sidebar" && source.droppableId === "folders") {
+    if (
+      source.droppableId === "folders" &&
+      destination.droppableId === "folders"
+    ) {
       const newFolderorder = [...folderData!.folderOrder];
 
       // Remove the folder from the old position
@@ -147,7 +185,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
 
       // Mutate the folder order
       reorderFolder({
-        folderId: draggableId,
         folderOrder: newFolderorder,
         userId: sessionData.user.id,
       });
@@ -393,43 +430,56 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                           )}
                         >
                           {boardsWithoutFolderData &&
-                            boardsWithoutFolderData.map((board, index) => (
-                              <Draggable
-                                key={board.id}
-                                draggableId={board.id}
-                                index={index}
-                              >
-                                {(provided, snapshot) => {
-                                  return (
-                                    <Link
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      href={`/board/${board.id}`}
-                                      className={classNames(
-                                        !sidebarExpanded && "justify-center",
-                                        "group flex items-center rounded-md px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-                                      )}
-                                    >
-                                      <span
-                                        className={classNames(
-                                          sidebarExpanded ? "mr-3" : "mr-0",
-                                          "text-xl"
-                                        )}
-                                      >
-                                        {board.thumbnail_image}
-                                      </span>
+                            boardsWithoutFolderData.boardOrder.map(
+                              (boardId, index) => {
+                                const boardItem =
+                                  boardsWithoutFolderData.boards.get(boardId);
+                                return (
+                                  <Draggable
+                                    key={boardId}
+                                    draggableId={boardId}
+                                    index={index}
+                                  >
+                                    {(provided, snapshot) => {
+                                      return (
+                                        <Link
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                          href={`/board/${boardId}`}
+                                          className={classNames(
+                                            !sidebarExpanded &&
+                                              "justify-center",
+                                            "group flex items-center rounded-md px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white",
+                                            snapshot.isDragging &&
+                                              "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-small shadow-gray-900"
+                                          )}
+                                        >
+                                          <span
+                                            className={classNames(
+                                              sidebarExpanded ? "mr-3" : "mr-0",
+                                              "text-xl"
+                                            )}
+                                          >
+                                            {boardItem
+                                              ? boardItem.thumbnail_image
+                                              : "📄"}
+                                          </span>
 
-                                      {sidebarExpanded && (
-                                        <p className="truncate">
-                                          {board.board_title}
-                                        </p>
-                                      )}
-                                    </Link>
-                                  );
-                                }}
-                              </Draggable>
-                            ))}
+                                          {sidebarExpanded && (
+                                            <p className="truncate">
+                                              {boardItem
+                                                ? boardItem.board_title
+                                                : boardId.toString()}
+                                            </p>
+                                          )}
+                                        </Link>
+                                      );
+                                    }}
+                                  </Draggable>
+                                );
+                              }
+                            )}
                           {provided.placeholder}
                         </div>
                       )}
@@ -451,23 +501,27 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                           )}
                         >
                           {folderData &&
-                            folderData.folderOrder?.map((folderId, index) => (
-                              <Draggable
-                                key={folderId}
-                                draggableId={folderId}
-                                index={index}
-                              >
-                                {(provided, snapshot) => (
-                                  <FolderDisclosure
-                                    provided={provided}
-                                    snapshot={snapshot}
-                                    sidebarExpanded={sidebarExpanded}
-                                    folderItem={folderData.folders[folderId]!}
-                                    folder_order={folderData.folderOrder}
-                                  />
-                                )}
-                              </Draggable>
-                            ))}
+                            folderData.folderOrder?.map((folderId, index) => {
+                              const folderItem =
+                                folderData.folders.get(folderId);
+                              return (
+                                <Draggable
+                                  key={folderId}
+                                  draggableId={folderId}
+                                  index={index}
+                                >
+                                  {(provided, snapshot) => (
+                                    <FolderDisclosure
+                                      provided={provided}
+                                      snapshot={snapshot}
+                                      sidebarExpanded={sidebarExpanded}
+                                      folderItem={folderItem!}
+                                      folder_order={folderData.folderOrder}
+                                    />
+                                  )}
+                                </Draggable>
+                              );
+                            })}
                           {provided.placeholder}
                         </div>
                       )}
