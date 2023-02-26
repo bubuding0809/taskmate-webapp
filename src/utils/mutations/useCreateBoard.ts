@@ -54,11 +54,15 @@ const useCreateBoard = () => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       // This is a hack to make sure that any queries that are refetched after the mutation is executed is cancelled to prevent the optimistic update from being overwritten
       // The cancel queries will execute after the forced query refetching after the mutation is executed
-      setTimeout(async () => {
-        void (await queryClient.cancelQueries({
-          queryKey: boardQueryKey,
-        }));
-      }, 1);
+      setTimeout(
+        () =>
+          (async () => {
+            await queryClient.cancelQueries({
+              queryKey: boardQueryKey,
+            });
+          })(),
+        1
+      );
 
       return { oldBoardData, boardQueryKey };
     },

@@ -64,14 +64,18 @@ const useRemoveBoardFromFolder = () => {
       newFolderData.folders.get(folderId)!.boards.delete(boardId);
       queryClient.setQueryData(folderQueryKey, newFolderData);
 
-      setTimeout(async () => {
-        void (await queryClient.cancelQueries({
-          queryKey: folderQueryKey,
-        }));
-        void (await queryClient.cancelQueries({
-          queryKey: boardQueryKey,
-        }));
-      }, 1);
+      setTimeout(
+        () =>
+          (async () => {
+            await queryClient.cancelQueries({
+              queryKey: folderQueryKey,
+            });
+            await queryClient.cancelQueries({
+              queryKey: boardQueryKey,
+            });
+          })(),
+        1
+      );
 
       return { oldBoardData, boardQueryKey, folderQueryKey, oldFolderData };
     },
