@@ -42,6 +42,15 @@ module.exports = {
       cursor: {
         "custom-cursor": "url(/public/cursors/cursoredit.gif), pointer",
       },
+      animation: {
+        fade: "fade 5s ",
+      },
+      keyframes: {
+        fade: {
+          "0%": { opacity: 0 },
+          "100%": { opacity: 1 },
+        },
+      },
     },
   },
   plugins: [
