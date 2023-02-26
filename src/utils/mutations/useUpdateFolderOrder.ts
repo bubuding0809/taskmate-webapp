@@ -1,6 +1,7 @@
 import { Board, Folder } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
 
 const useUpdateFolderOrder = () => {
@@ -25,9 +26,7 @@ const useUpdateFolderOrder = () => {
       // Snapshot the previous value
       const oldFolderData = queryClient.getQueryData(queryKey) as {
         folders: {
-          [key: string]: Folder & {
-            boards: Board[];
-          };
+          [key: string]: FolderWithBoards;
         };
         folderOrder: string[];
       };

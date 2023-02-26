@@ -83,7 +83,7 @@ const useDeleteBoard = () => {
       // The cancel queries will execute after the forced query refetching after the mutation is executed
       setTimeout(
         () =>
-          (async () => {
+          void (async () => {
             await queryClient.cancelQueries({
               queryKey: folderQueryKey,
             });
