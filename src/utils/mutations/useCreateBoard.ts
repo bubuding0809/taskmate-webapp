@@ -1,6 +1,7 @@
 import { Board, Folder } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import _ from "lodash";
 import { api } from "../api";
 
 const useCreateBoard = () => {
@@ -27,8 +28,10 @@ const useCreateBoard = () => {
         boardOrder: string[];
       };
 
+      const newBoardData = _.cloneDeep(oldBoardData);
+
       // Update the unorganized board map with the new board
-      oldBoardData.boards.set(boardId, {
+      newBoardData.boards.set(boardId, {
         id: boardId,
         user_id: userId,
         folder_id: null,
@@ -43,20 +46,18 @@ const useCreateBoard = () => {
         created_at: new Date(),
         updated_at: new Date(),
       });
+      newBoardData.boardOrder = [...currentBoardOrder, boardId];
 
       // Optimistically update boards to the new value
-      queryClient.setQueryData(boardQueryKey, {
-        ...oldBoardData,
-        boardOrder: [...currentBoardOrder, boardId],
-      });
+      queryClient.setQueryData(boardQueryKey, newBoardData);
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       // This is a hack to make sure that any queries that are refetched after the mutation is executed is cancelled to prevent the optimistic update from being overwritten
       // The cancel queries will execute after the forced query refetching after the mutation is executed
       setTimeout(async () => {
-        await queryClient.cancelQueries({
+        void (await queryClient.cancelQueries({
           queryKey: boardQueryKey,
-        });
+        }));
       }, 1);
 
       return { oldBoardData, boardQueryKey };

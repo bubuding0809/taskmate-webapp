@@ -65,19 +65,18 @@ const useDeleteFolder = () => {
         ...oldFolderData.folders.get(folderId)!.board_order,
       ];
 
-      console.log("newBoardData", newBoardData);
       queryClient.setQueryData(boardQueryKey, newBoardData);
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       // This is a hack to make sure that any queries that are refetched after the mutation is executed is cancelled to prevent the optimistic update from being overwritten
       // The cancel queries will execute after the forced query refetching after the mutation is executed
       setTimeout(async () => {
-        await queryClient.cancelQueries({
+        void (await queryClient.cancelQueries({
           queryKey: folderQueryKey,
-        });
-        await queryClient.cancelQueries({
+        }));
+        void (await queryClient.cancelQueries({
           queryKey: boardQueryKey,
-        });
+        }));
       }, 1);
 
       return { oldFolderData, folderQueryKey, boardQueryKey, oldBoardData };

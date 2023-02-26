@@ -1,6 +1,7 @@
 import { Board } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import _ from "lodash";
 import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
 
@@ -52,39 +53,41 @@ const useDeleteBoard = () => {
         boardOrder: string[] | null;
       };
 
+      const newFolderData = _.cloneDeep(oldFolderData);
+      const newBoardData = _.cloneDeep(oldBoardData);
+
       // If the board is not organized, remove it from the root board list
       if (!isOrganized) {
-        oldBoardData.boards.delete(boardId);
-        const newBoardOrder = oldBoardData.boardOrder?.filter(
+        newBoardData.boards.delete(boardId);
+        const newBoardOrder = newBoardData.boardOrder?.filter(
           (id) => id !== boardId
         );
         queryClient.setQueryData(boardQueryKey, {
-          ...oldBoardData,
+          ...newBoardData,
           boardOrder:
             newBoardOrder && newBoardOrder.length > 0 ? newBoardOrder : null,
         });
       } else {
         // If the board is organized, remove it from the folder board list
-        oldFolderData.folders.get(folderId!)!.boards.delete(boardId);
+        newFolderData.folders.get(folderId!)!.boards.delete(boardId);
         const newFolderBoardOrder =
           folderBoardOrder?.filter(
             (folderBoardId) => folderBoardId !== boardId
           ) ?? [];
-        oldFolderData.folders.get(folderId!)!.board_order = newFolderBoardOrder;
-        console.log("newest folder data", oldFolderData);
-        queryClient.setQueryData(folderQueryKey, oldFolderData);
+        newFolderData.folders.get(folderId!)!.board_order = newFolderBoardOrder;
+        queryClient.setQueryData(folderQueryKey, newFolderData);
       }
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       // This is a hack to make sure that any queries that are refetched after the mutation is executed is cancelled to prevent the optimistic update from being overwritten
       // The cancel queries will execute after the forced query refetching after the mutation is executed
       setTimeout(async () => {
-        await queryClient.cancelQueries({
+        void (await queryClient.cancelQueries({
           queryKey: folderQueryKey,
-        });
-        await queryClient.cancelQueries({
+        }));
+        void (await queryClient.cancelQueries({
           queryKey: boardQueryKey,
-        });
+        }));
       }, 1);
 
       return { oldFolderData, folderQueryKey, boardQueryKey, oldBoardData };
