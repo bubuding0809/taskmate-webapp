@@ -24,27 +24,21 @@ const useRenameFolder = () => {
 
       // Snapshot the previous value
       const oldFolderData = queryClient.getQueryData(queryKey) as {
-        folders: {
-          [key: string]: Folder & {
+        folders: Map<
+          string,
+          Folder & {
             boards: Board[];
-          };
-        };
+          }
+        >;
         folderOrder: string[];
       };
 
       // Optimistically update to the new value
-      const newFolderData = {
-        folders: {
-          ...oldFolderData.folders,
-          [folderId]: {
-            ...oldFolderData.folders[folderId],
-            folder_name: newName,
-          },
-        },
+      oldFolderData.folders.get(folderId)!.folder_name = newName;
+      queryClient.setQueryData(queryKey, {
+        folders: oldFolderData.folders,
         folderOrder: oldFolderData.folderOrder,
-      };
-
-      queryClient.setQueryData(queryKey, newFolderData);
+      });
 
       return { oldFolderData, queryKey };
     },

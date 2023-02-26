@@ -1,6 +1,7 @@
 import { Board, Folder } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
 
 const useCreateFolder = () => {
@@ -23,7 +24,7 @@ const useCreateFolder = () => {
 
       // Snapshot the previous value
       const oldFolderData = queryClient.getQueryData(folderQueryKey) as {
-        folders: Map<string, Folder & { boards: Board[] }>;
+        folders: Map<string, FolderWithBoards>;
         folderOrder: string[];
       };
 
@@ -33,9 +34,9 @@ const useCreateFolder = () => {
         folder_name: name,
         thumbnail_image: "📂",
         user_id: userId,
-        boards: [],
+        boards: new Map<string, Board>(),
         collapsed: false,
-        board_order: null,
+        board_order: [],
       });
 
       // Optimistically update to the new value

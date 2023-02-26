@@ -3,28 +3,27 @@ import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils/helper";
 import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
-import { PencilIcon } from "@heroicons/react/24/outline";
+import { BarsArrowUpIcon, PencilIcon } from "@heroicons/react/24/outline";
 import useClickAway from "@/utils/hooks/useClickAway";
 import { api } from "@/utils/api";
 import { Board } from "@prisma/client";
+import useDeleteBoard from "@/utils/mutations/useDeleteBoard";
+import { FolderWithBoards } from "server/api/routers/folder";
+import useRemoveBoardFromFolder from "@/utils/mutations/useRemoveBoardFromFolder";
 
-interface DropDownMenuProps {
-  user_id: string;
-  folder_id: string;
-  folder_order: string[];
-  folder_boards: Board[];
+interface BoardDropDownMenuProps {
+  boardItem: Board;
+  folderItem: FolderWithBoards | null;
   setDropDownMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setFolderRenameInputVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setBoardRenameInputVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setmenuButtonVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const DropDownMenu: React.FC<DropDownMenuProps> = ({
-  folder_id,
-  folder_order,
-  folder_boards,
-  user_id,
+const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
+  boardItem,
+  folderItem,
   setDropDownMenuOpen,
-  setFolderRenameInputVisible,
+  setBoardRenameInputVisible,
   setmenuButtonVisible,
 }) => {
   // Ref for detecting click outside of drop down menu
@@ -37,11 +36,11 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
   // Query to get board order of boards without folder
   const { data: boardsWithoutFolderData } =
     api.board.getUserBoardWithoutFolder.useQuery({
-      userId: user_id,
+      userId: boardItem.user_id,
     });
 
-  // Mutation to delete a folder
-  const { mutate: deleteFolder } = useDeleteFolder();
+  const { mutate: deleteBoard } = useDeleteBoard();
+  const { mutate: removeBoardFromFolder } = useRemoveBoardFromFolder();
 
   return (
     <Menu as="div" className="relative text-left">
@@ -67,7 +66,7 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
       >
         <Menu.Items
           ref={wrapperRef}
-          className={`fixed z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}
+          className="fixed z-10 mt-2 w-56 origin-top-right cursor-pointer rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
           style={{
             left: mousePostion.x,
             top: mousePostion.y,
@@ -77,16 +76,16 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
             setDropDownMenuOpen(open);
             return (
               <div className="py-1">
+                {/* Menu option to rename board */}
                 <Menu.Item>
                   {({ active }) => (
-                    <a
-                      href="#"
+                    <div
                       className={classNames(
                         active ? "bg-gray-100 text-gray-900" : "text-gray-700",
                         "group flex items-center px-4 py-2 text-sm"
                       )}
                       onClick={(e) => {
-                        setFolderRenameInputVisible(true);
+                        setBoardRenameInputVisible(true);
                       }}
                     >
                       <PencilIcon
@@ -94,27 +93,28 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
                         aria-hidden="true"
                       />
                       Rename
-                    </a>
+                    </div>
                   )}
                 </Menu.Item>
+
+                {/* Menu option to deleteBoard */}
                 <Menu.Item>
                   {({ active }) => (
-                    <a
-                      href="#"
+                    <div
                       className={classNames(
                         active ? "bg-gray-100 text-gray-900" : "text-gray-700",
                         "group flex items-center px-4 py-2 text-sm"
                       )}
                       onClick={(e) => {
-                        e.preventDefault();
-                        deleteFolder({
-                          folderId: folder_id,
-                          userId: user_id,
-                          folderOrder: folder_order,
-                          boardOrder: boardsWithoutFolderData!.boardOrder,
-                          boardIdsToBeUpdated: folder_boards.map(
-                            (board) => board.id
-                          ),
+                        // TODO: Add a confirmation modal
+
+                        deleteBoard({
+                          boardId: boardItem.id,
+                          userId: boardItem.user_id,
+                          isOrganized: boardItem.folder_id ? true : false,
+                          rootBoardOrder: boardsWithoutFolderData!.boardOrder,
+                          folderBoardOrder: folderItem?.board_order ?? null,
+                          folderId: boardItem.folder_id,
                         });
                       }}
                     >
@@ -123,9 +123,41 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
                         aria-hidden="true"
                       />
                       Delete
-                    </a>
+                    </div>
                   )}
                 </Menu.Item>
+
+                {/* Menu option to remove board from folder */}
+                {folderItem && (
+                  <Menu.Item>
+                    {({ active }) => (
+                      <div
+                        className={classNames(
+                          active
+                            ? "bg-gray-100 text-gray-900"
+                            : "text-gray-700",
+                          "group flex items-center px-4 py-2 text-sm"
+                        )}
+                        onClick={(e) => {
+                          // Call remove board from folder mutation
+                          removeBoardFromFolder({
+                            boardId: boardItem.id,
+                            folderId: folderItem.id,
+                            folderBoardOrder: folderItem.board_order,
+                            rootBoardOrder: boardsWithoutFolderData!.boardOrder,
+                            userId: boardItem.user_id,
+                          });
+                        }}
+                      >
+                        <BarsArrowUpIcon
+                          className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-500"
+                          aria-hidden="true"
+                        />
+                        Remove from folder
+                      </div>
+                    )}
+                  </Menu.Item>
+                )}
                 {/* <form method="POST" action="#">
               <Menu.Item>
                 {({ active }) => (
@@ -149,4 +181,4 @@ const DropDownMenu: React.FC<DropDownMenuProps> = ({
     </Menu>
   );
 };
-export default DropDownMenu;
+export default BoardDropDownMenu;

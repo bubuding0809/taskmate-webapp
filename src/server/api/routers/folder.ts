@@ -2,6 +2,16 @@ import { Board, Folder } from "@prisma/client";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 
+export type FolderWithBoards = {
+  boards: Map<string, Board>;
+  id: string;
+  folder_name: string;
+  thumbnail_image: string | null;
+  collapsed: boolean;
+  user_id: string;
+  board_order: string[];
+};
+
 export const folderRouter = createTRPCRouter({
   // Query to get all folders for a user
   getAllUserFolders: publicProcedure
@@ -26,8 +36,17 @@ export const folderRouter = createTRPCRouter({
       });
 
       // Create a map of folder id to folder
-      const folderMap = new Map<string, Folder & { boards: Board[] }>(
-        folders.map((folder) => [folder.id, folder])
+      const folderMap = new Map<string, FolderWithBoards>(
+        folders.map((folder) => [
+          folder.id,
+          {
+            ...folder,
+            boards: new Map<string, Board>(
+              folder.boards.map((board) => [board.id, board])
+            ),
+            board_order: folder.board_order?.split(",") || [],
+          },
+        ])
       );
 
       return {
@@ -65,31 +84,33 @@ export const folderRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const newFolder = await ctx.prisma.folder.create({
-        data: {
-          id: input.folderId,
-          folder_name: input.name,
-          thumbnail_image: "📂",
-          user: {
-            connect: {
-              id: input.userId,
+      return await ctx.prisma.$transaction(async (tx) => {
+        const newFolder = await tx.folder.create({
+          data: {
+            id: input.folderId,
+            folder_name: input.name,
+            thumbnail_image: "📂",
+            user: {
+              connect: {
+                id: input.userId,
+              },
             },
           },
-        },
-      });
+        });
 
-      await ctx.prisma.user.update({
-        where: {
-          id: input.userId,
-        },
-        data: {
-          folder_order: input.currentFolderOrder
-            .concat([newFolder.id])
-            .join(","),
-        },
-      });
+        await tx.user.update({
+          where: {
+            id: input.userId,
+          },
+          data: {
+            folder_order: input.currentFolderOrder
+              .concat([newFolder.id])
+              .join(","),
+          },
+        });
 
-      return newFolder;
+        return newFolder;
+      });
     }),
 
   // Mutation to delete a folder
@@ -132,6 +153,10 @@ export const folderRouter = createTRPCRouter({
           .join(",");
 
         // Update the user's folder order and board order
+        const newBoardOrder = [
+          ...input.boardOrder,
+          ...boardIdsToBeUpdated.map((board) => board.id),
+        ];
         await tx.user.update({
           where: {
             id: input.userId,
@@ -139,12 +164,7 @@ export const folderRouter = createTRPCRouter({
           data: {
             folder_order: newFolderOrder.length > 0 ? newFolderOrder : null,
             board_order:
-              boardIdsToBeUpdated.length > 0
-                ? [
-                    ...input.boardOrder,
-                    boardIdsToBeUpdated.map((item) => item.id),
-                  ].join(",")
-                : [...input.boardOrder].join(","),
+              newBoardOrder.length > 0 ? newBoardOrder.join(",") : null,
           },
         });
 

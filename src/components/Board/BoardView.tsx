@@ -13,6 +13,7 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import { TransitionGroup } from "react-transition-group";
+import { api } from "@/utils/api";
 
 const emptyBoardData: BoardType = {
   todoTasks: {},
@@ -23,10 +24,15 @@ const emptyBoardData: BoardType = {
 interface BoardViewProps {
   bid: string;
 }
+
 const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
   const [boardData, setBoardData] = useState<BoardType>(emptyBoardData);
   const [newPanel, setNewPanel] = useState("");
   const [isItemCombineEnabled, setIsItemCombineEnabled] = useState(false);
+
+  const { data: boardQueryData } = api.board.getBoardById.useQuery({
+    boardId: bid,
+  });
 
   useEffect(() => {
     const localBoardData: BoardType = getLocalStorage(
@@ -417,7 +423,7 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
   return (
     <>
       <div className="min-w-max rounded-md border bg-white px-4 py-2 text-xl font-bold shadow-md">
-        {bid} board
+        {boardQueryData?.board_title} board
       </div>
       <div
         className="

@@ -33,6 +33,8 @@ import useUpdateFolderOrder from "@/utils/mutations/useUpdateFolderOrder";
 import useUpdateBoardOrder from "@/utils/mutations/useUpdateBoardOrder";
 import useAddBoardToFolder from "@/utils/mutations/useAddBoardToFolder";
 import autoAnimate from "@formkit/auto-animate";
+import useCreateBoard from "@/utils/mutations/useCreateBoard";
+import BoardDisclosure from "./BoardDisclosure";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
@@ -86,6 +88,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   const { mutate: reorderFolder } = useUpdateFolderOrder();
   const { mutate: addBoardToFolder } = useAddBoardToFolder();
   const { mutate: reorderBoard } = useUpdateBoardOrder();
+  const { mutate: createBoard } = useCreateBoard();
 
   // Set up sidebar open state
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -135,6 +138,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
         folderId: combine.draggableId,
         userId: sessionData.user.id,
         boardOrder: newBoardOrder,
+        folderBoardOrder:
+          folderData?.folders.get(combine.draggableId)?.board_order ?? [],
       });
 
       return;
@@ -430,7 +435,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                           )}
                         >
                           {boardsWithoutFolderData &&
-                            boardsWithoutFolderData.boardOrder.map(
+                            boardsWithoutFolderData.boardOrder?.map(
                               (boardId, index) => {
                                 const boardItem =
                                   boardsWithoutFolderData.boards.get(boardId);
@@ -440,42 +445,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                                     draggableId={boardId}
                                     index={index}
                                   >
-                                    {(provided, snapshot) => {
-                                      return (
-                                        <Link
-                                          ref={provided.innerRef}
-                                          {...provided.draggableProps}
-                                          {...provided.dragHandleProps}
-                                          href={`/board/${boardId}`}
-                                          className={classNames(
-                                            !sidebarExpanded &&
-                                              "justify-center",
-                                            "group flex items-center rounded-md px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white",
-                                            snapshot.isDragging &&
-                                              "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-small shadow-gray-900"
-                                          )}
-                                        >
-                                          <span
-                                            className={classNames(
-                                              sidebarExpanded ? "mr-3" : "mr-0",
-                                              "text-xl"
-                                            )}
-                                          >
-                                            {boardItem
-                                              ? boardItem.thumbnail_image
-                                              : "📄"}
-                                          </span>
-
-                                          {sidebarExpanded && (
-                                            <p className="truncate">
-                                              {boardItem
-                                                ? boardItem.board_title
-                                                : boardId.toString()}
-                                            </p>
-                                          )}
-                                        </Link>
-                                      );
-                                    }}
+                                    {(provided, snapshot) => (
+                                      <BoardDisclosure
+                                        folderItem={null}
+                                        boardItem={boardItem!}
+                                        provided={provided}
+                                        snapshot={snapshot}
+                                        sidebarExpanded={sidebarExpanded}
+                                      />
+                                    )}
                                   </Draggable>
                                 );
                               }
@@ -497,7 +475,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                           {...provided.droppableProps}
                           className={classNames(
                             snapshot.isDraggingOver &&
-                              "rounded border-2 border-gray-500 bg-gray-700 transition delay-150 duration-200"
+                              "rounded border-2 border-gray-500 bg-gray-700 transition delay-150 duration-200",
+                            "flex flex-col gap-1"
                           )}
                         >
                           {folderData &&
@@ -538,6 +517,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                 "isolate inline-flex justify-center rounded-md p-2 shadow-sm"
               )}
             >
+              {/* Create new folder button */}
               <button
                 type="button"
                 className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
@@ -562,9 +542,20 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                   <FolderPlusIcon className="h-6 w-6" aria-hidden="true" />
                 )}
               </button>
+
+              {/* Create new board button */}
               <button
                 type="button"
                 className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                onClick={() =>
+                  createBoard({
+                    boardId: nanoid(),
+                    userId: sessionData.user.id,
+                    currentBoardOrder:
+                      boardsWithoutFolderData?.boardOrder ?? [],
+                    title: "New Board",
+                  })
+                }
               >
                 {sidebarExpanded ? (
                   <>

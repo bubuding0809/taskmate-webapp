@@ -1,72 +1,79 @@
-import { Board, Folder } from "@prisma/client";
+import { Board } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
-import _ from "lodash";
 import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
 
-const useDeleteFolder = () => {
+const useDeleteBoard = () => {
   const queryClient = useQueryClient();
 
-  return api.folder.deleteFolder.useMutation({
-    onMutate: async (folder) => {
-      const { folderId, userId } = folder;
+  return api.board.deleteBoard.useMutation({
+    onMutate: async (Board) => {
+      const {
+        boardId,
+        userId,
+        folderBoardOrder,
+        isOrganized,
+        rootBoardOrder,
+        folderId,
+      } = Board;
 
-      // Create query key to access the query data
+      // Create query key for the folder query
       const folderQueryKey = getQueryKey(
         api.folder.getAllUserFolders,
         { userId },
         "query"
       );
 
+      // Create query key for the board query
       const boardQueryKey = getQueryKey(
         api.board.getUserBoardWithoutFolder,
         { userId },
         "query"
       );
 
-      await queryClient.cancelQueries({
-        queryKey: folderQueryKey,
-      });
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
         queryKey: boardQueryKey,
+      });
+      await queryClient.cancelQueries({
+        queryKey: folderQueryKey,
       });
 
       // Snapshot the previous value for folders
       const oldFolderData = queryClient.getQueryData(folderQueryKey) as {
         folders: Map<string, FolderWithBoards>;
-        folderOrder: string[] | null;
+        folderOrder: string[];
       };
 
       // Snapshot the previous value for boards
       const oldBoardData = queryClient.getQueryData(boardQueryKey) as {
         boards: Map<string, Board>;
-        boardOrder: string[];
+        boardOrder: string[] | null;
       };
 
-      const newBoardData = _.cloneDeep(oldBoardData);
-      const newFolderData = _.cloneDeep(oldFolderData);
-
-      // Optimistically update unordered boards with the removed folder's boards
-      newFolderData.folders.get(folderId)!.boards.forEach((board) => {
-        newBoardData.boards.set(board.id, board);
-      });
-      newFolderData.folders.delete(folderId);
-      const newFolderOrder = newFolderData.folderOrder?.filter(
-        (id) => id !== folderId
-      );
-      newFolderData.folderOrder =
-        newFolderOrder && newFolderOrder.length > 0 ? newFolderOrder : null;
-      queryClient.setQueryData(folderQueryKey, newFolderData);
-
-      // Optimistically update the board data
-      newBoardData.boardOrder = [
-        ...newBoardData.boardOrder,
-        ...oldFolderData.folders.get(folderId)!.board_order,
-      ];
-
-      console.log("newBoardData", newBoardData);
-      queryClient.setQueryData(boardQueryKey, newBoardData);
+      // If the board is not organized, remove it from the root board list
+      if (!isOrganized) {
+        oldBoardData.boards.delete(boardId);
+        const newBoardOrder = oldBoardData.boardOrder?.filter(
+          (id) => id !== boardId
+        );
+        queryClient.setQueryData(boardQueryKey, {
+          ...oldBoardData,
+          boardOrder:
+            newBoardOrder && newBoardOrder.length > 0 ? newBoardOrder : null,
+        });
+      } else {
+        // If the board is organized, remove it from the folder board list
+        oldFolderData.folders.get(folderId!)!.boards.delete(boardId);
+        const newFolderBoardOrder =
+          folderBoardOrder?.filter(
+            (folderBoardId) => folderBoardId !== boardId
+          ) ?? [];
+        oldFolderData.folders.get(folderId!)!.board_order = newFolderBoardOrder;
+        console.log("newest folder data", oldFolderData);
+        queryClient.setQueryData(folderQueryKey, oldFolderData);
+      }
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       // This is a hack to make sure that any queries that are refetched after the mutation is executed is cancelled to prevent the optimistic update from being overwritten
@@ -92,7 +99,6 @@ const useDeleteFolder = () => {
       await queryClient.invalidateQueries({
         queryKey: ctx?.folderQueryKey,
       });
-
       await queryClient.invalidateQueries({
         queryKey: ctx?.boardQueryKey,
       });
@@ -100,4 +106,4 @@ const useDeleteFolder = () => {
   });
 };
 
-export default useDeleteFolder;
+export default useDeleteBoard;

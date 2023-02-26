@@ -1,26 +1,17 @@
 import { Board, Folder } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
-import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
 
-const useAddBoardToFolder = () => {
+const useCreateBoard = () => {
   const queryClient = useQueryClient();
 
-  return api.board.addBoardToFolder.useMutation({
-    onMutate: async (board) => {
-      const { boardOrder, userId, folderId, boardId, folderBoardOrder } = board;
+  return api.board.createBoard.useMutation({
+    onMutate: async (newFolder) => {
+      const { userId, boardId, currentBoardOrder, title } = newFolder;
 
-      // Create query key to access the board query data
       const boardQueryKey = getQueryKey(
         api.board.getUserBoardWithoutFolder,
-        { userId },
-        "query"
-      );
-
-      // Create query key to access the folder query data
-      const folderQueryKey = getQueryKey(
-        api.folder.getAllUserFolders,
         { userId },
         "query"
       );
@@ -36,54 +27,51 @@ const useAddBoardToFolder = () => {
         boardOrder: string[];
       };
 
-      // Snapshot the previous value for folders
-      const oldFolderData = queryClient.getQueryData(folderQueryKey) as {
-        folders: Map<string, FolderWithBoards>;
-        folderOrder: string[];
-      };
+      // Update the unorganized board map with the new board
+      oldBoardData.boards.set(boardId, {
+        id: boardId,
+        user_id: userId,
+        folder_id: null,
+        board_title: title,
+        board_description: null,
+        panelOrder: null,
+        visibility: "PRIVATE",
+        background_image: null,
+        background_color: null,
+        cover_image: null,
+        thumbnail_image: "📝",
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
 
       // Optimistically update boards to the new value
       queryClient.setQueryData(boardQueryKey, {
         ...oldBoardData,
-        boardOrder: boardOrder,
+        boardOrder: [...currentBoardOrder, boardId],
       });
 
-      // Optimistically update folders to the new value
-      oldFolderData.folders.get(folderId)!.boards.set(boardId, {
-        ...oldBoardData.boards.get(boardId)!,
-      });
-      oldFolderData.folders.get(folderId)!.board_order = [
-        ...folderBoardOrder,
-        boardId,
-      ];
-      queryClient.setQueryData(folderQueryKey, oldFolderData);
-
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      // This is a hack to make sure that any queries that are refetched after the mutation is executed is cancelled to prevent the optimistic update from being overwritten
+      // The cancel queries will execute after the forced query refetching after the mutation is executed
       setTimeout(async () => {
-        await queryClient.cancelQueries({
-          queryKey: folderQueryKey,
-        });
         await queryClient.cancelQueries({
           queryKey: boardQueryKey,
         });
       }, 1);
 
-      return { oldBoardData, boardQueryKey, folderQueryKey, oldFolderData };
+      return { oldBoardData, boardQueryKey };
     },
     onError: (_error, _variables, ctx) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       queryClient.setQueryData(ctx!.boardQueryKey, ctx!.oldBoardData);
-      queryClient.setQueryData(ctx!.folderQueryKey, ctx!.oldFolderData);
     },
     onSettled: async (_data, _error, _variables, ctx) => {
       // Always refetch query after error or success to make sure the server state is correct
       await queryClient.invalidateQueries({
         queryKey: ctx?.boardQueryKey,
       });
-      await queryClient.invalidateQueries({
-        queryKey: ctx?.folderQueryKey,
-      });
     },
   });
 };
 
-export default useAddBoardToFolder;
+export default useCreateBoard;

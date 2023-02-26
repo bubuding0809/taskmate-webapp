@@ -29,6 +29,7 @@
     "@trpc/server": "^10.9.0",
     "animate.css": "^4.1.1",
     "install": "^0.13.0",
+    "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "nanoid": "^4.0.0",
     "next": "13.1.6",
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
+    "@types/lodash": "^4.14.191",
     "@types/node": "^18.11.18",
     "@types/prettier": "^2.7.2",
     "@types/react": "^18.0.26",

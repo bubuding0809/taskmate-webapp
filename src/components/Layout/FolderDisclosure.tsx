@@ -3,19 +3,24 @@ import { useRef, useEffect, useState } from "react";
 import { classNames } from "../../utils/helper";
 import Link from "next/link";
 import { Board, Folder } from "@prisma/client";
-import DropDownMenu from "./DropDownMenu";
+import DropDownMenu from "./FolderDropDownMenu";
 import useRenameFolder from "@/utils/mutations/useRenameFolder";
-import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
+import {
+  Draggable,
+  DraggableProvided,
+  DraggableStateSnapshot,
+  Droppable,
+} from "react-beautiful-dnd";
 import useClickAway from "@/utils/hooks/useClickAway";
 import { Bars2Icon } from "@heroicons/react/24/outline";
 import autoAnimate from "@formkit/auto-animate";
+import BoardDisclosure from "./BoardDisclosure";
+import { FolderWithBoards } from "server/api/routers/folder";
 
 interface FolderDisclosureProps {
   provided: DraggableProvided;
   snapshot: DraggableStateSnapshot;
-  folderItem: Folder & {
-    boards: Board[];
-  };
+  folderItem: FolderWithBoards;
   sidebarExpanded: boolean;
   folder_order: string[];
 }
@@ -60,7 +65,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
       className={classNames(
         snapshot.isDragging &&
           "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-small shadow-gray-900",
-        "space-y-1"
+        "rounded-md border border-dashed border-gray-200 bg-gray-600/10"
       )}
       onMouseEnter={() => setmenuButtonVisible(true)}
       onMouseLeave={() => !dropDownMenuOpen && setmenuButtonVisible(false)}
@@ -79,7 +84,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                 htmlFor="name"
                 className="block text-xs font-medium text-gray-900"
               >
-                folder name
+                Rename folder
               </label>
               <input
                 type="text"
@@ -113,9 +118,9 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
           {/* Folder main */}
           <Disclosure.Button
             as="div"
-            className="group flex w-full flex-col items-center rounded-md p-2 text-left text-sm font-medium  text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none"
+            className="group flex w-full flex-col items-center rounded-md p-2 text-left text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none"
           >
-            <div className="flex w-full items-center justify-center">
+            <div className="flex w-full cursor-pointer items-center justify-center">
               {/* Folder thumbnail image */}
               <span
                 className={classNames(
@@ -148,7 +153,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                       <DropDownMenu
                         folder_id={folderItem.id}
                         folder_order={folder_order}
-                        folder_boards={folderItem.boards}
+                        folder_boards={Object.values(folderItem.boards)}
                         user_id={folderItem.user_id}
                         setDropDownMenuOpen={setDropDownMenuOpen}
                         setFolderRenameInputVisible={
@@ -182,25 +187,39 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
           {/* Children projects */}
           {sidebarExpanded && (
             <Disclosure.Panel className="space-y-1" ref={parent}>
-              {folderItem.boards?.map((board) => (
-                <Link href={`/board/${board.id}`} key={board.id}>
-                  <button className="group flex w-full items-center justify-start rounded-md py-2 pl-11 pr-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none">
-                    <span
-                      className={classNames(
-                        sidebarExpanded ? "mr-3" : "mr-0",
-                        "text-xl"
-                      )}
-                    >
-                      {board.thumbnail_image}
-                    </span>
-                    {sidebarExpanded && (
-                      <p className="flex-1 truncate text-start">
-                        {board.board_title}
-                      </p>
+              <Droppable
+                droppableId={`folder-${folderItem.id}`}
+                type="nested-boards"
+              >
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={classNames(
+                      folderItem.board_order.length > 0 && "pl-5 pb-2 pr-2"
                     )}
-                  </button>
-                </Link>
-              ))}
+                  >
+                    {folderItem.board_order?.map((boardId, index) => (
+                      <Draggable
+                        key={boardId}
+                        draggableId={`nested-${boardId}`}
+                        index={index}
+                      >
+                        {(provided, snapshot) => (
+                          <BoardDisclosure
+                            boardItem={folderItem.boards.get(boardId)!}
+                            folderItem={folderItem}
+                            provided={provided}
+                            snapshot={snapshot}
+                            sidebarExpanded={sidebarExpanded}
+                          />
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
             </Disclosure.Panel>
           )}
         </div>

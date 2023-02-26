@@ -3,13 +3,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
+import _ from "lodash";
 
-const useAddBoardToFolder = () => {
+const useRemoveBoardFromFolder = () => {
   const queryClient = useQueryClient();
 
-  return api.board.addBoardToFolder.useMutation({
+  return api.board.removeBoardFromFolder.useMutation({
     onMutate: async (board) => {
-      const { boardOrder, userId, folderId, boardId, folderBoardOrder } = board;
+      const { userId, folderId, boardId, folderBoardOrder, rootBoardOrder } =
+        board;
 
       // Create query key to access the board query data
       const boardQueryKey = getQueryKey(
@@ -29,6 +31,9 @@ const useAddBoardToFolder = () => {
       await queryClient.cancelQueries({
         queryKey: boardQueryKey,
       });
+      await queryClient.cancelQueries({
+        queryKey: folderQueryKey,
+      });
 
       // Snapshot the previous value for boards
       const oldBoardData = queryClient.getQueryData(boardQueryKey) as {
@@ -42,21 +47,22 @@ const useAddBoardToFolder = () => {
         folderOrder: string[];
       };
 
-      // Optimistically update boards to the new value
-      queryClient.setQueryData(boardQueryKey, {
-        ...oldBoardData,
-        boardOrder: boardOrder,
-      });
+      // Create deep copies of the old data to use for the optimistic update
+      const newBoardData = _.cloneDeep(oldBoardData);
+      const newFolderData = _.cloneDeep(oldFolderData);
 
-      // Optimistically update folders to the new value
-      oldFolderData.folders.get(folderId)!.boards.set(boardId, {
-        ...oldBoardData.boards.get(boardId)!,
+      // Optimistically update unordered boards with the removed board
+      newBoardData.boards.set(boardId, {
+        ...newFolderData.folders.get(folderId)!.boards.get(boardId)!,
       });
-      oldFolderData.folders.get(folderId)!.board_order = [
-        ...folderBoardOrder,
-        boardId,
-      ];
-      queryClient.setQueryData(folderQueryKey, oldFolderData);
+      newBoardData.boardOrder = [...rootBoardOrder, boardId];
+      queryClient.setQueryData(boardQueryKey, newBoardData);
+
+      // Optimistically remove the board from the folder
+      newFolderData.folders.get(folderId)!.board_order =
+        folderBoardOrder.filter((bid) => bid !== boardId);
+      newFolderData.folders.get(folderId)!.boards.delete(boardId);
+      queryClient.setQueryData(folderQueryKey, newFolderData);
 
       setTimeout(async () => {
         await queryClient.cancelQueries({
@@ -86,4 +92,4 @@ const useAddBoardToFolder = () => {
   });
 };
 
-export default useAddBoardToFolder;
+export default useRemoveBoardFromFolder;

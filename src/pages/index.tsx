@@ -10,10 +10,10 @@ const Home: NextPage = () => {
   const router = useRouter();
   const { data: sessionData } = useSession();
 
-  const hello = api.example.hello.useQuery({
+  const hello = api.user.hello.useQuery({
     text: `from ${sessionData?.user.name ?? "your mom"}`,
   });
-  const { data: exampleData } = api.example.getAllUsers.useQuery();
+  const { data: exampleData } = api.user.getAllUsers.useQuery();
   return (
     <>
       <Head>
@@ -61,7 +61,7 @@ export default Home;
 const AuthShowcase: React.FC = () => {
   const { data: sessionData } = useSession();
 
-  const { data: secretMessage } = api.example.getSecretMessage.useQuery(
+  const { data: secretMessage } = api.user.getSecretMessage.useQuery(
     undefined, // no input
     { enabled: sessionData?.user !== undefined }
   );
