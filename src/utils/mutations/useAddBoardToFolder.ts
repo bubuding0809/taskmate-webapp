@@ -60,7 +60,7 @@ const useAddBoardToFolder = () => {
 
       setTimeout(
         () =>
-          (async () => {
+          void (async () => {
             await queryClient.cancelQueries({
               queryKey: folderQueryKey,
             });
