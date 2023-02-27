@@ -7,6 +7,7 @@ import useClickAway from "@/utils/hooks/useClickAway";
 import BoardDropDownMenu from "./BoardDropDownMenu";
 import useRenameBoard from "@/utils/mutations/useRenameBoard";
 import { FolderWithBoards } from "server/api/routers/folder";
+import { Fade, Tooltip } from "@mui/material";
 
 interface BoardDisclosureProps {
   provided: DraggableProvided;
@@ -86,44 +87,60 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
           />
         </div>
       )}
-      <Link
-        ref={provided.innerRef}
-        {...provided.draggableProps}
-        {...provided.dragHandleProps}
-        href={`/board/${boardItem.id}`}
-        className={classNames(
-          sidebarExpanded ? "justify-between" : "justify-center",
-          snapshot.isDragging &&
-            "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-small shadow-gray-900",
-          "group flex items-center rounded-md px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-        )}
-        onMouseEnter={() => setMenuButtonVisible(true)}
-        onMouseLeave={() => !dropDownMenuOpen && setMenuButtonVisible(false)}
+      <Tooltip
+        title="Drop to add"
+        open={!!snapshot.combineWith}
+        TransitionComponent={Fade}
+        TransitionProps={{ timeout: 600 }}
       >
-        <div className="flex items-center">
-          <span
-            className={classNames(sidebarExpanded ? "mr-3" : "mr-0", "text-xl")}
-          >
-            {boardItem ? boardItem.thumbnail_image : "📄"}
-          </span>
-          {sidebarExpanded && (
-            <p className="cursor-pointer truncate">{boardItem.board_title}</p>
+        <Link
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          href={`/board/${boardItem.id}`}
+          className={classNames(
+            sidebarExpanded ? "justify-between" : "justify-center",
+            snapshot.isDragging &&
+              "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-small shadow-gray-900",
+            !!snapshot.combineWith && "bg-emerald-400/50",
+            "group flex w-full items-center rounded-md px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
           )}
-        </div>
-        {sidebarExpanded && (
-          <div
-            className={classNames(menuButtonVisible ? "visible" : "invisible")}
-          >
-            <BoardDropDownMenu
-              boardItem={boardItem}
-              folderItem={folderItem}
-              setDropDownMenuOpen={setDropDownMenuOpen}
-              setBoardRenameInputVisible={setBoardRenameInputVisible}
-              setmenuButtonVisible={setMenuButtonVisible}
-            />
+          onMouseEnter={() => setMenuButtonVisible(true)}
+          onMouseLeave={() => !dropDownMenuOpen && setMenuButtonVisible(false)}
+        >
+          <div className="flex w-11/12 items-center">
+            <span
+              className={classNames(
+                sidebarExpanded ? "mr-3" : "mr-0",
+                "text-xl"
+              )}
+            >
+              {boardItem ? boardItem.thumbnail_image : "📄"}
+            </span>
+            {sidebarExpanded && (
+              <p className="cursor-pointer truncate overflow-ellipsis">
+                {boardItem.board_title}
+              </p>
+            )}
           </div>
-        )}
-      </Link>
+          {sidebarExpanded && (
+            <div
+              className={classNames(
+                menuButtonVisible ? "visible" : "invisible",
+                "w-1/12"
+              )}
+            >
+              <BoardDropDownMenu
+                boardItem={boardItem}
+                folderItem={folderItem}
+                setDropDownMenuOpen={setDropDownMenuOpen}
+                setBoardRenameInputVisible={setBoardRenameInputVisible}
+                setmenuButtonVisible={setMenuButtonVisible}
+              />
+            </div>
+          )}
+        </Link>
+      </Tooltip>
     </>
   );
 };

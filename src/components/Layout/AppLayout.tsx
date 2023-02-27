@@ -35,6 +35,7 @@ import useAddBoardToFolder from "@/utils/mutations/useAddBoardToFolder";
 import autoAnimate from "@formkit/auto-animate";
 import useCreateBoard from "@/utils/mutations/useCreateBoard";
 import BoardDisclosure from "./BoardDisclosure";
+import useUpdateNestedBoardOrder from "@/utils/mutations/useUpdateNestedBoardOrder";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
@@ -89,6 +90,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   const { mutate: addBoardToFolder } = useAddBoardToFolder();
   const { mutate: reorderBoard } = useUpdateBoardOrder();
   const { mutate: createBoard } = useCreateBoard();
+  const { mutate: reorderNestedBoard } = useUpdateNestedBoardOrder();
 
   // Set up sidebar open state
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -123,7 +125,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
       "Drag end info: ",
       combine,
       source.droppableId,
-      destination?.droppableId
+      destination?.droppableId,
+      type
     );
 
     // * Handle combining of board to a folder
@@ -197,14 +200,51 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
       return;
     }
 
-    // * Handle reorder of a sidebar board
-    if (type === "sidebar" && source.droppableId === "boards") {
-      // TODO : Add board reorder logic
+    // * Handle reordering of a nested folder board
+    if (type === "nested-boards") {
+      const _draggableId = draggableId.replace("nested-board-", "");
+      // Get the new board order for the source folder and destination folder
+      const newSourceBoardOrder = [
+        ...folderData!.folders.get(source.droppableId)!.board_order,
+      ];
+      const newDestinationBoardOrder = [
+        ...folderData!.folders.get(destination.droppableId)!.board_order,
+      ];
+
+      // Remove the board from the old position
+      newSourceBoardOrder.splice(source.index, 1);
+      // If the source folder and destination folder are the same, add the board to the new position in the source folder
+      if (source.droppableId === destination.droppableId) {
+        newSourceBoardOrder.splice(destination.index, 0, _draggableId);
+      } else {
+        // If the source folder and destination folder are different, add the board to the new position in the destination folder
+        newDestinationBoardOrder.splice(destination.index, 0, _draggableId);
+      }
+
+      // Mutate the board order for the source folder and destination folder
+      console.log({
+        userId: sessionData.user.id,
+        boardId: _draggableId,
+        sourceFolderId: source.droppableId,
+        destinationFolderId: destination.droppableId,
+        sourceBoardOrder: newSourceBoardOrder,
+        destinationBoardOrder: newDestinationBoardOrder,
+        isSameFolder: source.droppableId === destination.droppableId,
+      });
+
+      reorderNestedBoard({
+        userId: sessionData.user.id,
+        boardId: _draggableId,
+        sourceFolderId: source.droppableId,
+        destinationFolderId: destination.droppableId,
+        sourceBoardOrder: newSourceBoardOrder,
+        destinationBoardOrder: newDestinationBoardOrder,
+        isSameFolder: source.droppableId === destination.droppableId,
+      });
     }
   };
 
   const onDragStart = (initial: DragStart) => {
-    // TODO : Add drag start logic
     const { source, type, draggableId } = initial;
 
     if (source.droppableId === "folders") {

@@ -187,38 +187,46 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
           {/* Children projects */}
           {sidebarExpanded && (
             <Disclosure.Panel className="space-y-1" ref={parent}>
-              <Droppable
-                droppableId={`folder-${folderItem.id}`}
-                type="nested-boards"
-              >
-                {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className={classNames(
-                      folderItem.board_order.length > 0 && "pl-5 pb-2 pr-2"
-                    )}
-                  >
-                    {folderItem.board_order?.map((boardId, index) => (
-                      <Draggable
-                        key={boardId}
-                        draggableId={`nested-${boardId}`}
-                        index={index}
-                      >
-                        {(provided, snapshot) => (
-                          <BoardDisclosure
-                            boardItem={folderItem.boards.get(boardId)!}
-                            folderItem={folderItem}
-                            provided={provided}
-                            snapshot={snapshot}
-                            sidebarExpanded={sidebarExpanded}
-                          />
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
+              <Droppable droppableId={folderItem.id} type="nested-boards">
+                {(provided, snapshot) => {
+                  return (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className="pl-5 pb-2 pr-2"
+                    >
+                      {folderItem.board_order?.map((boardId, index) => (
+                        <Draggable
+                          key={`nested-board-${boardId}`}
+                          draggableId={`nested-board-${boardId}`}
+                          index={index}
+                        >
+                          {(provided, snapshot) => (
+                            <BoardDisclosure
+                              boardItem={folderItem.boards.get(boardId)!}
+                              folderItem={folderItem}
+                              provided={provided}
+                              snapshot={snapshot}
+                              sidebarExpanded={sidebarExpanded}
+                            />
+                          )}
+                        </Draggable>
+                      ))}
+                      {folderItem.board_order.length === 0 && (
+                        <div
+                          className={classNames(
+                            snapshot.isDraggingOver && "bg-slate-800",
+                            "flex h-12 items-center justify-center rounded-md border border-dashed border-gray-500"
+                          )}
+                        >
+                          <p className="text-sm text-white">Add a board here</p>
+                        </div>
+                      )}
+                      {folderItem.board_order.length > 0 &&
+                        provided.placeholder}
+                    </div>
+                  );
+                }}
               </Droppable>
             </Disclosure.Panel>
           )}

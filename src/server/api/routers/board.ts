@@ -313,4 +313,72 @@ export const boardRouter = createTRPCRouter({
         };
       });
     }),
+
+  // Mutation to update a board's order in a folder
+  // This is used when a user drags a board in a folder in the sidebar to a new position
+  // This can be from one folder to another or within the same folder
+  updateFolderBoardOrder: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        boardId: z.string(),
+        sourceFolderId: z.string(),
+        destinationFolderId: z.string(),
+        sourceBoardOrder: z.array(z.string()),
+        destinationBoardOrder: z.array(z.string()),
+        isSameFolder: z.boolean(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await ctx.prisma.$transaction(async (tx) => {
+        // Update the source folder's board order
+        const sourceFolder = await tx.folder.update({
+          where: {
+            id: input.sourceFolderId,
+          },
+          data: {
+            board_order:
+              input.sourceBoardOrder.length > 0
+                ? input.sourceBoardOrder.join(",")
+                : null,
+          },
+        });
+
+        // Update the destination folder's board order if the board is being moved to a different folder
+        let destinationFolder;
+        if (!input.isSameFolder) {
+          destinationFolder = await tx.folder.update({
+            where: {
+              id: input.destinationFolderId,
+            },
+            data: {
+              board_order:
+                input.destinationBoardOrder.length > 0
+                  ? input.destinationBoardOrder.join(",")
+                  : null,
+            },
+          });
+        }
+
+        // Update the board's folder_id
+        const board = await tx.board.update({
+          where: {
+            id: input.boardId,
+          },
+          data: {
+            folder: {
+              connect: {
+                id: input.destinationFolderId,
+              },
+            },
+          },
+        });
+
+        return {
+          sourceFolder,
+          destinationFolder,
+          board,
+        };
+      });
+    }),
 });
