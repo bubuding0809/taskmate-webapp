@@ -1,6 +1,7 @@
 import { Board, Folder } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import _ from "lodash";
 import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
 
@@ -31,12 +32,11 @@ const useUpdateFolderOrder = () => {
         folderOrder: string[];
       };
 
+      const newFolderData = _.cloneDeep(oldFolderData);
+
       // Optimistically update to the new value
-      const optimistFolderData = {
-        ...oldFolderData,
-        folderOrder: folderOrder,
-      };
-      queryClient.setQueryData(queryKey, optimistFolderData);
+      newFolderData.folderOrder = folderOrder;
+      queryClient.setQueryData(queryKey, newFolderData);
 
       return { oldFolderData, queryKey };
     },

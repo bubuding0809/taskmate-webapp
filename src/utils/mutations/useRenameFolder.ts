@@ -1,6 +1,8 @@
 import { Board, Folder } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import _ from "lodash";
+import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
 
 const useRenameFolder = () => {
@@ -24,21 +26,15 @@ const useRenameFolder = () => {
 
       // Snapshot the previous value
       const oldFolderData = queryClient.getQueryData(queryKey) as {
-        folders: Map<
-          string,
-          Folder & {
-            boards: Board[];
-          }
-        >;
+        folders: Map<string, FolderWithBoards>;
         folderOrder: string[];
       };
 
+      const newFolderData = _.cloneDeep(oldFolderData);
+
       // Optimistically update to the new value
-      oldFolderData.folders.get(folderId)!.folder_name = newName;
-      queryClient.setQueryData(queryKey, {
-        folders: oldFolderData.folders,
-        folderOrder: oldFolderData.folderOrder,
-      });
+      newFolderData.folders.get(folderId)!.folder_name = newName;
+      queryClient.setQueryData(queryKey, newFolderData);
 
       return { oldFolderData, queryKey };
     },

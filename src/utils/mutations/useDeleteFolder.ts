@@ -35,7 +35,7 @@ const useDeleteFolder = () => {
       // Snapshot the previous value for folders
       const oldFolderData = queryClient.getQueryData(folderQueryKey) as {
         folders: Map<string, FolderWithBoards>;
-        folderOrder: string[] | null;
+        folderOrder: string[];
       };
 
       // Snapshot the previous value for boards
@@ -52,11 +52,10 @@ const useDeleteFolder = () => {
         newBoardData.boards.set(board.id, board);
       });
       newFolderData.folders.delete(folderId);
-      const newFolderOrder = newFolderData.folderOrder?.filter(
+
+      newFolderData.folderOrder = newFolderData.folderOrder.filter(
         (id) => id !== folderId
       );
-      newFolderData.folderOrder =
-        newFolderOrder && newFolderOrder.length > 0 ? newFolderOrder : null;
       queryClient.setQueryData(folderQueryKey, newFolderData);
 
       // Optimistically update the board data

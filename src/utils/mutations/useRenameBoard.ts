@@ -1,6 +1,7 @@
 import { Board } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import _ from "lodash";
 import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
 
@@ -41,15 +42,18 @@ const useRenameBoard = () => {
         folderOrder: string[];
       };
 
+      const newBoardData = _.cloneDeep(oldBoardData);
+      const newFolderData = _.cloneDeep(oldFolderData);
+
       if (!isOrganized) {
         // Optimistically update the board data that is not organized
-        oldBoardData.boards.get(boardId)!.board_title = title;
-        queryClient.setQueryData(boardQueryKey, oldBoardData);
+        newBoardData.boards.get(boardId)!.board_title = title;
+        queryClient.setQueryData(boardQueryKey, newBoardData);
       } else {
         // Optimistically update the board data that is organized, from the folder
-        oldFolderData.folders.get(folderId!)!.boards.get(boardId)!.board_title =
+        newFolderData.folders.get(folderId!)!.boards.get(boardId)!.board_title =
           title;
-        queryClient.setQueryData(folderQueryKey, oldFolderData);
+        queryClient.setQueryData(folderQueryKey, newFolderData);
       }
 
       return { oldBoardData, boardQueryKey, oldFolderData, folderQueryKey };

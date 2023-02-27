@@ -1,6 +1,7 @@
 import { Board, Folder } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import _ from "lodash";
 import { api } from "../api";
 
 const useUpdateBoardOrder = () => {
@@ -28,12 +29,11 @@ const useUpdateBoardOrder = () => {
         boardOrder: string[];
       };
 
+      const newBoardData = _.cloneDeep(oldBoardData);
+
       // Optimistically update to the new value
-      const optimistBoardData = {
-        ...oldBoardData,
-        boardOrder: boardOrder,
-      };
-      queryClient.setQueryData(queryKey, optimistBoardData);
+      newBoardData.boardOrder = boardOrder;
+      queryClient.setQueryData(queryKey, newBoardData);
 
       return { oldBoardData, queryKey };
     },

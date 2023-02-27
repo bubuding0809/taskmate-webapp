@@ -1,6 +1,7 @@
 import { Board, Folder } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import _ from "lodash";
 import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
 
@@ -42,21 +43,25 @@ const useAddBoardToFolder = () => {
         folderOrder: string[];
       };
 
-      // Optimistically update boards to the new value
-      queryClient.setQueryData(boardQueryKey, {
-        ...oldBoardData,
-        boardOrder: boardOrder,
+      const newBoardData = _.cloneDeep(oldBoardData);
+      const newFolderData = _.cloneDeep(oldFolderData);
+
+      // Set the new unorganized board order
+      newBoardData.boardOrder = boardOrder;
+
+      // Add the board to the folder
+      newFolderData.folders.get(folderId)!.boards.set(boardId, {
+        ...newBoardData.boards.get(boardId)!,
       });
 
-      // Optimistically update folders to the new value
-      oldFolderData.folders.get(folderId)!.boards.set(boardId, {
-        ...oldBoardData.boards.get(boardId)!,
-      });
-      oldFolderData.folders.get(folderId)!.board_order = [
+      // Add the board to the folder board order
+      newFolderData.folders.get(folderId)!.board_order = [
         ...folderBoardOrder,
         boardId,
       ];
-      queryClient.setQueryData(folderQueryKey, oldFolderData);
+
+      queryClient.setQueryData(boardQueryKey, newBoardData);
+      queryClient.setQueryData(folderQueryKey, newFolderData);
 
       setTimeout(
         () =>

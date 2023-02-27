@@ -155,7 +155,7 @@ export const folderRouter = createTRPCRouter({
         // Update the user's folder order and board order
         const newBoardOrder = [
           ...input.boardOrder,
-          ...boardIdsToBeUpdated.map((board) => board.id),
+          ...boardIdsToBeUpdated.map((board) => board.id).reverse(),
         ];
         await tx.user.update({
           where: {

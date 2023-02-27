@@ -1,6 +1,7 @@
 import { Board, Folder } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import _ from "lodash";
 import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
 
@@ -9,6 +10,7 @@ const useCreateFolder = () => {
 
   return api.folder.createFolder.useMutation({
     onMutate: async (newFolder) => {
+      console.time("createFolder");
       const { name, userId, folderId } = newFolder;
 
       const folderQueryKey = getQueryKey(
@@ -28,8 +30,10 @@ const useCreateFolder = () => {
         folderOrder: string[];
       };
 
+      const newFolderData = _.cloneDeep(oldFolderData);
+
       // Set the new folder data
-      oldFolderData.folders.set(folderId, {
+      newFolderData.folders.set(folderId, {
         id: folderId,
         folder_name: name,
         thumbnail_image: "📂",
@@ -39,11 +43,11 @@ const useCreateFolder = () => {
         board_order: [],
       });
 
+      // Set the new folder order, by adding the new folder id to the end
+      newFolderData.folderOrder.push(folderId);
+
       // Optimistically update to the new value
-      queryClient.setQueryData(folderQueryKey, {
-        ...oldFolderData,
-        folderOrder: [...oldFolderData.folderOrder, folderId],
-      });
+      queryClient.setQueryData(folderQueryKey, newFolderData);
 
       return { oldFolderData, folderQueryKey };
     },
@@ -52,6 +56,7 @@ const useCreateFolder = () => {
       queryClient.setQueryData(ctx!.folderQueryKey, ctx!.oldFolderData);
     },
     onSettled: async (_data, _error, _variables, ctx) => {
+      console.timeEnd("createFolder");
       // Always refetch query after error or success to make sure the server state is correct
       await queryClient.invalidateQueries({
         queryKey: ctx?.folderQueryKey,
