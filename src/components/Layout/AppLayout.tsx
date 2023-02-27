@@ -222,16 +222,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
       }
 
       // Mutate the board order for the source folder and destination folder
-      console.log({
-        userId: sessionData.user.id,
-        boardId: _draggableId,
-        sourceFolderId: source.droppableId,
-        destinationFolderId: destination.droppableId,
-        sourceBoardOrder: newSourceBoardOrder,
-        destinationBoardOrder: newDestinationBoardOrder,
-        isSameFolder: source.droppableId === destination.droppableId,
-      });
-
       reorderNestedBoard({
         userId: sessionData.user.id,
         boardId: _draggableId,
@@ -480,21 +470,23 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                                 const boardItem =
                                   boardsWithoutFolderData.boards.get(boardId);
                                 return (
-                                  <Draggable
-                                    key={boardId}
-                                    draggableId={boardId}
-                                    index={index}
-                                  >
-                                    {(provided, snapshot) => (
-                                      <BoardDisclosure
-                                        folderItem={null}
-                                        boardItem={boardItem!}
-                                        provided={provided}
-                                        snapshot={snapshot}
-                                        sidebarExpanded={sidebarExpanded}
-                                      />
-                                    )}
-                                  </Draggable>
+                                  !!boardItem && (
+                                    <Draggable
+                                      key={boardId}
+                                      draggableId={boardId}
+                                      index={index}
+                                    >
+                                      {(provided, snapshot) => (
+                                        <BoardDisclosure
+                                          folderItem={null}
+                                          boardItem={boardItem!}
+                                          provided={provided}
+                                          snapshot={snapshot}
+                                          sidebarExpanded={sidebarExpanded}
+                                        />
+                                      )}
+                                    </Draggable>
+                                  )
                                 );
                               }
                             )}
@@ -524,21 +516,23 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                               const folderItem =
                                 folderData.folders.get(folderId);
                               return (
-                                <Draggable
-                                  key={folderId}
-                                  draggableId={folderId}
-                                  index={index}
-                                >
-                                  {(provided, snapshot) => (
-                                    <FolderDisclosure
-                                      provided={provided}
-                                      snapshot={snapshot}
-                                      sidebarExpanded={sidebarExpanded}
-                                      folderItem={folderItem!}
-                                      folder_order={folderData.folderOrder}
-                                    />
-                                  )}
-                                </Draggable>
+                                !!folderItem && (
+                                  <Draggable
+                                    key={folderId}
+                                    draggableId={folderId}
+                                    index={index}
+                                  >
+                                    {(provided, snapshot) => (
+                                      <FolderDisclosure
+                                        provided={provided}
+                                        snapshot={snapshot}
+                                        sidebarExpanded={sidebarExpanded}
+                                        folderItem={folderItem!}
+                                        folder_order={folderData.folderOrder}
+                                      />
+                                    )}
+                                  </Draggable>
+                                )
                               );
                             })}
                           {provided.placeholder}
