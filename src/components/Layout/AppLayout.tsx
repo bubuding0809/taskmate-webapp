@@ -36,6 +36,7 @@ import autoAnimate from "@formkit/auto-animate";
 import useCreateBoard from "@/utils/mutations/useCreateBoard";
 import BoardDisclosure from "./BoardDisclosure";
 import useUpdateNestedBoardOrder from "@/utils/mutations/useUpdateNestedBoardOrder";
+import { useDebounceBool } from "@/utils/hooks/useDebounceBool";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
@@ -100,6 +101,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
 
   // state to handle drop enabled or disabled for folders and boards
   const [boardsDropDisabled, setBoardsDropDropDisabled] = useState(false);
+
+  // Debounce function to prevent spamming of folder creation or board creation
+  const [mutationAvail, setMutationAvail] = useDebounceBool(400);
 
   // Set up autoAnimation of folder boards element
   const parent = useRef<HTMLDivElement>(null);
@@ -479,7 +483,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                                       {(provided, snapshot) => (
                                         <BoardDisclosure
                                           folderItem={null}
-                                          boardItem={boardItem!}
+                                          boardItem={boardItem}
                                           provided={provided}
                                           snapshot={snapshot}
                                           sidebarExpanded={sidebarExpanded}
@@ -527,7 +531,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                                         provided={provided}
                                         snapshot={snapshot}
                                         sidebarExpanded={sidebarExpanded}
-                                        folderItem={folderItem!}
+                                        folderItem={folderItem}
                                         folder_order={folderData.folderOrder}
                                       />
                                     )}
@@ -556,12 +560,16 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                 type="button"
                 className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 onClick={() => {
-                  createFolder({
-                    folderId: nanoid(),
-                    name: "New Folder",
-                    userId: sessionData.user.id,
-                    currentFolderOrder: folderData?.folderOrder ?? [],
-                  });
+                  // Prevents multiple mutations from being sent
+                  mutationAvail &&
+                    createFolder({
+                      folderId: nanoid(),
+                      name: "New Folder",
+                      userId: sessionData.user.id,
+                      currentFolderOrder: folderData?.folderOrder ?? [],
+                    });
+                  // Once mutation is sent, set mutationAvail to false, it will only be set back to true after a delay
+                  setMutationAvail(false);
                 }}
               >
                 {sidebarExpanded ? (
@@ -581,15 +589,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
               <button
                 type="button"
                 className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                onClick={() =>
-                  createBoard({
-                    boardId: nanoid(),
-                    userId: sessionData.user.id,
-                    currentBoardOrder:
-                      boardsWithoutFolderData?.boardOrder ?? [],
-                    title: "New Board",
-                  })
-                }
+                onClick={() => {
+                  mutationAvail &&
+                    createBoard({
+                      boardId: nanoid(),
+                      userId: sessionData.user.id,
+                      currentBoardOrder:
+                        boardsWithoutFolderData?.boardOrder ?? [],
+                      title: "New Board",
+                    });
+                  setMutationAvail(false);
+                }}
               >
                 {sidebarExpanded ? (
                   <>
