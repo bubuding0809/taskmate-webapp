@@ -91,7 +91,7 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
         title="Drop to add"
         open={!!snapshot.combineWith}
         TransitionComponent={Fade}
-        TransitionProps={{ timeout: 600 }}
+        TransitionProps={{ timeout: 500 }}
       >
         <Link
           ref={provided.innerRef}
@@ -103,19 +103,24 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
             snapshot.isDragging &&
               "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-small shadow-gray-900",
             !!snapshot.combineWith && "bg-emerald-400/50",
-            "group flex w-full items-center rounded-md px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+            "group flex w-full items-center rounded-md px-2 py-1 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
           )}
           onMouseEnter={() => setMenuButtonVisible(true)}
           onMouseLeave={() => !dropDownMenuOpen && setMenuButtonVisible(false)}
         >
-          <div className="flex w-11/12 items-center">
+          <div
+            className={classNames(
+              sidebarExpanded ? "w-11/12" : "w-full justify-center",
+              "flex items-center"
+            )}
+          >
             <span
               className={classNames(
                 sidebarExpanded ? "mr-3" : "mr-0",
-                "text-xl"
+                "cursor-pointer text-xl"
               )}
             >
-              {boardItem ? boardItem.thumbnail_image : "📄"}
+              {boardItem ? boardItem.thumbnail_image : "???"}
             </span>
             {sidebarExpanded && (
               <p className="cursor-pointer truncate overflow-ellipsis">

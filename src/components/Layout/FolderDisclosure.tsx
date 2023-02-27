@@ -71,6 +71,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
       onMouseLeave={() => !dropDownMenuOpen && setmenuButtonVisible(false)}
       ref={provided.innerRef}
       {...provided.draggableProps}
+      {...provided.dragHandleProps}
     >
       {({ open, close }) => (
         <div className="relative">
@@ -120,34 +121,44 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
             as="div"
             className="group flex w-full flex-col items-center rounded-md p-2 text-left text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none"
           >
-            <div className="flex w-full cursor-pointer items-center justify-center">
-              {/* Folder thumbnail image */}
-              <span
+            <div className="flex w-full justify-between">
+              <div
                 className={classNames(
-                  sidebarExpanded ? "mr-3" : "mr-0",
-                  "text-xl"
+                  sidebarExpanded ? "w-[78%] " : "w-full justify-center",
+                  "flex items-center"
                 )}
               >
-                {folderItem.thumbnail_image}
-              </span>
-
-              {/* Folder Name */}
-              {sidebarExpanded && (
-                <>
+                {/* Folder thumbnail image */}
+                <span
+                  className={classNames(
+                    sidebarExpanded ? "mr-3" : "mr-0",
+                    "relative cursor-pointer text-xl"
+                  )}
+                >
+                  {folderItem.thumbnail_image}
+                  <span className="absolute left-3.5 -top-0.5 items-center rounded-full bg-indigo-200 px-1.5 py-[1px] text-xs font-bold text-indigo-700">
+                    {folderItem.board_order.length}
+                  </span>
+                </span>
+                {sidebarExpanded && (
                   <p
                     className={classNames(
                       snapshot.isDragging && "text-white",
-                      "flex-1 truncate"
+                      "cursor-pointer truncate text-ellipsis"
                     )}
                   >
                     {folderItem.folder_name}
                   </p>
+                )}
+              </div>
+              {/* Folder Name */}
+              {sidebarExpanded && (
+                <div className="flex items-center">
                   {/* Fixed position dropdown menu button */}
                   {sidebarExpanded && (
                     <div
                       className={classNames(
-                        menuButtonVisible ? "visible" : "invisible",
-                        "flex"
+                        menuButtonVisible ? "visible" : "invisible"
                       )}
                     >
                       <DropDownMenu
@@ -161,12 +172,6 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                         }
                         setmenuButtonVisible={setmenuButtonVisible}
                       />
-                      <div {...provided.dragHandleProps}>
-                        <Bars2Icon
-                          className="h-5 w-5 text-gray-400"
-                          onMouseDown={() => close()}
-                        />
-                      </div>
                     </div>
                   )}
                   <svg
@@ -179,7 +184,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                   >
                     <path d="M6 6L14 10L6 14V6Z" fill="currentColor" />
                   </svg>
-                </>
+                </div>
               )}
             </div>
           </Disclosure.Button>
@@ -193,7 +198,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                     <div
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      className="pl-5 pb-2 pr-2"
+                      className="pl-4 pb-1 pr-1"
                     >
                       {folderItem.board_order?.map((boardId, index) => (
                         <Draggable
@@ -212,16 +217,18 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                           )}
                         </Draggable>
                       ))}
+                      {/* Drop zone indicator if folder is empty */}
                       {folderItem.board_order.length === 0 && (
                         <div
                           className={classNames(
                             snapshot.isDraggingOver && "bg-slate-800",
-                            "flex h-12 items-center justify-center rounded-md border border-dashed border-gray-500"
+                            "flex h-10 items-center justify-center rounded-md border border-dashed border-gray-500"
                           )}
                         >
                           <p className="text-sm text-white">Add a board here</p>
                         </div>
                       )}
+                      {/* Only active placeholder if there are boards in the folder */}
                       {folderItem.board_order.length > 0 &&
                         provided.placeholder}
                     </div>
