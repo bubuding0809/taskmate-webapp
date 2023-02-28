@@ -18,7 +18,6 @@ import FolderDisclosure from "../../components/Layout/FolderDisclosure";
 import Head from "next/head";
 import { signOut, useSession } from "next-auth/react";
 import { api } from "@/utils/api";
-import Link from "next/link";
 import useCreateFolder from "@/utils/mutations/useCreateFolder";
 import { nanoid } from "nanoid";
 import {
@@ -123,15 +122,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   /* Drag and Drop handlers for Drag Drop Context */
   const onDragEnd = (result: DropResult) => {
     const { destination, source, draggableId, type, combine } = result;
-
-    // Debugging console log
-    console.log(
-      "Drag end info: ",
-      combine,
-      source.droppableId,
-      destination?.droppableId,
-      type
-    );
 
     // * Handle combining of board to a folder
     if (combine && source.droppableId === "boards") {
@@ -317,7 +307,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                     <img
                       className="h-8 w-auto"
                       src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                      alt="Your Company"
+                      alt="TaskMate"
                     />
                   </div>
                   <div className="mt-5 h-0 flex-1 overflow-y-auto">
@@ -385,14 +375,22 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
             <div
               className={classNames(
                 sidebarExpanded ? "justify-start" : "justify-center",
-                "flex h-16 flex-shrink-0 items-center bg-gray-900 px-4"
+                "flex h-16 flex-shrink-0 items-center border-r-2 bg-white px-3"
               )}
             >
-              <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                alt="Taskmate"
-              />
+              {sidebarExpanded ? (
+                <img
+                  className="h-12 w-auto"
+                  src="/logo_full.png"
+                  alt="Taskmate"
+                />
+              ) : (
+                <img
+                  className="h-14 w-auto"
+                  src="/logo_small.png"
+                  alt="Taskmate"
+                />
+              )}
             </div>
 
             {/* Sidebar main */}
