@@ -12,7 +12,6 @@ import {
   Droppable,
 } from "react-beautiful-dnd";
 import useClickAway from "@/utils/hooks/useClickAway";
-import { Bars2Icon } from "@heroicons/react/24/outline";
 import autoAnimate from "@formkit/auto-animate";
 import BoardDisclosure from "./BoardDisclosure";
 import { FolderWithBoards } from "server/api/routers/folder";
