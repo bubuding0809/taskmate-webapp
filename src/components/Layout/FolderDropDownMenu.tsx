@@ -2,7 +2,6 @@ import { Fragment, useRef, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils/helper";
-import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
 import { PencilIcon } from "@heroicons/react/24/outline";
 import useClickAway from "@/utils/hooks/useClickAway";
 import { api } from "@/utils/api";
@@ -10,22 +9,18 @@ import { Board } from "@prisma/client";
 
 interface DropDownMenuProps {
   user_id: string;
-  folder_id: string;
-  folder_order: string[];
-  folder_boards: Board[];
   setDropDownMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setFolderRenameInputVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setmenuButtonVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setDeleteModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const FolderDropDownMenu: React.FC<DropDownMenuProps> = ({
-  folder_id,
-  folder_order,
-  folder_boards,
   user_id,
   setDropDownMenuOpen,
   setFolderRenameInputVisible,
   setmenuButtonVisible,
+  setDeleteModalOpen,
 }) => {
   // Ref for detecting click outside of drop down menu
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -33,15 +28,6 @@ const FolderDropDownMenu: React.FC<DropDownMenuProps> = ({
 
   // Keep track of mouse position state to position the menu
   const [mousePostion, setMousePosition] = useState({ x: 0, y: 0 });
-
-  // Query to get board order of boards without folder
-  const { data: boardsWithoutFolderData } =
-    api.board.getUserBoardWithoutFolder.useQuery({
-      userId: user_id,
-    });
-
-  // Mutation to delete a folder
-  const { mutate: deleteFolder } = useDeleteFolder();
 
   return (
     <Menu as="div" className="relative text-left">
@@ -79,8 +65,7 @@ const FolderDropDownMenu: React.FC<DropDownMenuProps> = ({
               <div className="py-1">
                 <Menu.Item>
                   {({ active }) => (
-                    <a
-                      href="#"
+                    <div
                       className={classNames(
                         active ? "bg-gray-100 text-gray-900" : "text-gray-700",
                         "group flex items-center px-4 py-2 text-sm"
@@ -94,28 +79,19 @@ const FolderDropDownMenu: React.FC<DropDownMenuProps> = ({
                         aria-hidden="true"
                       />
                       Rename
-                    </a>
+                    </div>
                   )}
                 </Menu.Item>
                 <Menu.Item>
                   {({ active }) => (
-                    <a
-                      href="#"
+                    <div
                       className={classNames(
                         active ? "bg-gray-100 text-gray-900" : "text-gray-700",
                         "group flex items-center px-4 py-2 text-sm"
                       )}
                       onClick={(e) => {
-                        e.preventDefault();
-                        deleteFolder({
-                          folderId: folder_id,
-                          userId: user_id,
-                          folderOrder: folder_order,
-                          boardOrder: boardsWithoutFolderData!.boardOrder,
-                          boardIdsToBeUpdated: folder_boards.map(
-                            (board) => board.id
-                          ),
-                        });
+                        // Open delete modal to confirm deletion of folder
+                        setDeleteModalOpen(true);
                       }}
                     >
                       <TrashIcon
@@ -123,7 +99,7 @@ const FolderDropDownMenu: React.FC<DropDownMenuProps> = ({
                         aria-hidden="true"
                       />
                       Delete
-                    </a>
+                    </div>
                   )}
                 </Menu.Item>
                 {/* <form method="POST" action="#">

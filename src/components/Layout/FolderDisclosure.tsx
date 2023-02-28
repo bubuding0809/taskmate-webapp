@@ -15,6 +15,10 @@ import useClickAway from "@/utils/hooks/useClickAway";
 import autoAnimate from "@formkit/auto-animate";
 import BoardDisclosure from "./BoardDisclosure";
 import { FolderWithBoards } from "server/api/routers/folder";
+import ConfirmationModal from "@/components/Layout/ConfirmationModal";
+import { TrashIcon } from "@heroicons/react/24/outline";
+import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
+import { api } from "@/utils/api";
 
 interface FolderDisclosureProps {
   provided: DraggableProvided;
@@ -33,6 +37,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
 }) => {
   const [menuButtonVisible, setmenuButtonVisible] = useState(false);
   const [dropDownMenuOpen, setDropDownMenuOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [folderRenameInputVisible, setFolderRenameInputVisible] =
     useState(false);
   const [renameInputValue, setRenameInputValue] = useState(
@@ -54,8 +59,15 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
     parent.current && autoAnimate(parent.current);
   }, [parent]);
 
-  // Rename folder mutation
+  // Query to get board order of boards without folder
+  const { data: boardsWithoutFolderData } =
+    api.board.getUserBoardWithoutFolder.useQuery({
+      userId: folderItem.user_id,
+    });
+
+  // folder mutations
   const { mutate: renameFolder } = useRenameFolder();
+  const { mutate: deleteFolder } = useDeleteFolder();
 
   return (
     <Disclosure
@@ -161,15 +173,13 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                       )}
                     >
                       <DropDownMenu
-                        folder_id={folderItem.id}
-                        folder_order={folder_order}
-                        folder_boards={Object.values(folderItem.boards)}
                         user_id={folderItem.user_id}
                         setDropDownMenuOpen={setDropDownMenuOpen}
                         setFolderRenameInputVisible={
                           setFolderRenameInputVisible
                         }
                         setmenuButtonVisible={setmenuButtonVisible}
+                        setDeleteModalOpen={setDeleteModalOpen}
                       />
                     </div>
                   )}
@@ -236,6 +246,23 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
               </Droppable>
             </Disclosure.Panel>
           )}
+          <ConfirmationModal
+            open={deleteModalOpen}
+            setOpen={setDeleteModalOpen}
+            title="Delete folder"
+            description="Are you sure you want to delete this folder? This action cannot be undone. All boards in this folder will be moved to the unorganized board area."
+            ModalIcon={TrashIcon}
+            confirmText="Delete Folder"
+            onConfirm={() => {
+              deleteFolder({
+                folderId: folderItem.id,
+                userId: folderItem.user_id,
+                folderOrder: folder_order,
+                boardOrder: boardsWithoutFolderData!.boardOrder,
+                boardIdsToBeUpdated: folderItem.board_order,
+              });
+            }}
+          />
         </div>
       )}
     </Disclosure>
