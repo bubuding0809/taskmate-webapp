@@ -2,12 +2,10 @@ import { Fragment, useRef, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils/helper";
-import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
 import { BarsArrowUpIcon, PencilIcon } from "@heroicons/react/24/outline";
 import useClickAway from "@/utils/hooks/useClickAway";
 import { api } from "@/utils/api";
 import { Board } from "@prisma/client";
-import useDeleteBoard from "@/utils/mutations/useDeleteBoard";
 import { FolderWithBoards } from "server/api/routers/folder";
 import useRemoveBoardFromFolder from "@/utils/mutations/useRemoveBoardFromFolder";
 
@@ -17,6 +15,7 @@ interface BoardDropDownMenuProps {
   setDropDownMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setBoardRenameInputVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setmenuButtonVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setDeleteModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
@@ -25,6 +24,7 @@ const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
   setDropDownMenuOpen,
   setBoardRenameInputVisible,
   setmenuButtonVisible,
+  setDeleteModalOpen,
 }) => {
   // Ref for detecting click outside of drop down menu
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -39,7 +39,6 @@ const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
       userId: boardItem.user_id,
     });
 
-  const { mutate: deleteBoard } = useDeleteBoard();
   const { mutate: removeBoardFromFolder } = useRemoveBoardFromFolder();
 
   return (
@@ -106,16 +105,8 @@ const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
                         "group flex items-center px-4 py-2 text-sm"
                       )}
                       onClick={(e) => {
-                        // TODO: Add a confirmation modal
-
-                        deleteBoard({
-                          boardId: boardItem.id,
-                          userId: boardItem.user_id,
-                          isOrganized: boardItem.folder_id ? true : false,
-                          rootBoardOrder: boardsWithoutFolderData!.boardOrder,
-                          folderBoardOrder: folderItem?.board_order ?? null,
-                          folderId: boardItem.folder_id,
-                        });
+                        // Open delete modal to confirm delete
+                        setDeleteModalOpen(true);
                       }}
                     >
                       <TrashIcon

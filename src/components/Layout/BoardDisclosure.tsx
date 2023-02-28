@@ -8,6 +8,11 @@ import BoardDropDownMenu from "./BoardDropDownMenu";
 import useRenameBoard from "@/utils/mutations/useRenameBoard";
 import { FolderWithBoards } from "server/api/routers/folder";
 import { Fade, Tooltip } from "@mui/material";
+import ConfirmationModal from "@/components/Layout/ConfirmationModal";
+import useDeleteBoard from "@/utils/mutations/useDeleteBoard";
+import { api } from "@/utils/api";
+import { QueryClient, useQueryClient } from "@tanstack/react-query";
+import { TrashIcon } from "@heroicons/react/24/outline";
 
 interface BoardDisclosureProps {
   provided: DraggableProvided;
@@ -40,8 +45,18 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   useClickAway(wrapperRef, () => setBoardRenameInputVisible(false));
 
+  // Query to get board order of boards without folder
+  const { data: boardsWithoutFolderData } =
+    api.board.getUserBoardWithoutFolder.useQuery({
+      userId: boardItem.user_id,
+    });
+
   // Rename board mutation
   const { mutate: renameBoard } = useRenameBoard();
+  const { mutate: deleteBoard } = useDeleteBoard();
+
+  // Confirmation modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   return (
     <>
@@ -141,11 +156,30 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
                 setDropDownMenuOpen={setDropDownMenuOpen}
                 setBoardRenameInputVisible={setBoardRenameInputVisible}
                 setmenuButtonVisible={setMenuButtonVisible}
+                setDeleteModalOpen={setDeleteModalOpen}
               />
             </div>
           )}
         </Link>
       </Tooltip>
+      <ConfirmationModal
+        open={deleteModalOpen}
+        setOpen={setDeleteModalOpen}
+        ModalIcon={TrashIcon}
+        title="Delete Board"
+        description="Are you sure you want to delete this board? This action cannot be undone."
+        confirmText="Delete Board"
+        onConfirm={() =>
+          deleteBoard({
+            boardId: boardItem.id,
+            userId: boardItem.user_id,
+            isOrganized: boardItem.folder_id ? true : false,
+            rootBoardOrder: boardsWithoutFolderData!.boardOrder,
+            folderBoardOrder: folderItem?.board_order ?? null,
+            folderId: boardItem.folder_id,
+          })
+        }
+      />
     </>
   );
 };
