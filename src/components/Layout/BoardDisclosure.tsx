@@ -173,19 +173,21 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
         description="Are you sure you want to delete this board? This action cannot be undone."
         confirmText="Delete Board"
         onConfirm={() =>
-          deleteBoard({
+          void deleteBoard({
             boardId: boardItem.id,
             userId: boardItem.user_id,
             isOrganized: boardItem.folder_id ? true : false,
             rootBoardOrder: boardsWithoutFolderData!.boardOrder,
             folderBoardOrder: folderItem?.board_order ?? null,
             folderId: boardItem.folder_id,
-          }).then(
-            () =>
-              // Redirect to dashboard if deleting board that is currently open
-              router.asPath.split("/")[2] === boardItem.id &&
-              router.push("/dashboard")
-          )
+          })
+            .then(
+              () =>
+                // Redirect to dashboard if deleting board that is currently open
+                router.asPath.split("/")[2] === boardItem.id &&
+                router.push("/dashboard")
+            )
+            .catch((err) => console.log(err))
         }
       />
     </>

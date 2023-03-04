@@ -59,7 +59,7 @@ const useDeleteTask = () => {
 
       // If task is a subtask, find the parent task and remove the task from it's subtasks
       if (parentTask) {
-        parentTask!.subtasks = parentTask!.subtasks.filter(
+        parentTask.subtasks = parentTask.subtasks.filter(
           (task) => task.id !== taskId
         );
       }
