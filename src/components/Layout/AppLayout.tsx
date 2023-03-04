@@ -36,6 +36,8 @@ import useCreateBoard from "@/utils/mutations/useCreateBoard";
 import BoardDisclosure from "./BoardDisclosure";
 import useUpdateNestedBoardOrder from "@/utils/mutations/useUpdateNestedBoardOrder";
 import { useDebounceBool } from "@/utils/hooks/useDebounceBool";
+import { useRouter } from "next/router";
+import BreadCrumbs from "./BreadCrumbs";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
@@ -57,6 +59,17 @@ type AppLayoutProps = {
 const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Use resetServerContext to prevent react-beautiful-dnd from crashing
   resetServerContext();
+
+  // Get router to get the current path to populate the breadcrumbs
+  const router = useRouter();
+  const breadCrumbPages = router.asPath
+    .split("/")
+    .slice(1)
+    .map((page) => ({
+      name: page,
+      href: page,
+      current: page === router.asPath.split("/").slice(-1)[0],
+    }));
 
   // Get session data
   const { data: sessionData, status: sessionStatus } = useSession({
@@ -631,9 +644,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
 
             {/* Top Nav content */}
             <div className="flex flex-1 items-center justify-between gap-2 px-4">
-              <h1 className="hidden text-2xl font-semibold text-gray-900 md:block">
+              <BreadCrumbs pages={breadCrumbPages} />
+              {/* <h1 className="hidden text-2xl font-semibold text-gray-900 md:block">
                 {title}
-              </h1>
+              </h1> */}
 
               {/* Search bar */}
               <div className="flex flex-1 items-center justify-center px-2 lg:ml-6 lg:justify-end">
@@ -729,7 +743,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
           </div>
 
           {/* Main content goes here */}
-          <main className="flex flex-1 flex-col overflow-x-auto px-4 py-2 sm:px-6 sm:py-4 md:px-8 md:py-6">
+          <main
+            className="flex flex-1 flex-col overflow-x-auto
+          "
+          >
             {/* Replace with your content */}
             {children}
             {/* /End replace */}

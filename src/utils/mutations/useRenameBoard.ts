@@ -72,6 +72,14 @@ const useRenameBoard = () => {
       await queryClient.invalidateQueries({
         queryKey: ctx?.folderQueryKey,
       });
+
+      await queryClient.invalidateQueries({
+        queryKey: getQueryKey(
+          api.board.getBoardById,
+          { boardId: _variables.boardId },
+          "query"
+        ),
+      });
     },
   });
 };

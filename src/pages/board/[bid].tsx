@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
 const UserBoardPage: NextPageWithLayout = () => {
-  const { status } = useSession({
+  const { status, data: sessionData } = useSession({
     required: true,
   });
   const router = useRouter();
@@ -24,7 +24,7 @@ const UserBoardPage: NextPageWithLayout = () => {
   }
 
   // Only allow the user to view their own boards when logged in
-  return <BoardView bid={bid} />;
+  return <BoardView bid={bid} sessionData={sessionData} />;
 };
 export default UserBoardPage;
 

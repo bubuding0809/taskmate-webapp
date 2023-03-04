@@ -1,11 +1,6 @@
-import { BoardType, PanelType } from "../../utils/types";
 import React, { useEffect, useState, useRef } from "react";
 import autoAnimate from "@formkit/auto-animate";
-import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
-import { TodoPanelDivider } from "./TodoPanelDivider";
-import { TodoList } from "./TodoList";
 import { Save } from "@mui/icons-material";
-import { PanelMenu } from "./PanelMenu";
 import {
   Typography,
   Paper,
@@ -15,22 +10,22 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
+import { PanelMenu } from "@/components/Board/PanelMenu";
+import { TodoList } from "@/components/Board/TodoList";
+import { TodoPanelDivider } from "@/components/Board/TodoPanelDivider";
+
+import useUpdatePanelTitle from "@/utils/mutations/panel/useUpdatePanelTitle";
+import type { PanelWithTasks } from "server/api/routers/board";
+import type {
+  DraggableProvided,
+  DraggableStateSnapshot,
+} from "react-beautiful-dnd";
 
 interface TodoListProps {
   provided: DraggableProvided;
   snapshot: DraggableStateSnapshot;
-  panelData: PanelType;
-  boardData: BoardType;
-  setBoardData: React.Dispatch<React.SetStateAction<BoardType>>;
-  newPanel: string;
-  setNewPanel: React.Dispatch<React.SetStateAction<string>>;
+  panelItem: PanelWithTasks;
   isItemCombineEnabled: boolean;
-  activeList: string[];
-  completedList: string[];
-  handleDeletePanel: (panelId: string) => void;
-  handleDeleteTask: (taskId: string, panelId: string) => void;
-  handleUnappendSubtask: (taskId: string, panelId: string) => void;
-  handleToggleTask: (taskId: string, panelId: string) => void;
 }
 
 const StyledTextField = styled(TextField)({
@@ -60,18 +55,8 @@ const StyledTextField = styled(TextField)({
 export const TodoMain: React.FC<TodoListProps> = ({
   provided,
   snapshot,
-  panelData,
-  boardData,
-  setBoardData,
-  activeList,
-  completedList,
-  newPanel,
-  setNewPanel,
+  panelItem,
   isItemCombineEnabled,
-  handleDeletePanel,
-  handleDeleteTask,
-  handleUnappendSubtask,
-  handleToggleTask,
 }: TodoListProps) => {
   // Set up autoAnimation of ul element
   const parent = useRef<HTMLDivElement>(null);
@@ -79,16 +64,27 @@ export const TodoMain: React.FC<TodoListProps> = ({
     parent.current && autoAnimate(parent.current);
   }, [parent]);
 
-  const [isEditPanelTitle, setIsEditPanelTitle] = useState(
-    panelData.id === newPanel
+  // UI state to toggle panel title edit mode
+  const [isEditPanelTitle, setIsEditPanelTitle] = useState(false);
+
+  // UI state to control panel title input
+  const [panelTitle, setPanelTitle] = useState<string>(
+    panelItem.panel_title ?? "Untitled"
   );
-  const [panelTitle, setPanelTitle] = useState<string>(panelData.title);
+
+  // state to control whether completed tasks are revealed
   const [isReveal, setIsReveal] = useState<boolean>(false);
+
+  // state to control whether error animation is triggered when editing panel title
   const [isAnimateError, setIsAnimateError] = useState<boolean>(false);
+
+  // Mutation to update panel title
+  const { mutate: updatePanelTitle } = useUpdatePanelTitle();
 
   const handleSavePanelTitle = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // If panel title is empty, animate error
     if (!panelTitle.trim()) {
       setIsAnimateError(true);
       setTimeout(() => {
@@ -97,28 +93,15 @@ export const TodoMain: React.FC<TodoListProps> = ({
       return;
     }
 
-    setBoardData((prevState) => ({
-      ...prevState,
-      panels: {
-        ...prevState.panels,
-        [panelData.id]: {
-          ...panelData,
-          title: panelTitle,
-        },
-      },
-    }));
+    // Mutation to update panel title
+    updatePanelTitle({
+      boardId: panelItem.board_id,
+      panelId: panelItem.id,
+      title: panelTitle,
+    });
 
     // set panel edit state to false
     setIsEditPanelTitle(false);
-
-    // clear the new panel state
-    setNewPanel("");
-  };
-
-  const handleReveal: React.ChangeEventHandler<HTMLInputElement> = () => {
-    setIsReveal((prevState) => {
-      return !prevState;
-    });
   };
 
   return (
@@ -150,7 +133,7 @@ export const TodoMain: React.FC<TodoListProps> = ({
               fontSize={18}
               onDoubleClick={() => setIsEditPanelTitle(true)}
             >
-              {panelData.title}
+              {panelItem.panel_title ?? "Untitled"}
             </Typography>
           </Tooltip>
         ) : (
@@ -184,11 +167,7 @@ export const TodoMain: React.FC<TodoListProps> = ({
             />
           </form>
         )}
-        <PanelMenu
-          panelData={panelData}
-          boardData={boardData}
-          handleDelete={handleDeletePanel}
-        />
+        <PanelMenu panelItem={panelItem} />
       </div>
 
       {/* Panel body */}
@@ -197,35 +176,46 @@ export const TodoMain: React.FC<TodoListProps> = ({
 
         {/* Render active tasks */}
         <TodoList
-          type="active"
-          boardData={boardData}
-          panelData={panelData}
-          todoList={activeList}
-          handleDeleteTask={handleDeleteTask}
+          taskListType="active"
+          panelItem={panelItem}
+          // Only render tasks that are not completed and is also a root task
+          tasks={panelItem.Task.filter(
+            (task) => !task.parentTaskId && !task.is_completed
+          )}
           isItemCombineEnabled={isItemCombineEnabled}
-          handleUnappendSubtask={handleUnappendSubtask}
-          handleToggleTask={handleToggleTask}
         />
 
         {/* Divider */}
         <TodoPanelDivider
-          activeCount={activeList.length}
-          completedCount={completedList.length}
+          // ! To be optimized
+          activeCount={
+            panelItem.Task.filter(
+              (task) => !task.is_completed && !task.parentTaskId
+            ).length
+          }
+          // ! To be optimized
+          completedCount={
+            panelItem.Task.filter(
+              (task) => task.is_completed && !task.parentTaskId
+            ).length
+          }
           isReveal={isReveal}
-          handleReveal={handleReveal}
+          handleReveal={() =>
+            setIsReveal((prevState) => {
+              return !prevState;
+            })
+          }
         />
 
         {/* Render completed tasks */}
         {isReveal && (
           <TodoList
-            type="completed"
-            boardData={boardData}
-            panelData={panelData}
-            todoList={completedList}
+            taskListType="completed"
+            panelItem={panelItem}
+            tasks={panelItem.Task.filter(
+              (task) => task.is_completed && !task.parentTaskId
+            )}
             isItemCombineEnabled={false}
-            handleDeleteTask={handleDeleteTask}
-            handleUnappendSubtask={handleUnappendSubtask}
-            handleToggleTask={handleToggleTask}
           />
         )}
       </div>

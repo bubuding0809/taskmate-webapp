@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect, CSSProperties } from "react";
 import { Collapse, IconButton, Typography } from "@mui/material";
 import { TransitionGroup } from "react-transition-group";
-import { BoardType, PanelType, TaskType } from "../../utils/types";
 import { Divider } from "@mui/material";
 import {
   Draggable,
@@ -16,29 +15,26 @@ import { TodoTask } from "./TodoTask";
 import autoAnimate from "@formkit/auto-animate";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { PanelWithTasks, TaskWithSubtasks } from "server/api/routers/board";
+import { classNames } from "@/utils/helper";
+import { TaskDetailed } from "server/api/routers/board";
 
 interface TodoItemProps {
-  task: TaskType;
-  boardData: BoardType;
-  panelData: PanelType;
+  taskListType: "active" | "completed";
+  task: TaskDetailed | TaskWithSubtasks;
+  panelItem: PanelWithTasks;
   provided: DraggableProvided;
   snapshot: DraggableStateSnapshot;
   style: DraggingStyle | NotDraggingStyle | undefined;
-  handleDeleteTask: (taskId: string, panelId: string) => void;
-  handleUnappendSubtask: (taskId: string, panelId: string) => void;
-  handleToggleTask: (taskId: string, panelId: string) => void;
 }
 
 export const TodoItem: React.FC<TodoItemProps> = ({
+  taskListType,
   task,
-  boardData,
-  panelData,
+  panelItem,
   provided,
   snapshot,
   style,
-  handleDeleteTask,
-  handleUnappendSubtask,
-  handleToggleTask,
 }: TodoItemProps) => {
   const [isRevealSubtasks, setIsRevealSubtasks] = useState(false);
 
@@ -47,12 +43,13 @@ export const TodoItem: React.FC<TodoItemProps> = ({
     parent.current && autoAnimate(parent.current);
   }, [parent, isRevealSubtasks]);
 
-  const nestListPreviewStyle = () => {
-    if (panelData.active.includes(task.id)) {
-      return "bg-gradient-to-br from-emerald-100/50 to-gray-100";
-    }
-    return "bg-gradient-to-br from-gray-100/50 to-slate-200/50";
-  };
+  // Style that will be applied to the subtask list
+  // const nestListPreviewStyle = () => {
+  //   if (panelData.active.includes(task.id)) {
+  //     return "bg-gradient-to-br from-emerald-100/50 to-gray-100";
+  //   }
+  //   return "bg-gradient-to-br from-gray-100/50 to-slate-200/50";
+  // };
 
   const nestedListStyle = (snapshot: DroppableStateSnapshot) => {
     const { isDraggingOver, draggingFromThisWith, draggingOverWith } = snapshot;
@@ -72,10 +69,9 @@ export const TodoItem: React.FC<TodoItemProps> = ({
     <div
       ref={provided.innerRef}
       {...provided.draggableProps}
-      {...provided.dragHandleProps}
       className={`
         flex flex-col rounded p-1 shadow hover:shadow-inner
-        ${task.isCompleted ? "bg-gray-300" : "bg-white"}
+        ${task.is_completed ? "bg-gray-300" : "bg-white"}
         ${
           snapshot.isDragging
             ? "border-3 border-slate-700 bg-slate-50/80 shadow-solid-small"
@@ -84,15 +80,12 @@ export const TodoItem: React.FC<TodoItemProps> = ({
       `}
       style={style}
     >
+      {/* Render parent task here */}
       <TodoTask
         task={task}
-        panelData={panelData}
-        boardData={boardData}
+        panelItem={panelItem}
         provided={provided}
-        handleToggle={handleToggleTask}
-        handleDelete={handleDeleteTask}
-        handleRemoveDateTime={() => console.log("yet to be implemented")}
-        handleUnappendSubtask={handleUnappendSubtask}
+        handleRemoveDateTime={() => alert("yet to be implemented")}
       />
 
       {/* sub tasks */}
@@ -117,7 +110,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
           </IconButton>
 
           {isRevealSubtasks ? (
-            <Droppable droppableId={task.id} type={"active-subtask"}>
+            <Droppable droppableId={`${task.id}-drop`} type={"active-subtask"}>
               {(provided, snapshot) => (
                 <div
                   ref={provided.innerRef}
@@ -128,40 +121,40 @@ export const TodoItem: React.FC<TodoItemProps> = ({
                 >
                   <TransitionGroup className="flex flex-col">
                     {task.subtasks.map((subtask, index) => (
-                      <Collapse key={boardData.todoTasks[subtask]!.id}>
+                      <Collapse key={subtask.id}>
                         <Draggable
-                          draggableId={boardData.todoTasks[subtask]!.id}
+                          draggableId={`${subtask.id}-subtask`}
                           index={index}
+                          // isDragDisabled={
+                          //   subtask.is_completed && taskListType === "completed"
+                          // }
                         >
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                            >
-                              {!snapshot.isDragging && index !== 0 && (
-                                <Divider
-                                  sx={{
-                                    marginX: 1,
-                                    marginY: 0.5,
-                                  }}
+                          {(provided, snapshot) => {
+                            return (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                              >
+                                {!snapshot.isDragging && index !== 0 && (
+                                  <Divider
+                                    sx={{
+                                      marginX: 1,
+                                      marginY: 0.5,
+                                    }}
+                                  />
+                                )}
+                                <TodoTask
+                                  task={subtask}
+                                  panelItem={panelItem}
+                                  provided={provided}
+                                  snapshot={snapshot}
+                                  handleRemoveDateTime={() =>
+                                    console.log("yet to be implemented")
+                                  }
                                 />
-                              )}
-                              <TodoTask
-                                task={boardData.todoTasks[subtask]!}
-                                panelData={panelData}
-                                boardData={boardData}
-                                provided={provided}
-                                snapshot={snapshot}
-                                handleToggle={handleToggleTask}
-                                handleDelete={handleDeleteTask}
-                                handleRemoveDateTime={() =>
-                                  console.log("yet to be implemented")
-                                }
-                                handleUnappendSubtask={handleUnappendSubtask}
-                              />
-                            </div>
-                          )}
+                              </div>
+                            );
+                          }}
                         </Draggable>
                       </Collapse>
                     ))}
@@ -172,10 +165,10 @@ export const TodoItem: React.FC<TodoItemProps> = ({
             </Droppable>
           ) : (
             <Typography
-              className={`
-                cursor-pointer rounded border
-                ${nestListPreviewStyle()}
-              `}
+              className={classNames(
+                // nestListPreviewStyle(),
+                "cursor-pointer rounded border"
+              )}
               variant="subtitle2"
               sx={{
                 lineHeight: "20px",

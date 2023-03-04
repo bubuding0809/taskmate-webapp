@@ -1,8 +1,6 @@
 import { Disclosure } from "@headlessui/react";
 import { useRef, useEffect, useState } from "react";
 import { classNames } from "../../utils/helper";
-import Link from "next/link";
-import { Board, Folder } from "@prisma/client";
 import DropDownMenu from "./FolderDropDownMenu";
 import useRenameFolder from "@/utils/mutations/useRenameFolder";
 import {
@@ -19,6 +17,8 @@ import ConfirmationModal from "@/components/Layout/ConfirmationModal";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
 import { api } from "@/utils/api";
+import useCreateBoard from "@/utils/mutations/useCreateBoard";
+import { nanoid } from "nanoid";
 
 interface FolderDisclosureProps {
   provided: DraggableProvided;
@@ -68,6 +68,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
   // folder mutations
   const { mutate: renameFolder } = useRenameFolder();
   const { mutate: deleteFolder } = useDeleteFolder();
+  const { mutate: createBoard } = useCreateBoard();
 
   return (
     <Disclosure
@@ -228,14 +229,24 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                       ))}
                       {/* Drop zone indicator if folder is empty */}
                       {folderItem.board_order.length === 0 && (
-                        <div
+                        <button
                           className={classNames(
                             snapshot.isDraggingOver && "bg-slate-800",
-                            "flex h-10 items-center justify-center rounded-md border border-dashed border-gray-500"
+                            "flex h-10 w-full items-center justify-center rounded-md border border-dashed border-gray-500 hover:bg-slate-600"
                           )}
+                          onClick={() =>
+                            // TODO - Currently this creates the board in the unorganized area. It should be created in the folder
+                            createBoard({
+                              boardId: nanoid(),
+                              userId: folderItem.user_id,
+                              currentBoardOrder:
+                                boardsWithoutFolderData?.boardOrder ?? [],
+                              title: "New Board",
+                            })
+                          }
                         >
                           <p className="text-sm text-white">Add a board here</p>
-                        </div>
+                        </button>
                       )}
                       {/* Only active placeholder if there are boards in the folder */}
                       {folderItem.board_order.length > 0 &&

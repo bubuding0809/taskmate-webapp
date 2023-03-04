@@ -1,6 +1,25 @@
-import { Board } from "@prisma/client";
+import type {
+  Attachment,
+  Board,
+  Panel,
+  Task,
+  Task_Activity,
+} from "@prisma/client";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+
+export type TaskDetailed = Task & {
+  Attachment: Attachment[];
+  Task_Activity: Task_Activity[];
+  subtasks: Task[];
+};
+export type TaskWithSubtasks = Task & { subtasks: Task[] };
+export type PanelWithTasks = Panel & {
+  Task: TaskWithSubtasks[];
+};
+export type BoardWithPanelsAndTasks = Board & {
+  Panel: PanelWithTasks[];
+};
 
 export const boardRouter = createTRPCRouter({
   // Query to get board by id
@@ -11,7 +30,66 @@ export const boardRouter = createTRPCRouter({
         where: {
           id: input.boardId,
         },
+        include: {
+          Panel: {
+            include: {
+              Task: {
+                include: {
+                  subtasks: {
+                    orderBy: {
+                      order: "asc",
+                    },
+                  },
+                },
+                orderBy: {
+                  order: "asc",
+                },
+              },
+            },
+            orderBy: {
+              order: "asc",
+            },
+          },
+        },
       });
+    }),
+
+  // Query to get a map of tasks by id
+  getTasksMapByBoardId: protectedProcedure
+    .input(z.object({ boardId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const boardData = await ctx.prisma.board.findUnique({
+        where: { id: input.boardId },
+        select: {
+          Panel: {
+            select: {
+              Task: {
+                include: {
+                  subtasks: {
+                    orderBy: {
+                      order: "asc",
+                    },
+                  },
+                  Attachment: true,
+                  Task_Activity: true,
+                },
+                orderBy: {
+                  order: "asc",
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const tasksMap = new Map<string, TaskDetailed>();
+      boardData?.Panel.forEach((panel) => {
+        panel.Task.forEach((task) => {
+          tasksMap.set(task.id, task);
+        });
+      });
+
+      return tasksMap;
     }),
 
   // Query to get all boards that are not in a folder for a user, and the order of the boards

@@ -1,36 +1,66 @@
-import autoAnimate from "@formkit/auto-animate";
 import React, { useRef, useEffect } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
-import { BoardType, PanelType } from "../../utils/types";
 import { TodoItem } from "./TodoItem";
-import { TransitionGroup } from "react-transition-group";
-import { Collapse } from "@mui/material";
+
+import type {
+  PanelWithTasks,
+  TaskWithSubtasks,
+} from "server/api/routers/board";
 
 interface TodoListProps {
-  type: "active" | "completed";
-  boardData: BoardType;
-  panelData: PanelType;
-  todoList: string[];
+  taskListType: "active" | "completed";
+  panelItem: PanelWithTasks;
+  tasks: TaskWithSubtasks[];
   isItemCombineEnabled: boolean;
-  handleDeleteTask: (taskId: string, panelId: string) => void;
-  handleUnappendSubtask: (taskId: string, panelId: string) => void;
-  handleToggleTask: (taskId: string, panelId: string) => void;
 }
 
 export const TodoList: React.FC<TodoListProps> = ({
-  type,
-  boardData,
-  panelData,
-  todoList,
+  taskListType,
+  panelItem,
+  tasks,
   isItemCombineEnabled,
-  handleDeleteTask,
-  handleUnappendSubtask,
-  handleToggleTask,
 }: TodoListProps) => {
+  // * Do not make the list droppable if it is a completed list
+  if (taskListType === "completed") {
+    return (
+      <div className="m-2 flex flex-col gap-1.5 rounded transition-all delay-100 duration-200 ease-in-out">
+        {tasks.length ? (
+          // Only diplays tasks parent tasks in the list, subtasks will be nested under their parent
+          tasks.map((task, index) => (
+            <Draggable
+              key={`${task.id}-drag`}
+              draggableId={`${task.id}-drag`}
+              index={index}
+              isDragDisabled={task.is_completed}
+            >
+              {(provided, snapshot) => {
+                return (
+                  <TodoItem
+                    taskListType={taskListType}
+                    task={task}
+                    style={provided.draggableProps.style}
+                    panelItem={panelItem}
+                    provided={provided}
+                    snapshot={snapshot}
+                  />
+                );
+              }}
+            </Draggable>
+          ))
+        ) : (
+          <div className="py-2 text-center">
+            <p>No tasks</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // * Make the list droppable if it is an active list
   return (
     <Droppable
-      droppableId={`${panelData.id}-${type}`}
-      type={`panel-${type}`}
+      droppableId={`${panelItem.id}-drop`}
+      type={`${taskListType}-task`}
       isCombineEnabled={isItemCombineEnabled}
     >
       {(provided, snapshot) => {
@@ -41,7 +71,9 @@ export const TodoList: React.FC<TodoListProps> = ({
             return "bg-[#F0F7EC] shadow-inner";
           } else if (
             !draggingOverWith &&
-            panelData.active.includes(draggingFromThisWith!)
+            panelItem.Task.map((task) => task.id).includes(
+              draggingFromThisWith!
+            )
           ) {
             return "bg-[#eefffd] shadow-inner";
           }
@@ -50,41 +82,40 @@ export const TodoList: React.FC<TodoListProps> = ({
 
         return (
           <div
-            className={`m-2 rounded transition-all delay-100 duration-200 ease-in-out
+            className={`m-2 flex flex-col gap-1.5 rounded transition-all delay-100 duration-200 ease-in-out
               ${taskListStyle()}
             `}
             ref={provided.innerRef}
             {...provided.droppableProps}
           >
-            <TransitionGroup className="flex flex-col gap-1.5">
-              {todoList.length ? (
-                todoList.map((taskId, index) => (
-                  <Collapse key={taskId} timeout={100}>
-                    <Draggable draggableId={taskId} index={index}>
-                      {(provided, snapshot) => (
-                        <TodoItem
-                          task={boardData.todoTasks[taskId]!}
-                          style={provided.draggableProps.style}
-                          boardData={boardData}
-                          panelData={panelData}
-                          provided={provided}
-                          snapshot={snapshot}
-                          handleDeleteTask={handleDeleteTask}
-                          handleUnappendSubtask={handleUnappendSubtask}
-                          handleToggleTask={handleToggleTask}
-                        />
-                      )}
-                    </Draggable>
-                  </Collapse>
-                ))
-              ) : (
-                <Collapse>
-                  <div className="py-2 text-center">
-                    <p>No tasks</p>
-                  </div>
-                </Collapse>
-              )}
-            </TransitionGroup>
+            {tasks.length ? (
+              // Only diplays tasks parent tasks in the list, subtasks will be nested under their parent
+              tasks.map((task, index) => (
+                <Draggable
+                  key={`${task.id}-drag`}
+                  draggableId={`${task.id}-drag`}
+                  index={index}
+                  isDragDisabled={task.is_completed}
+                >
+                  {(provided, snapshot) => {
+                    return (
+                      <TodoItem
+                        taskListType={taskListType}
+                        task={task}
+                        style={provided.draggableProps.style}
+                        panelItem={panelItem}
+                        provided={provided}
+                        snapshot={snapshot}
+                      />
+                    );
+                  }}
+                </Draggable>
+              ))
+            ) : (
+              <div className="py-2 text-center">
+                <p>No tasks</p>
+              </div>
+            )}
             {provided.placeholder}
           </div>
         );

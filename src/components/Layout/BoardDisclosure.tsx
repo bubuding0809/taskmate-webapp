@@ -13,6 +13,7 @@ import useDeleteBoard from "@/utils/mutations/useDeleteBoard";
 import { api } from "@/utils/api";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/router";
 
 interface BoardDisclosureProps {
   provided: DraggableProvided;
@@ -29,6 +30,8 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
   folderItem,
   sidebarExpanded,
 }) => {
+  const router = useRouter();
+
   const [menuButtonVisible, setMenuButtonVisible] = useState(false);
   const [dropDownMenuOpen, setDropDownMenuOpen] = useState(false);
   const [boardRenameInputVisible, setBoardRenameInputVisible] = useState(false);
@@ -53,7 +56,7 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
 
   // Rename board mutation
   const { mutate: renameBoard } = useRenameBoard();
-  const { mutate: deleteBoard } = useDeleteBoard();
+  const { mutateAsync: deleteBoard } = useDeleteBoard();
 
   // Confirmation modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -177,7 +180,12 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
             rootBoardOrder: boardsWithoutFolderData!.boardOrder,
             folderBoardOrder: folderItem?.board_order ?? null,
             folderId: boardItem.folder_id,
-          })
+          }).then(
+            () =>
+              // Redirect to dashboard if deleting board that is currently open
+              router.asPath.split("/")[2] === boardItem.id &&
+              router.push("/dashboard")
+          )
         }
       />
     </>

@@ -7,8 +7,10 @@ import { authOptions } from "../../server/auth";
 
 const DashboardPage: NextPageWithLayout = () => {
   return (
-    <div className="py-4">
-      <div className="h-96 rounded-lg border-4 border-dashed border-gray-200" />
+    <div className="h-full p-4">
+      <div className="grid h-full place-items-center rounded-lg border-4 border-dashed border-gray-200 font-bold">
+        Work in progress
+      </div>
     </div>
   );
 };

@@ -1,57 +1,42 @@
 import React, { FormEventHandler, useEffect, useState } from "react";
 import { nanoid } from "nanoid";
-import { EntryType, BoardType } from "../../utils/types";
 import { TodoEntryForm } from "./TodoEntryForm";
 import { TodoMain } from "./TodoMain";
-import { PanelType } from "../../utils/types";
 import {
   DraggableProvided,
   DraggableStateSnapshot,
   DraggingStyle,
   NotDraggingStyle,
 } from "react-beautiful-dnd";
+import useCreateTask from "@/utils/mutations/task/useCreateTask";
+
+import type { EntryType } from "../../utils/types";
+import type { PanelWithTasks } from "server/api/routers/board";
+import { classNames } from "@/utils/helper";
 
 interface PanelProps {
   style: DraggingStyle | NotDraggingStyle | undefined;
   provided: DraggableProvided;
   snapshot: DraggableStateSnapshot;
-  panelData: PanelType;
-  boardData: BoardType;
-  setBoardData: React.Dispatch<React.SetStateAction<BoardType>>;
-  newPanel: string;
-  setNewPanel: React.Dispatch<React.SetStateAction<string>>;
+  panelItem: PanelWithTasks;
   isItemCombineEnabled: boolean;
-  handleDeletePanel: (panelId: string) => void;
-  handleDeleteTask: (taskId: string, panelId: string) => void;
-  handleUnappendSubtask: (taskId: string, panelId: string) => void;
-  handleToggleTask: (taskId: string, panelId: string) => void;
 }
 
 const Panel = ({
   style,
   provided,
   snapshot,
-  panelData,
-  boardData,
-  setBoardData,
-  newPanel,
-  setNewPanel,
+  panelItem,
   isItemCombineEnabled,
-  handleDeletePanel,
-  handleDeleteTask,
-  handleUnappendSubtask,
-  handleToggleTask,
 }: PanelProps): JSX.Element => {
-  const { active: activeList, completed: completedList } = panelData;
-
   const [newEntry, setNewEntry] = useState<EntryType>({
     todoMessage: "",
     todoDateTime: null,
     todoDescription: "",
   });
 
+  // Animate panel on mount
   const [isAnimateEnter, setIsAnimateEnter] = useState(false);
-
   useEffect(() => {
     setIsAnimateEnter(true);
 
@@ -62,12 +47,16 @@ const Panel = ({
     return () => clearTimeout(timeout);
   }, []);
 
+  // Mutation to create new task
+  const { mutate: createTask } = useCreateTask();
+
   //handle new todo entry
   const handleNewEntry: FormEventHandler<HTMLFormElement> = (
     e: React.FormEvent<HTMLFormElement>
   ): void => {
     e.preventDefault();
     const { todoMessage, todoDateTime, todoDescription } = newEntry;
+    todoDateTime?.toDate();
 
     // Ensure that the todoMessage is not empty
     if (!todoMessage.trim()) {
@@ -77,29 +66,19 @@ const Panel = ({
 
     // Update active list with new item
     const newTaskId = nanoid();
-    setBoardData((prevState) => ({
-      ...prevState,
-      todoTasks: {
-        ...prevState.todoTasks,
-        [newTaskId]: {
-          id: newTaskId,
-          parent: null,
-          title: todoMessage.trim(),
-          date: todoDateTime ? todoDateTime.format("YYYY-MM-DD") : "",
-          time: todoDateTime ? todoDateTime.format("h:mm a") : "",
-          description: todoDescription ? todoDescription.trim() : "",
-          subtasks: [],
-          isCompleted: false,
-        },
-      },
-      panels: {
-        ...prevState.panels,
-        [panelData.id]: {
-          ...panelData,
-          active: [newTaskId, ...panelData.active],
-        },
-      },
-    }));
+    const rootTasks = panelItem.Task.filter((task) => !task.parentTaskId);
+    const postTaskOrder = rootTasks.length ? rootTasks[0]!.order : 0;
+
+    // Mutation to add new task to panel
+    createTask({
+      boardId: panelItem.board_id,
+      panelId: panelItem.id,
+      taskId: newTaskId,
+      postTaskOrder: postTaskOrder,
+      title: todoMessage,
+      details: todoDescription,
+      dueDate: todoDateTime?.toDate(),
+    });
 
     //reset newEntry form
     setNewEntry({
@@ -113,9 +92,10 @@ const Panel = ({
     <div
       ref={provided.innerRef}
       {...provided.draggableProps}
-      className={`animate__animated flex w-80 min-w-sm max-w-sm flex-col gap-2 ${
-        isAnimateEnter ? "animate__bounceInDown animate__faster" : ""
-      }`}
+      className={classNames(
+        // isAnimateEnter && "animate__bounceInDown animate__faster",
+        "flex w-80 min-w-sm max-w-sm flex-col gap-2"
+      )}
       style={style}
     >
       {/* Task Entry form */}
@@ -129,18 +109,8 @@ const Panel = ({
       <TodoMain
         provided={provided}
         snapshot={snapshot}
-        panelData={panelData}
-        boardData={boardData}
-        setBoardData={setBoardData}
-        activeList={activeList}
-        completedList={completedList}
-        newPanel={newPanel}
+        panelItem={panelItem}
         isItemCombineEnabled={isItemCombineEnabled}
-        setNewPanel={setNewPanel}
-        handleDeletePanel={handleDeletePanel}
-        handleDeleteTask={handleDeleteTask}
-        handleUnappendSubtask={handleUnappendSubtask}
-        handleToggleTask={handleToggleTask}
       />
     </div>
   );

@@ -6,23 +6,23 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import ClearIcon from "@mui/icons-material/Clear";
 import SubdirectoryArrowLeftIcon from "@mui/icons-material/SubdirectoryArrowLeft";
-import { BoardType, PanelType, TaskType } from "../../utils/types";
+import useDeleteTask from "@/utils/mutations/task/useDeleteTask";
+import useUnappendSubtask from "@/utils/mutations/task/useUnappendSubtask";
+
+import type { PanelWithTasks } from "server/api/routers/board";
+import type { Task } from "@prisma/client";
+import type { TaskDetailed } from "server/api/routers/board";
 
 interface TodoTaskMenuProps {
-  task: TaskType;
-  panelData: PanelType;
-  boardData: BoardType;
-  handleDelete: (taskId: string, panelId: string) => void;
-  handleUnappend: (taskId: string, panelId: string) => void;
+  task: TaskDetailed | Task;
+  panelItem: PanelWithTasks;
 }
 
 export const TodoTaskMenu: React.FC<TodoTaskMenuProps> = ({
   task,
-  panelData,
-  boardData,
-  handleDelete,
-  handleUnappend,
+  panelItem,
 }: TodoTaskMenuProps) => {
+  // Anchor ref to handle closing and opening of menu
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -31,6 +31,10 @@ export const TodoTaskMenu: React.FC<TodoTaskMenuProps> = ({
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  // Mutation to delete a task
+  const { mutate: deleteTask } = useDeleteTask();
+  const { mutate: unappendSubTask } = useUnappendSubtask();
 
   return (
     <div>
@@ -61,25 +65,27 @@ export const TodoTaskMenu: React.FC<TodoTaskMenuProps> = ({
           horizontal: "left",
         }}
       >
-        {(!task.parent || !boardData.todoTasks[task.parent]!.isCompleted) && (
-          <Tooltip
-            title="Delete task permanently"
-            placement="right-start"
-            TransitionComponent={Fade}
-            TransitionProps={{ timeout: 1000 }}
+        <Tooltip
+          title="Delete task permanently"
+          placement="right-start"
+          TransitionComponent={Fade}
+          TransitionProps={{ timeout: 1000 }}
+        >
+          <MenuItem
+            onClick={() => {
+              deleteTask({
+                boardId: panelItem.board_id,
+                panelId: panelItem.id,
+                taskId: task.id,
+              });
+              handleClose();
+            }}
           >
-            <MenuItem
-              onClick={() => {
-                handleDelete(task.id, panelData.id);
-                handleClose();
-              }}
-            >
-              <DeleteForeverIcon sx={{ fontSize: "20px", marginRight: 1 }} />
-              <Typography variant="body2">Delete</Typography>
-            </MenuItem>
-          </Tooltip>
-        )}
-        {task.parent && !task.isCompleted && (
+            <DeleteForeverIcon sx={{ fontSize: "20px", marginRight: 1 }} />
+            <Typography variant="body2">Delete</Typography>
+          </MenuItem>
+        </Tooltip>
+        {task.parentTaskId && !task.is_completed && (
           <Tooltip
             title="Move out of sub tasks"
             placement="right-start"
@@ -88,7 +94,29 @@ export const TodoTaskMenu: React.FC<TodoTaskMenuProps> = ({
           >
             <MenuItem
               onClick={() => {
-                handleUnappend(task.id, panelData.id);
+                // Find index of parent task in the panel
+                const { parentTaskId } = task;
+                const parentTaskIndex = panelItem.Task.findIndex(
+                  (task) => task.id === parentTaskId
+                );
+
+                const parentTask = panelItem.Task[parentTaskIndex];
+                const nextTask = panelItem.Task.filter(
+                  (task) => task.parentTaskId === null
+                )[parentTaskIndex + 1];
+
+                const newTaskOrder = nextTask
+                  ? Math.floor((parentTask!.order + nextTask.order) / 2)
+                  : parentTask!.order + 100;
+
+                unappendSubTask({
+                  boardId: panelItem.board_id,
+                  panelId: panelItem.id,
+                  taskId: task.id,
+                  parentTaskId: task.parentTaskId!,
+                  order: newTaskOrder,
+                });
+
                 handleClose();
               }}
             >
