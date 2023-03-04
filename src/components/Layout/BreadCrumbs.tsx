@@ -1,11 +1,6 @@
 import { HomeIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
 
-// const pages = [
-//   { name: "Projects", href: "#", current: false },
-//   { name: "Project Nero", href: "#", current: true },
-// ];
-
 interface BreadCrumbsProps {
   pages: { name: string; href: string; current: boolean }[];
 }

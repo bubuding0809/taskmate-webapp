@@ -60,9 +60,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (session) {
     return { redirect: { destination: "/dashboard" } };
   }
-  console.log("running getServerSideProps");
+
   const providers = await getProviders();
-  console.log("Where are my providers", providers);
 
   return {
     props: { providers: providers ?? [] },
