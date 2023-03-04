@@ -58,7 +58,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   // Note: Make sure not to redirect to the same page
   // To avoid an infinite loop!
   if (session) {
-    return { redirect: { destination: "/landing" } };
+    return { redirect: { destination: "/dashboard" } };
   }
   console.log("running getServerSideProps");
   const providers = await getProviders();
