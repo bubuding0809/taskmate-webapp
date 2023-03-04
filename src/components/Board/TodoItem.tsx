@@ -125,9 +125,9 @@ export const TodoItem: React.FC<TodoItemProps> = ({
                         <Draggable
                           draggableId={`${subtask.id}-subtask`}
                           index={index}
-                          // isDragDisabled={
-                          //   subtask.is_completed && taskListType === "completed"
-                          // }
+                          isDragDisabled={
+                            subtask.is_completed && taskListType === "completed"
+                          }
                         >
                           {(provided, snapshot) => {
                             return (
