@@ -11,7 +11,7 @@ import { Session } from "next-auth";
 import useCreatePanel from "@/utils/mutations/panel/useCreatePanel";
 import useUpdatePanelOrder from "@/utils/mutations/panel/useUpdatePanelOrder";
 import useUpdateTaskOrder from "@/utils/mutations/task/useUpdateTaskOrder";
-import useUpdateSubtaskOrder from "@/utils/mutations/task/useUpdateSubTaskOrder";
+import useUpdateSubtaskOrder from "@/utils/mutations/task/useUpdateSubtaskOrder";
 import useCombineTask from "@/utils/mutations/task/useCombineTask";
 
 import type { DragStart, DropResult } from "react-beautiful-dnd";
