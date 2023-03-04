@@ -67,6 +67,7 @@ const useCreateTask = () => {
         end_datetime: dueDate ?? null,
         parentTaskId: parentTaskId ?? null,
         subtasks: [],
+        is_reveal_subtasks: false,
       };
 
       // Add the new task to the task map
