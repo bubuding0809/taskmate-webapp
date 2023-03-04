@@ -84,7 +84,7 @@ create table if not exists Team_Board_Rel (
 );
 
 create table if not exists Panel (
-    id varchar(191) PRIMARY KEY,
+    id varchar(191) DEFAULT(UUID()) PRIMARY KEY,
     panel_title varchar(191),
     task_order varchar(1000),
     is_visible bool DEFAULT(TRUE) NOT NULL,
@@ -95,18 +95,20 @@ create table if not exists Panel (
 );
 
 create table if not exists Task (
-    id varchar(191) PRIMARY KEY,
+    id varchar(191) DEFAULT(UUID()) PRIMARY KEY,
     task_title varchar(191),
     task_details varchar(500),
-    subtask_order varchar(1000),
+    order INTEGER,
     start_datetime datetime,
     end_datetime datetime,
     is_completed bool DEFAULT(FALSE) NOT NULL,
     panel_id varchar(191) NOT NULL,
+    parent_task_id varchar(191),
     FOREIGN KEY(panel_id) REFERENCES Panel(id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY(parent_task_id) REFERENCES Task(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-create table if not exists Task_Assign (
+create table if not exists Task_Assign_Rel (
     task_id varchar(191) NOT NULL,
     user_id varchar(191) NOT NULL,
     PRIMARY KEY(task_id, user_id),
@@ -123,7 +125,7 @@ create table if not exists Sub_Task_Rel (
 );
 
 create table Attachment (
-    id varchar(191) PRIMARY KEY,
+    id varchar(191) DEFAULT(UUID()) PRIMARY KEY,
     attachment_url varchar(191) NOT NULL,
     attachment_type enum('IMAGE', 'FILE') NOT NULL,
     is_cover_image bool DEFAULT(FALSE) NOT NULL,
