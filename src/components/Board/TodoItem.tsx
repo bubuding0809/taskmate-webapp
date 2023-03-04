@@ -18,6 +18,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { PanelWithTasks, TaskWithSubtasks } from "server/api/routers/board";
 import { classNames } from "@/utils/helper";
 import { TaskDetailed } from "server/api/routers/board";
+import useToggleRevealSubtasks from "@/utils/mutations/task/useToggleRevealSubtasks";
 
 interface TodoItemProps {
   taskListType: "active" | "completed";
@@ -36,12 +37,12 @@ export const TodoItem: React.FC<TodoItemProps> = ({
   snapshot,
   style,
 }: TodoItemProps) => {
-  const [isRevealSubtasks, setIsRevealSubtasks] = useState(false);
-
   const parent = useRef(null);
   useEffect(() => {
     parent.current && autoAnimate(parent.current);
-  }, [parent, isRevealSubtasks]);
+  }, [parent, task.is_reveal_subtasks]);
+
+  const { mutate: toggelRevealSubtasks } = useToggleRevealSubtasks();
 
   // Style that will be applied to the subtask list
   // const nestListPreviewStyle = () => {
@@ -100,16 +101,24 @@ export const TodoItem: React.FC<TodoItemProps> = ({
               alignSelf: "flex-start",
             }}
             size="small"
-            onClick={() => setIsRevealSubtasks((prevState) => !prevState)}
+            onClick={() =>
+              toggelRevealSubtasks({
+                boardId: panelItem.board_id,
+                panelId: panelItem.id,
+                taskId: task.id,
+                parentTaskId: task.parentTaskId,
+                reveal: !task.is_reveal_subtasks,
+              })
+            }
           >
-            {isRevealSubtasks ? (
+            {task.is_reveal_subtasks ? (
               <ExpandMoreIcon sx={{ fontSize: "20px" }} />
             ) : (
               <ChevronRightIcon sx={{ fontSize: "20px" }} />
             )}
           </IconButton>
 
-          {isRevealSubtasks ? (
+          {task.is_reveal_subtasks ? (
             <Droppable droppableId={`${task.id}-drop`} type={"active-subtask"}>
               {(provided, snapshot) => (
                 <div
@@ -176,7 +185,15 @@ export const TodoItem: React.FC<TodoItemProps> = ({
                 paddingX: "10px",
                 paddingY: "2px",
               }}
-              onClick={() => setIsRevealSubtasks(true)}
+              onClick={() => {
+                toggelRevealSubtasks({
+                  boardId: panelItem.board_id,
+                  panelId: panelItem.id,
+                  taskId: task.id,
+                  parentTaskId: task.parentTaskId,
+                  reveal: !task.is_reveal_subtasks,
+                });
+              }}
             >
               {`${task.subtasks.length} sub tasks`}
             </Typography>

@@ -188,16 +188,6 @@ model Panel {
     @@index([board_id], map: "Panel_ibfk_1")
 }
 
-model Sub_Task_Rel {
-    parent_task_id                         String
-    sub_task_id                            String
-    Task_Sub_Task_Rel_parent_task_idToTask Task   @relation("Sub_Task_Rel_parent_task_idToTask", fields: [parent_task_id], references: [id], onDelete: Cascade, map: "Sub_Task_Rel_ibfk_1")
-    Task_Sub_Task_Rel_sub_task_idToTask    Task   @relation("Sub_Task_Rel_sub_task_idToTask", fields: [sub_task_id], references: [id], onDelete: Cascade, map: "Sub_Task_Rel_ibfk_2")
-
-    @@id([parent_task_id, sub_task_id])
-    @@index([sub_task_id], map: "sub_task_id")
-}
-
 model Tag {
     id        String      @id @default(dbgenerated("(uuid())"))
     tag_name  String
@@ -209,21 +199,20 @@ model Tag {
 }
 
 model Task {
-    id                                             String            @id @default(dbgenerated("(uuid())"))
-    task_title                                     String?
-    task_details                                   String?           @db.VarChar(500)
-    order                                          Int               @default(dbgenerated("(0)"))
-    start_datetime                                 DateTime?         @db.DateTime(0)
-    end_datetime                                   DateTime?         @db.DateTime(0)
-    is_completed                                   Boolean           @default(dbgenerated("(false)"))
-    panel_id                                       String
-    Attachment                                     Attachment[]
-    Sub_Task_Rel_Sub_Task_Rel_parent_task_idToTask Sub_Task_Rel[]    @relation("Sub_Task_Rel_parent_task_idToTask")
-    Sub_Task_Rel_Sub_Task_Rel_sub_task_idToTask    Sub_Task_Rel[]    @relation("Sub_Task_Rel_sub_task_idToTask")
-    Panel                                          Panel             @relation(fields: [panel_id], references: [id], onDelete: Cascade, map: "Task_ibfk_1")
-    Task_Activity                                  Task_Activity[]
-    Task_Assign_Rel                                Task_Assign_Rel[]
-    Task_Label_Rel                                 Task_Label_Rel[]
+    id                 String            @id @default(dbgenerated("(uuid())"))
+    task_title         String?
+    task_details       String?           @db.VarChar(500)
+    order              Int               @default(dbgenerated("(0)"))
+    start_datetime     DateTime?         @db.DateTime(0)
+    end_datetime       DateTime?         @db.DateTime(0)
+    is_completed       Boolean           @default(dbgenerated("(false)"))
+    is_reveal_subtasks Boolean           @default(dbgenerated("(false)"))
+    panel_id           String
+    Attachment         Attachment[]
+    Panel              Panel             @relation(fields: [panel_id], references: [id], onDelete: Cascade, map: "Task_ibfk_1")
+    Task_Activity      Task_Activity[]
+    Task_Assign_Rel    Task_Assign_Rel[]
+    Task_Label_Rel     Task_Label_Rel[]
 
     // This is a one-to-many self-relation
     // Where a task can have zero or one parent task

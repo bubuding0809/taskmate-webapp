@@ -352,4 +352,26 @@ export const taskRouter = createTRPCRouter({
         },
       });
     }),
+
+  //Mutation to handle toggling of reveal subtasks
+  toggleRevealSubtasks: protectedProcedure
+    .input(
+      z.object({
+        boardId: z.string(),
+        panelId: z.string(),
+        taskId: z.string(),
+        parentTaskId: z.string().nullable(),
+        reveal: z.boolean(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.prisma.task.update({
+        where: {
+          id: input.taskId,
+        },
+        data: {
+          is_reveal_subtasks: input.reveal,
+        },
+      });
+    }),
 });
