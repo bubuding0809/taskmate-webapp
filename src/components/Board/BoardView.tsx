@@ -1,10 +1,8 @@
-import { Collapse } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Panel from "@/components/Board/Panel";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { nanoid } from "nanoid";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { TransitionGroup } from "react-transition-group";
 import { api } from "@/utils/api";
 import { Session } from "next-auth";
 
@@ -15,10 +13,11 @@ import useUpdateSubtaskOrder from "@/utils/mutations/task/useUpdateSubtaskOrder"
 import useCombineTask from "@/utils/mutations/task/useCombineTask";
 
 import type { DragStart, DropResult } from "react-beautiful-dnd";
+import { classNames } from "@/utils/helper";
 
 interface BoardViewProps {
   bid: string;
-  sessionData: Session;
+  sessionData: Session | null;
 }
 
 const BoardView: React.FC<BoardViewProps> = ({ bid, sessionData }) => {
@@ -49,7 +48,7 @@ const BoardView: React.FC<BoardViewProps> = ({ bid, sessionData }) => {
       ? boardQueryData.Panel[panelCount - 1]!.order
       : 0;
     createPanel({
-      userId: sessionData.user.id,
+      userId: boardQueryData!.user_id,
       boardId: bid,
       panelId: newPanelId,
       prevPanelOrder: currentPanelOrder,
@@ -282,7 +281,7 @@ const BoardView: React.FC<BoardViewProps> = ({ bid, sessionData }) => {
   return (
     <div
       className="
-        flex h-full flex-col items-start gap-3 overflow-auto
+        flex h-full flex-1 flex-col items-start gap-3 overflow-auto
         bg-green-image bg-cover p-4
         "
     >
@@ -299,38 +298,31 @@ const BoardView: React.FC<BoardViewProps> = ({ bid, sessionData }) => {
                 : "";
               return (
                 <div
-                  className="h-full"
+                  className={classNames(
+                    dropZoneStyle,
+                    "flex h-full gap-4 rounded pb-2 transition-all duration-500 ease-in-out"
+                  )}
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                 >
-                  <TransitionGroup
-                    className={`flex gap-4 rounded pb-2 ${dropZoneStyle}
-                  transition-all duration-500 ease-in-out`}
-                  >
-                    {boardQueryData?.Panel.map((panelItem, index) => (
-                      <Collapse
-                        key={panelItem.id}
-                        orientation="horizontal"
-                        timeout={100}
-                      >
-                        <Draggable
-                          draggableId={`${panelItem.id}-drag`}
-                          index={index}
-                        >
-                          {(provided, snapshot) => (
-                            <Panel
-                              style={provided.draggableProps.style}
-                              provided={provided}
-                              snapshot={snapshot}
-                              panelItem={panelItem}
-                              isItemCombineEnabled={isItemCombineEnabled}
-                            />
-                          )}
-                        </Draggable>
-                      </Collapse>
-                    ))}
-                    {provided.placeholder}
-                  </TransitionGroup>
+                  {boardQueryData?.Panel.map((panelItem, index) => (
+                    <Draggable
+                      key={panelItem.id}
+                      draggableId={`${panelItem.id}-drag`}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <Panel
+                          style={provided.draggableProps.style}
+                          provided={provided}
+                          snapshot={snapshot}
+                          panelItem={panelItem}
+                          isItemCombineEnabled={isItemCombineEnabled}
+                        />
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
                 </div>
               );
             }}
