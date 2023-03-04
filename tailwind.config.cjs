@@ -7,7 +7,7 @@ module.exports = {
         3: "3px",
       },
       backgroundImage: {
-        "green-image": "url('/public/images/paul-weaver-unsplash.jpeg')",
+        "green-image": "url('/images/paul-weaver-unsplash.jpeg')",
       },
       backgroundColor: {
         "secondary-green": "#9cb380",
@@ -40,7 +40,7 @@ module.exports = {
         "solid-small": "3px 3px 0.5px #94a3b8",
       },
       cursor: {
-        "custom-cursor": "url(/public/cursors/cursoredit.gif), pointer",
+        "custom-cursor": "url(/cursors/cursoredit.gif), pointer",
       },
     },
   },
