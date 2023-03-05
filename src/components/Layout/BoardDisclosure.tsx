@@ -115,7 +115,11 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          href={`/board/${boardItem.id}`}
+          href={(() => {
+            return folderItem
+              ? `/board/${folderItem.folder_name}/${boardItem.id}`
+              : `/board/${boardItem.id}`;
+          })()}
           className={classNames(
             sidebarExpanded ? "justify-between" : "justify-center",
             snapshot.isDragging &&
