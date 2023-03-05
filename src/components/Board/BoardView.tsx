@@ -284,7 +284,8 @@ const BoardView: React.FC<BoardViewProps> = ({ bid, sessionData }) => {
         bg-green-image bg-cover p-4
         "
     >
-      <div className="min-w-max rounded-md border bg-white px-4 py-2 text-xl font-bold shadow-md">
+      <div className="min-w-max rounded-md border bg-white px-4 py-2 text-2xl font-bold shadow-md">
+        <span className="mr-2">{boardQueryData?.thumbnail_image}</span>
         {boardQueryData?.board_title}
       </div>
       <div className="flex h-full items-start">

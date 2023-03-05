@@ -1,4 +1,12 @@
-import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/router";
+import {
+  Fragment,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
   Bars3BottomLeftIcon,
@@ -12,22 +20,18 @@ import {
   FolderPlusIcon,
   DocumentPlusIcon,
 } from "@heroicons/react/24/outline";
+import { DocumentTextIcon, FolderIcon } from "@heroicons/react/20/solid";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { classNames } from "../../utils/helper";
 import FolderDisclosure from "../../components/Layout/FolderDisclosure";
 import Head from "next/head";
 import { signOut, useSession } from "next-auth/react";
-import { api } from "@/utils/api";
-import useCreateFolder from "@/utils/mutations/useCreateFolder";
-import { nanoid } from "nanoid";
 import {
   DragDropContext,
   Draggable,
-  DragStart,
   Droppable,
-  DropResult,
   resetServerContext,
 } from "react-beautiful-dnd";
+import useCreateFolder from "@/utils/mutations/useCreateFolder";
 import useUpdateFolderOrder from "@/utils/mutations/useUpdateFolderOrder";
 import useUpdateBoardOrder from "@/utils/mutations/useUpdateBoardOrder";
 import useAddBoardToFolder from "@/utils/mutations/useAddBoardToFolder";
@@ -35,9 +39,13 @@ import autoAnimate from "@formkit/auto-animate";
 import useCreateBoard from "@/utils/mutations/useCreateBoard";
 import BoardDisclosure from "./BoardDisclosure";
 import useUpdateNestedBoardOrder from "@/utils/mutations/useUpdateNestedBoardOrder";
+import BreadCrumbs, { BreadCrumbPage } from "./BreadCrumbs";
+import { api } from "@/utils/api";
+import { nanoid } from "nanoid";
 import { useDebounceBool } from "@/utils/hooks/useDebounceBool";
-import { useRouter } from "next/router";
-import BreadCrumbs from "./BreadCrumbs";
+import { classNames, trimChar } from "@/utils/helper";
+
+import type { DragStart, DropResult } from "react-beautiful-dnd";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
@@ -62,14 +70,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
 
   // Get router to get the current path to populate the breadcrumbs
   const router = useRouter();
-  const breadCrumbPages = router.asPath
-    .split("/")
-    .slice(1)
-    .map((page) => ({
-      name: page,
-      href: page,
-      current: page === router.asPath.split("/").slice(-1)[0],
-    }));
 
   // Get session data
   const { data: sessionData, status: sessionStatus } = useSession({
@@ -97,6 +97,16 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
       }
     );
 
+  // Get a map of all boards for the user
+  const { data: boardMapData } = api.board.getUserBoardMap.useQuery(
+    {
+      userId: sessionData?.user.id ?? "",
+    },
+    {
+      enabled: !!sessionData && sessionData.user.id !== undefined,
+    }
+  );
+
   // Mutation hooks
   const { mutate: createFolder } = useCreateFolder();
   const { mutate: reorderFolder } = useUpdateFolderOrder();
@@ -116,6 +126,62 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
 
   // Debounce function to prevent spamming of folder creation or board creation
   const [mutationAvail, setMutationAvail] = useDebounceBool(400);
+
+  // function to generate breadcrumbs based on the current path
+  const getBreadCrumbPages = () => {
+    // Trim the leading and trailing slashes from the path
+    const params = trimChar(["/"], router.asPath).split("/");
+    const pages: BreadCrumbPage[] = params
+      // Map the pages to an object with the name and href
+      .map((page) => {
+        // If the page is a board, set the name to the board title by getting the board title from the boardMapData
+        // Else, set the name to the page
+        const pathName = boardMapData?.get(page)?.board_title ?? page;
+        return {
+          name: pathName,
+          href: page,
+          // The current property is used to set the aria-current property of the link
+          current: page === router.asPath.split("/").slice(-1)[0],
+          isFolder: false,
+        };
+      })
+      .filter((page) => page.name !== "board");
+    // Filter out the board page from the breadcrumbs as there is no path to the board page
+    // .filter((page) => page.name !== "board");
+
+    // If the page paths starts with /board, then check if the board is in a folder
+    // If the board is in a folder, add the folder to the breadcrumbs
+    if (params[0] === "board") {
+      const boardId = params[params.length - 1];
+      const folderId = boardMapData?.get(boardId!)?.folder_id;
+      const folder = folderData?.folders.get(folderId!);
+
+      // If the board is in a folder, add set the first page to the folder
+      if (folder) {
+        pages[0] = {
+          ...pages[0]!,
+          name: folder.folder_name,
+          href: folder.id,
+          isFolder: true,
+          icon: FolderIcon,
+        };
+      }
+
+      // Add icon to the board page
+      pages[pages.length - 1] = {
+        ...pages[pages.length - 1]!,
+        icon: DocumentTextIcon,
+      };
+    }
+
+    return pages;
+  };
+
+  // Memoize the breadcrumbs function to only run when the path changes or when the boards data changes
+  const breadCrumbs = useMemo(getBreadCrumbPages, [
+    router.asPath,
+    boardsWithoutFolderData,
+  ]);
 
   // Set up autoAnimation of folder boards element
   const parent = useRef<HTMLDivElement>(null);
@@ -644,7 +710,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
 
             {/* Top Nav content */}
             <div className="flex flex-1 items-center justify-between gap-2 px-4">
-              <BreadCrumbs pages={breadCrumbPages} />
+              <BreadCrumbs pages={breadCrumbs} />
               {/* <h1 className="hidden text-2xl font-semibold text-gray-900 md:block">
                 {title}
               </h1> */}

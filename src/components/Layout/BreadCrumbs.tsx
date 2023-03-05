@@ -1,11 +1,26 @@
+import { classNames } from "@/utils/helper";
 import { HomeIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
+import FlyOutFolderMenu from "./FlyOutFolderMenu";
 
+export type BreadCrumbPage = {
+  name: string;
+  href: string;
+  current: boolean;
+  isFolder: boolean;
+  icon?: React.ForwardRefExoticComponent<
+    React.SVGProps<SVGSVGElement> & {
+      title?: string | undefined;
+      titleId?: string | undefined;
+    }
+  >;
+};
 interface BreadCrumbsProps {
-  pages: { name: string; href: string; current: boolean }[];
+  pages: BreadCrumbPage[];
 }
 
 const BreadCrumbs: React.FC<BreadCrumbsProps> = ({ pages }) => {
+  console.log("BreadCrumbs pages: ", pages);
   return (
     <nav className="flex" aria-label="Breadcrumb">
       <ol
@@ -35,17 +50,29 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = ({ pages }) => {
               >
                 <path d="M.293 0l22 22-22 22h1.414l22-22-22-22H.293z" />
               </svg>
-              <a
+              <Link
                 href={page.href}
-                className="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"
+                className={classNames(
+                  page.current ? "text-gray-500" : "text-gray-400",
+                  "ml-4 flex text-sm font-medium hover:text-gray-700"
+                )}
                 aria-current={page.current ? "page" : undefined}
+                onClick={(e) => {
+                  if (page.isFolder) {
+                    e.preventDefault();
+                    alert("TODO - Open flyout menu");
+                  }
+                }}
               >
-                {page.name}
-              </a>
+                {page.icon && <page.icon className="mr-1 h-5 w-5" />}
+                <span>{page.name}</span>
+              </Link>
             </div>
           </li>
         ))}
       </ol>
+      {/* TODO - Set folder crumb to open flyout menu when clicked */}
+      {/* <FlyOutFolderMenu /> */}
     </nav>
   );
 };
