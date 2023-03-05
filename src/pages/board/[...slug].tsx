@@ -10,7 +10,10 @@ const UserBoardPage: NextPageWithLayout = () => {
     required: true,
   });
   const router = useRouter();
-  const { bid } = router.query as { bid: string };
+
+  // Get the board id from the slug which is the last element in the array
+  const { slug } = router.query;
+  const bid = slug![slug!.length - 1] as string;
 
   // Return loading screen while session is loading
   if (status === "loading") {
