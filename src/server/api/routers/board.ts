@@ -54,6 +54,27 @@ export const boardRouter = createTRPCRouter({
       });
     }),
 
+  // Query to get a map of boards by id
+  getUserBoardMap: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const boards = await ctx.prisma.board.findMany({
+        where: {
+          user_id: input.userId,
+        },
+      });
+
+      const boardMap = new Map<string, Board>(
+        boards.map((board) => [board.id, board])
+      );
+
+      return boardMap;
+    }),
+
   // Query to get a map of tasks by id
   getTasksMapByBoardId: protectedProcedure
     .input(z.object({ boardId: z.string() }))
