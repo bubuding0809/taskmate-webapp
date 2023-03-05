@@ -58,7 +58,6 @@ const BoardView: React.FC<BoardViewProps> = ({ bid, sessionData }) => {
   const onDragStart = (initial: DragStart) => {
     // ! Make sure to parse draggableId and droppableId to remove the "-drag" and "-drop" suffixes
     const { draggableId, source, type, mode } = initial;
-    console.log(source.droppableId, draggableId);
 
     // If draggable is a from the active panel, enable item combine based on if the draggable has subtasks
     if (type === "active-task") {
