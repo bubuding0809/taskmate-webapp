@@ -104,8 +104,8 @@ const LandingPage: NextPage = () => {
           </div>
         </div>
 
-        <div className="flex-no-wrap mb-8  mt-80 flex snap-x snap-mandatory items-center overflow-x-scroll py-10 pl-52 scrollbar-hide">
-          <div className="mr-72 flex h-96 flex-none snap-end items-center rounded-lg border border-black pl-10 md:ml-36 md:w-2/3 lg:w-2/3">
+        <div className="flex-no-wrap mb-8  mt-80 flex snap-x snap-mandatory items-center overflow-x-scroll py-10 pl-52 scrollbar-none">
+          <div className="mr-72 flex h-96 flex-none snap-end items-center rounded-lg border border-black bg-[#D9D9D9] pl-10 md:ml-36 md:w-2/3 lg:w-2/3">
             <div>
               <img src="./images/calendar.jpg" className="mt-20  md:w-60" />
             </div>
@@ -122,7 +122,7 @@ const LandingPage: NextPage = () => {
             </div>
           </div>
 
-          <div className="mr-64 flex h-96 w-2/3 flex-none snap-center items-center rounded-lg border border-black pl-10  md:ml-36 md:w-2/3 md:pb-4">
+          <div className="mr-64 flex h-96 w-2/3 flex-none snap-center items-center rounded-lg border border-black bg-[#D9D9D9] pl-10  md:ml-36 md:w-2/3 md:pb-4">
             <div className="mt-8">
               <h1 className="text-6xl font-bold tracking-tight">
                 <span className="block text-[#595e64]">Fully Customisable</span>
@@ -139,7 +139,7 @@ const LandingPage: NextPage = () => {
             </div>
           </div>
 
-          <div className="mr-64 flex  h-96 w-2/3 flex-none snap-center items-center rounded-lg border border-black pl-10  md:ml-36 md:w-2/3 md:pb-4">
+          <div className="mr-64 flex  h-96 w-2/3 flex-none snap-center items-center rounded-lg border border-black bg-[#D9D9D9] pl-10  md:ml-36 md:w-2/3 md:pb-4">
             <div className="pl-10">
               <img src="./images/planning.jpg" className="w-96" />
             </div>
@@ -154,7 +154,7 @@ const LandingPage: NextPage = () => {
             </div>
           </div>
 
-          <div className="mr-96 flex h-96 w-2/3 flex-none snap-center items-center rounded-lg border border-black pl-10 md:ml-36 md:w-2/3 md:pb-4">
+          <div className="mr-96 flex h-96 w-2/3 flex-none snap-center items-center rounded-lg border border-black bg-[#D9D9D9] pl-10 md:ml-36 md:w-2/3 md:pb-4">
             <div className="mr-10 ml-10 mt-8">
               <h1 className="text-6xl font-bold tracking-tight">
                 <span className="block text-[#595e64]">Ideal Workspace</span>
