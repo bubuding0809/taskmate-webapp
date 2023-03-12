@@ -49,7 +49,7 @@ const navigation = [
     {
       name: "Jansonn Lim",
       role: "Frontend Developer",
-      image: "./images/puren.jpg",
+      image: "./images/jansonn.jpg",
     },
     {
       name: "Chua Chen yu",
@@ -120,8 +120,15 @@ const LandingPage: NextPage = () => {
           <nav className="sticky top-0 flex bg-white opacity-80 ">
             <div>
               <img
-                className="h-20 justify-center md:w-36 "
+                className="hidden h-20 justify-center md:flex md:w-36 "
                 src="./images/TaskMate.png"
+                alt="logo"
+              />
+            </div>
+            <div>
+              <img
+                className="flex h-16 justify-center md:hidden md:w-36 "
+                src="./images/Tmlogo.png"
                 alt="logo"
               />
             </div>
@@ -130,7 +137,7 @@ const LandingPage: NextPage = () => {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-2xl font-medium hover:text-[#B97E7E]"
+                  className="text-sm font-medium hover:text-[#B97E7E] md:text-xl"
                 >
                   {item.name}
                 </a>
@@ -139,7 +146,7 @@ const LandingPage: NextPage = () => {
           </nav>
 
           {/* hero section */}
-          <div className="mx-auto max-w-7xl py-24 px-6 sm:py-32 lg:px-8">
+          <div className="mx-auto max-w-7xl animate-fade py-24 px-6 sm:py-32 lg:px-8">
             <h2 className="text-center text-6xl font-bold tracking-tight text-[#595e64] sm:text-8xl">
               New Generation
               <br />
@@ -172,7 +179,7 @@ const LandingPage: NextPage = () => {
           </div>
 
           {/* features */}
-          <div className="mt-20 mb-8 flex snap-x snap-mandatory items-center overflow-x-scroll py-10 pl-36 scrollbar-none">
+          <div className="mt-20 mb-8 flex snap-x snap-mandatory items-center gap-52 overflow-x-scroll py-10 px-5 scrollbar-none md:pl-36">
             {/* <ul>
               {features.map((item) => (
                 <li
@@ -194,73 +201,72 @@ const LandingPage: NextPage = () => {
               ))}
             </ul> */}
 
-            <div className="sm:1/3 mr-72 flex h-96 flex-none snap-end items-center rounded-lg bg-[#f8efef] pl-10 shadow-md md:ml-36 md:w-2/3">
+            <div className="w-5/5 flex h-40 flex-none snap-end items-center rounded-lg bg-[#f8efef] px-5 shadow-md md:mr-72 md:ml-32 md:h-80 md:w-4/6 md:pl-10">
               <div>
                 <img
-                  className="mt-20  w-60"
+                  className="hidden md:mt-8 md:flex md:w-52"
                   src="./images/calendar.jpg"
                   alt="calendar"
                 />
               </div>
-              <div className="mt-10 ml-28">
-                <h1 className="font-bold tracking-tight sm:text-3xl md:text-3xl lg:text-6xl">
+              <div className="md:mt-10 md:ml-5">
+                <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
                   <span className="block text-[#595e64]">
                     Track Your Task Easily
                   </span>
                 </h1>
-                <div className="ml-2 mt-5 text-[#CDAAAA] md:text-xl lg:text-2xl">
+                <div className="mt-3 ml-2 text-[#CDAAAA] md:text-xl">
                   <p>Manage any type of project more efficiently.</p>
                   <p>No separate, clunky system</p>
                 </div>
               </div>
             </div>
 
-            <div className="mr-64 flex h-96 w-2/3 flex-none snap-center items-center rounded-lg bg-[#f8efef] pl-10 shadow-md  md:ml-36 md:w-2/3 md:pb-4">
-              <div className="mt-8">
-                <h1 className="text-6xl font-bold tracking-tight">
+            <div className="w-5/5 flex h-40 flex-none snap-center items-center rounded-lg bg-[#f8efef] px-5 shadow-md md:mr-24  md:h-80 md:w-4/6 md:pb-4">
+              <div className="pl-3 md:ml-5">
+                <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
                   <span className="block text-[#595e64]">
                     Fully Customisable
                   </span>
                 </h1>
-                <div className="ml-2 mt-5 text-[#CDAAAA] md:text-xl lg:text-2xl">
+                <div className="mt-2 text-[#CDAAAA] md:text-xl">
                   <p>Create your own labels, tags, owners, and more, </p>
-                  <p>
-                    where everyone has context and everything stays organized.
-                  </p>
+                  <p>where everyone has context.</p>
+                  <p>Everything stays organized.</p>
                 </div>
               </div>
-              <div className="pl-4">
-                <img src="./images/kanban.jpg" className="w-72" />
+              <div className="hidden pl-4 md:flex">
+                <img src="./images/kanban.jpg" className="w-56" />
               </div>
             </div>
 
-            <div className="mr-64 flex h-96 w-2/3 flex-none snap-center items-center rounded-lg bg-[#f8efef] pl-10 shadow-md  md:ml-36 md:w-2/3 md:pb-4">
-              <div className="pl-10">
-                <img src="./images/planning.jpg" className="w-96" />
+            <div className="flex h-40 w-4/5 flex-none snap-center items-center rounded-lg bg-[#f8efef] px-5 shadow-md  md:h-80 md:w-4/6 md:pb-4">
+              <div className="hidden md:flex">
+                <img src="./images/planning.jpg" className="w-64" />
               </div>
-              <div className="mt-8 ml-10">
-                <h1 className="text-6xl font-bold tracking-tight">
+              <div className="md:ml-10">
+                <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
                   <span className="block text-[#595e64]">Plan accordingly</span>
                 </h1>
-                <div className="ml-2 mt-5 text-2xl text-[#CDAAAA]">
+                <div className="mt-1 text-[#CDAAAA] md:mt-5 md:text-xl">
                   <p>Work With Team</p>
                   <p>With No Communication</p>
                 </div>
               </div>
             </div>
 
-            <div className="mr-96 flex h-96 w-2/3 flex-none snap-center items-center rounded-lg bg-[#f8efef] pl-10 shadow-md md:ml-36 md:w-2/3 md:pb-4">
-              <div className="mr-10 ml-10 mt-8">
-                <h1 className="text-6xl font-bold tracking-tight">
+            <div className="mr-60 flex h-40 w-4/5 flex-none snap-center items-center rounded-lg bg-[#f8efef] px-5 shadow-md md:ml-24 md:h-80 md:w-2/3 md:pb-4">
+              <div className="md:mr-10 md:ml-10 md:mt-8">
+                <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
                   <span className="block text-[#595e64]">Ideal Workspace</span>
                 </h1>
-                <div className="ml-2 mt-5 text-2xl text-[#CDAAAA]">
+                <div className="mt-2 text-[#CDAAAA] md:text-xl">
                   <p>Build custom roadmaps and Gantt charts </p>
                   <p>so you monitor everything from the start.</p>
                 </div>
               </div>
-              <div className="pl-4">
-                <img src="./images/teamplan.jpg" className=" pl-36" />
+              <div className="hidden md:flex md:pl-4">
+                <img src="./images/teamplan.jpg" className="w-64" />
               </div>
             </div>
           </div>
