@@ -249,7 +249,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
           // Redirect to the folder
           void router.push(
             `/board/${
-              folderData?.folders.get(combine.draggableId)?.folder_name
+              folderData?.folders.get(combine.draggableId)?.folder_name ??
+              "undefined"
             }/${draggableId}`
           );
         })

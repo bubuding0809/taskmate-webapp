@@ -245,35 +245,37 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                 className={classNames(
                   "flex h-10 w-full items-center justify-center border-t border-dashed border-gray-500 hover:bg-slate-600"
                 )}
-                onClick={async () => {
-                  try {
-                    const board = await createBoard({
-                      boardId: nanoid(),
-                      userId: folderItem.user_id,
-                      title: "New Board",
-                      currentBoardOrder:
-                        boardsWithoutFolderData?.boardOrder ?? [],
-                      folderId: folderItem.id,
-                      folderBoardOrder: folderItem.board_order ?? [],
-                    });
-
-                    // Redirect to new board
-                    await router.push(
-                      `/board/${folderItem.folder_name}/${board.id}`
-                    );
-
-                    // Show success toast 300ms after redirect
-                    setTimeout(() => {
-                      addToast({
-                        title: "Board Created",
-                        description:
-                          "Start adding panels and tasks to your board!",
-                        icon: CheckCircleIcon,
+                onClick={() => {
+                  void (async () => {
+                    try {
+                      const board = await createBoard({
+                        boardId: nanoid(),
+                        userId: folderItem.user_id,
+                        title: "New Board",
+                        currentBoardOrder:
+                          boardsWithoutFolderData?.boardOrder ?? [],
+                        folderId: folderItem.id,
+                        folderBoardOrder: folderItem.board_order ?? [],
                       });
-                    }, 300);
-                  } catch (error) {
-                    console.log(error);
-                  }
+
+                      // Redirect to new board
+                      await router.push(
+                        `/board/${folderItem.folder_name}/${board.id}`
+                      );
+
+                      // Show success toast 300ms after redirect
+                      setTimeout(() => {
+                        addToast({
+                          title: "Board Created",
+                          description:
+                            "Start adding panels and tasks to your board!",
+                          icon: CheckCircleIcon,
+                        });
+                      }, 300);
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  });
                 }}
               >
                 <p className="text-sm text-white">Add a board here</p>

@@ -78,7 +78,9 @@ const UserModal: React.FC<UserModalProps> = ({ open, setOpen, user }) => {
                   <div className="-mt-px flex divide-x divide-gray-200">
                     <div className="flex w-0 flex-1">
                       <a
-                        href={`mailto:${user.email}`}
+                        href={`mailto:${
+                          user.email ?? "bubuding0809@gmail.com"
+                        }`}
                         className="relative -mr-px inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-bl-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
                       >
                         <EnvelopeIcon

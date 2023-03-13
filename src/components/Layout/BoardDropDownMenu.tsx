@@ -148,26 +148,29 @@ const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
                             : "text-gray-700",
                           "group flex items-center px-4 py-2 text-sm"
                         )}
-                        onClick={async () => {
-                          // Call remove board from folder mutation
-                          await removeBoardFromFolder({
-                            boardId: boardItem.id,
-                            folderId: folderItem.id,
-                            folderBoardOrder: folderItem.board_order,
-                            rootBoardOrder: boardsWithoutFolderData!.boardOrder,
-                            userId: boardItem.user_id,
-                          });
-                          const pathParams = trimChar(
-                            ["/"],
-                            router.asPath
-                          ).split("/");
+                        onClick={() => {
+                          void (async () => {
+                            // Call remove board from folder mutation
+                            await removeBoardFromFolder({
+                              boardId: boardItem.id,
+                              folderId: folderItem.id,
+                              folderBoardOrder: folderItem.board_order,
+                              rootBoardOrder:
+                                boardsWithoutFolderData!.boardOrder,
+                              userId: boardItem.user_id,
+                            });
+                            const pathParams = trimChar(
+                              ["/"],
+                              router.asPath
+                            ).split("/");
 
-                          // Redirect to dashboard if deleting board that is currently open
-                          if (
-                            pathParams[pathParams.length - 1] === boardItem.id
-                          ) {
-                            router.push(`/board/${boardItem.id}`);
-                          }
+                            // Redirect to dashboard if deleting board that is currently open
+                            if (
+                              pathParams[pathParams.length - 1] === boardItem.id
+                            ) {
+                              await router.push(`/board/${boardItem.id}`);
+                            }
+                          });
                         }}
                       >
                         <BarsArrowUpIcon

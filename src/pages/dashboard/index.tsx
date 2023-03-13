@@ -23,9 +23,7 @@ const stats = [
   { label: "Tasks", value: 2 },
 ];
 
-interface DashboardPageProps {}
-
-const DashboardPage: NextPageWithLayout<DashboardPageProps> = () => {
+const DashboardPage: NextPageWithLayout = () => {
   const router = useRouter();
   const { data: sessionData, status } = useSession();
 
@@ -83,7 +81,7 @@ const DashboardPage: NextPageWithLayout<DashboardPageProps> = () => {
     if (prevFolderLength > (folderData?.folderOrder.length ?? 0)) {
       setPrevFolderLength(folderData?.folderOrder.length ?? 0);
     }
-  }, [folderData]);
+  }, [folderData, prevFolderLength]);
 
   // Return loading screen while session is loading
   if (status === "loading") {
@@ -174,7 +172,7 @@ const DashboardPage: NextPageWithLayout<DashboardPageProps> = () => {
                 <div className="flex-shrink-0">
                   <img
                     className="mx-auto h-20 w-20 rounded-full"
-                    src={sessionData!.user!.image!}
+                    src={sessionData?.user.image ?? ""}
                     alt=""
                   />
                 </div>

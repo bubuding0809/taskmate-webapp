@@ -137,7 +137,7 @@ const Board: React.FC<BoardProps> = ({
                 "relative inline-block h-8 w-8 rounded-full ring-2 ring-white"
               )}
               src={user.image ?? ""}
-              alt={`Board collaborator - ${user.name}`}
+              alt={`Board collaborator - ${user.name ?? ""}`}
             />
           </Tooltip>
         );
@@ -213,7 +213,9 @@ const Board: React.FC<BoardProps> = ({
         ) : (
           <Tooltip title="View board">
             <Link
-              href={`/board/${boardItem.folder_id}/${boardItem.id}`}
+              href={`/board/${boardItem.folder_id ?? "null"}/${
+                boardItem.id ?? "null"
+              }`}
               className="w-6/12"
             >
               <h3 className="truncate text-base font-semibold leading-6 text-gray-900">
@@ -251,7 +253,11 @@ const Board: React.FC<BoardProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
                 <Tooltip title="View panel">
-                  <Link href={`/board/${boardItem.folder_id}/${boardItem.id}`}>
+                  <Link
+                    href={`/board/${boardItem.folder_id ?? "null"}/${
+                      boardItem.id ?? "null"
+                    }`}
+                  >
                     <h4 className="text-sm font-medium text-gray-900">
                       {panel.panel_title ?? "Untitled"}
                     </h4>
@@ -322,8 +328,8 @@ const Board: React.FC<BoardProps> = ({
         title="Delete Board"
         description="Are you sure you want to delete this board? This action cannot be undone."
         confirmText="Delete Board"
-        onConfirm={
-          async () => {
+        onConfirm={() => {
+          void (async () => {
             await deleteBoard({
               boardId: boardItem.id,
               userId: boardItem.user_id,
@@ -340,7 +346,9 @@ const Board: React.FC<BoardProps> = ({
                 () =>
                   addToast({
                     title: "Board deleted successfully",
-                    description: `Your board with the title "${boardItem.board_title}" was deleted successfully`,
+                    description: `Your board with the title "${
+                      boardItem.board_title ?? "null"
+                    }" was deleted successfully`,
                     icon: TrashIcon,
                   }),
                 300
@@ -351,38 +359,15 @@ const Board: React.FC<BoardProps> = ({
               () =>
                 addToast({
                   title: "Board deleted successfully",
-                  description: `Your board with the title "${boardItem.board_title}" was deleted successfully`,
+                  description: `Your board with the title "${
+                    boardItem.board_title ?? "null"
+                  }" was deleted successfully`,
                   icon: TrashIcon,
                 }),
               300
             );
-          }
-          // TODO - Clean up commented code when done testing
-          // () =>
-          // void deleteBoard({
-          //   boardId: boardItem.id,
-          //   userId: boardItem.user_id,
-          //   isOrganized: boardItem.folder_id ? true : false,
-          //   rootBoardOrder: boardsWithoutFolderData!.boardOrder,
-          //   folderBoardOrder: folderItem?.board_order ?? null,
-          //   folderId: boardItem.folder_id,
-          // })
-          //   .then(() => {
-          //     // Redirect to dashboard if deleting board that is currently open
-          //     router.asPath.split("/")[2] === boardItem.id &&
-          //       void router.push("/dashboard").then(() =>
-          //         setTimeout(
-          //           () =>
-          //             addToast({
-          //               title: "Board deleted successfully",
-          //               description: "Your board was deleted successfully",
-          //             }),
-          //           300
-          //         )
-          //       );
-          //   })
-          //   .catch((err) => console.log(err))
-        }
+          });
+        }}
       />
     </div>
   );
