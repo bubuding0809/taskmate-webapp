@@ -80,6 +80,7 @@ export const ToastContextProvider: React.FC<ToastContextProviderProps> = ({
                 leave="transition ease-in duration-100"
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
+                key={index}
               >
                 <div className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5">
                   <div className="p-4">
