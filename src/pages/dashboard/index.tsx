@@ -13,6 +13,8 @@ import Board from "@/components/Dashboard/Board";
 import Divider from "@/components/custom/Divider";
 import { nanoid } from "nanoid";
 import useCreateBoard from "@/utils/mutations/useCreateBoard";
+import { DocumentPlusIcon, FolderPlusIcon } from "@heroicons/react/20/solid";
+import useCreateFolder from "@/utils/mutations/useCreateFolder";
 
 // TODO - TBD - This is just a placeholder for now
 const stats = [
@@ -52,6 +54,7 @@ const DashboardPage: NextPageWithLayout<DashboardPageProps> = () => {
     );
 
   const { mutate: createBoard } = useCreateBoard();
+  const { mutate: createFolder } = useCreateFolder();
 
   // TODO - Revisit the background position logic
   const [backgroundPosition, setBackgroundPosition] = useState({
@@ -228,57 +231,77 @@ const DashboardPage: NextPageWithLayout<DashboardPageProps> = () => {
         {/* Grid for folders and boards */}
         <div className="grid gap-4 overflow-x-auto">
           <div className="z-0 col-span-full flex flex-col gap-4 overflow-x-auto bg-white px-4 py-4">
-            <h2 className="col-span-full indent-2 text-3xl font-semibold">
-              📚 Boards
-            </h2>
+            <div className="col-span-full flex justify-between">
+              <h2 className="col-span-full flex items-center indent-2 text-3xl font-semibold">
+                📚 Boards
+              </h2>
+              <button
+                type="button"
+                className="flex items-center gap-1.5 rounded-full bg-indigo-600 py-2.5 px-4 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                onClick={() =>
+                  createBoard({
+                    boardId: nanoid(),
+                    userId: sessionData!.user.id,
+                    title: "New Board",
+                    currentBoardOrder: unorgainzedBoardData?.boardOrder ?? [],
+                  })
+                }
+              >
+                New board
+                <DocumentPlusIcon className="h-6 w-6" aria-hidden="true" />
+              </button>
+            </div>
 
             {/* flexbox for unorganized boards */}
             <div
               ref={boardParent}
               className="col-span-full flex flex-grow gap-2 overflow-x-auto p-1"
             >
-              {unorgainzedBoardData?.boardOrder.map((boardId) => {
-                const boardItem = unorgainzedBoardData?.boards.get(boardId);
-                return (
-                  !!boardItem && (
-                    <Board
-                      key={boardItem.id}
-                      boardItem={boardItem}
-                      className="border"
-                    />
-                  )
-                );
-              })}
-              <button
-                type="button"
-                className="relative block h-80 w-96 min-w-md rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                onClick={() => {
-                  createBoard({
-                    boardId: nanoid(),
-                    userId: sessionData!.user!.id!,
-                    title: "New Board",
-                    currentBoardOrder: unorgainzedBoardData?.boardOrder ?? [],
-                  });
-                }}
-              >
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  stroke="currentColor"
-                  fill="none"
-                  viewBox="0 0 48 48"
-                  aria-hidden="true"
+              {!!unorgainzedBoardData?.boardOrder.length ? (
+                unorgainzedBoardData?.boardOrder.map((boardId) => {
+                  const boardItem = unorgainzedBoardData?.boards.get(boardId);
+                  return (
+                    !!boardItem && (
+                      <Board
+                        key={boardItem.id}
+                        boardItem={boardItem}
+                        className="border"
+                      />
+                    )
+                  );
+                })
+              ) : (
+                <button
+                  type="button"
+                  className="relative block h-80 w-96 min-w-md rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  onClick={() => {
+                    createBoard({
+                      boardId: nanoid(),
+                      userId: sessionData!.user.id,
+                      title: "New Board",
+                      currentBoardOrder: unorgainzedBoardData?.boardOrder ?? [],
+                    });
+                  }}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 14v20c0 4.418 7.163 8 16 8 1.381 0 2.721-.087 4-.252M8 14c0 4.418 7.163 8 16 8s16-3.582 16-8M8 14c0-4.418 7.163-8 16-8s16 3.582 16 8m0 0v14m0-4c0 4.418-7.163 8-16 8S8 28.418 8 24m32 10v6m0 0v6m0-6h6m-6 0h-6"
-                  />
-                </svg>
-                <span className="mt-2 block text-sm font-semibold text-gray-900">
-                  Create a new board
-                </span>
-              </button>
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    stroke="currentColor"
+                    fill="none"
+                    viewBox="0 0 48 48"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 14v20c0 4.418 7.163 8 16 8 1.381 0 2.721-.087 4-.252M8 14c0 4.418 7.163 8 16 8s16-3.582 16-8M8 14c0-4.418 7.163-8 16-8s16 3.582 16 8m0 0v14m0-4c0 4.418-7.163 8-16 8S8 28.418 8 24m32 10v6m0 0v6m0-6h6m-6 0h-6"
+                    />
+                  </svg>
+                  <span className="mt-2 block text-sm font-semibold text-gray-900">
+                    Create a new board
+                  </span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -286,9 +309,24 @@ const DashboardPage: NextPageWithLayout<DashboardPageProps> = () => {
             ref={folderParent}
             className="z-0 col-span-full grid grid-cols-1 gap-4 bg-white px-4 py-4 2xl:grid-cols-2"
           >
-            <h2 className="col-span-full indent-2 text-3xl font-semibold">
-              🗂️ Folders
-            </h2>
+            <div className="col-span-full flex justify-between">
+              <h2 className="indent-2 text-3xl font-semibold">🗂️ Folders</h2>
+              <button
+                type="button"
+                className="flex items-center gap-1.5 rounded-full bg-indigo-600 py-2.5 px-4 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                onClick={() =>
+                  createFolder({
+                    folderId: nanoid(),
+                    name: "New Folder",
+                    userId: sessionData!.user.id,
+                    currentFolderOrder: folderData?.folderOrder ?? [],
+                  })
+                }
+              >
+                New folder
+                <FolderPlusIcon className="h-6 w-6" aria-hidden="true" />
+              </button>
+            </div>
 
             {/* Folder components */}
             {folderData?.folderOrder.map((folderId) => {

@@ -151,6 +151,12 @@ const Folder: React.FC<FolderProps> = ({
               </h3>
             </Tooltip>
           )}
+          <span className="mr-auto ml-2 inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-sm font-medium text-indigo-800">
+            {
+              // Get board count of folder
+              folderItem.board_order?.length ?? 0
+            }
+          </span>
 
           {/* Header right */}
           <div className="flex items-center gap-2">
