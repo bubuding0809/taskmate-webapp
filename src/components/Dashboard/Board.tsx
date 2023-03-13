@@ -213,9 +213,11 @@ const Board: React.FC<BoardProps> = ({
         ) : (
           <Tooltip title="View board">
             <Link
-              href={`/board/${boardItem.folder_id ?? "null"}/${
-                boardItem.id ?? "null"
-              }`}
+              href={
+                boardItem.folder_id
+                  ? `/board/${boardItem.folder_id}/${boardItem.id}`
+                  : `/board/${boardItem.id}`
+              }
               className="w-6/12"
             >
               <h3 className="truncate text-base font-semibold leading-6 text-gray-900">
@@ -254,9 +256,11 @@ const Board: React.FC<BoardProps> = ({
               <div className="flex flex-col">
                 <Tooltip title="View panel">
                   <Link
-                    href={`/board/${boardItem.folder_id ?? "null"}/${
-                      boardItem.id ?? "null"
-                    }`}
+                    href={
+                      boardItem.folder_id
+                        ? `/board/${boardItem.folder_id}/${boardItem.id}`
+                        : `/board/${boardItem.id}`
+                    }
                   >
                     <h4 className="text-sm font-medium text-gray-900">
                       {panel.panel_title ?? "Untitled"}
