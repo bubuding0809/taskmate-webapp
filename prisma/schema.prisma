@@ -51,6 +51,7 @@ model User {
     image              String?
     folder_order       String?              @db.VarChar(1000)
     board_order        String?              @db.VarChar(1000)
+    status_message     String?              @default("I'm using TaskMate!") @db.VarChar(1000)
     accounts           Account[]
     Attachment         Attachment[]
     Board              Board[]
@@ -205,6 +206,7 @@ model Task {
     order              Int               @default(dbgenerated("(0)"))
     start_datetime     DateTime?         @db.DateTime(0)
     end_datetime       DateTime?         @db.DateTime(0)
+    due_datetime       DateTime?         @db.DateTime(0)
     is_completed       Boolean           @default(dbgenerated("(false)"))
     is_reveal_subtasks Boolean           @default(dbgenerated("(false)"))
     panel_id           String

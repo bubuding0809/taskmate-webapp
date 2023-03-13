@@ -18,9 +18,12 @@ const useCreateTask = () => {
         title,
         details,
         startDate,
+        endDate,
         dueDate,
         parentTaskId,
       } = task;
+
+      console.log(dueDate);
 
       // Create query key for the board query
       const boardQueryKey = getQueryKey(
@@ -63,8 +66,9 @@ const useCreateTask = () => {
         task_details: details ?? "",
         order: postTaskOrder ? Math.floor(postTaskOrder / 2) : 0,
         is_completed: false,
-        start_datetime: startDate ?? null,
-        end_datetime: dueDate ?? null,
+        start_datetime: startDate,
+        end_datetime: endDate,
+        due_datetime: dueDate,
         parentTaskId: parentTaskId ?? null,
         subtasks: [],
         is_reveal_subtasks: false,

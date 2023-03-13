@@ -1,9 +1,13 @@
-import { Board, Folder } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
-import _ from "lodash";
-import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
+import _ from "lodash";
+
+import type { Board } from "@prisma/client";
+import type {
+  BoardDetailed,
+  FolderWithBoards,
+} from "server/api/routers/folder";
 
 const useAddBoardToFolder = () => {
   const queryClient = useQueryClient();
@@ -26,14 +30,27 @@ const useAddBoardToFolder = () => {
         "query"
       );
 
+      // Create query key to access the board map data
+      const boardMapQueryKey = getQueryKey(
+        api.board.getUserBoardMap,
+        { userId },
+        "query"
+      );
+
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
         queryKey: boardQueryKey,
       });
+      await queryClient.cancelQueries({
+        queryKey: folderQueryKey,
+      });
+      await queryClient.cancelQueries({
+        queryKey: boardMapQueryKey,
+      });
 
       // Snapshot the previous value for boards
       const oldBoardData = queryClient.getQueryData(boardQueryKey) as {
-        boards: Map<string, Board>;
+        boards: Map<string, BoardDetailed>;
         boardOrder: string[];
       };
 
@@ -72,11 +89,20 @@ const useAddBoardToFolder = () => {
             await queryClient.cancelQueries({
               queryKey: boardQueryKey,
             });
+            await queryClient.cancelQueries({
+              queryKey: boardMapQueryKey,
+            });
           })(),
         1
       );
 
-      return { oldBoardData, boardQueryKey, folderQueryKey, oldFolderData };
+      return {
+        oldBoardData,
+        boardQueryKey,
+        folderQueryKey,
+        oldFolderData,
+        boardMapQueryKey,
+      };
     },
     onError: (_error, _variables, ctx) => {
       // If the mutation fails, use the context returned from onMutate to roll back
@@ -90,6 +116,9 @@ const useAddBoardToFolder = () => {
       });
       await queryClient.invalidateQueries({
         queryKey: ctx?.folderQueryKey,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ctx?.boardMapQueryKey,
       });
     },
   });

@@ -11,13 +11,12 @@ import type { PanelWithTasks } from "server/api/routers/board";
 import type { Task } from "@prisma/client";
 import type { TaskDetailed } from "server/api/routers/board";
 import { formatDate } from "@/utils/helper";
-import { api } from "@/utils/api";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
 
 interface TodoTaskProps {
   task: TaskDetailed | Task;
   panelItem: PanelWithTasks;
-  provided: DraggableProvided;
+  provided?: DraggableProvided;
   snapshot?: DraggableStateSnapshot;
   handleRemoveDateTime: (taskId: string, panelId: string) => void;
 }
@@ -76,7 +75,7 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
         {/* CheckBox and task title */}
         <div
           className="flex items-start justify-start gap-1"
-          {...provided.dragHandleProps}
+          {...provided?.dragHandleProps}
         >
           <BpCheckBox
             className="self-start"
@@ -120,7 +119,7 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
               {/* Show delete button on hover */}
             </div>
           )}
-          {task.end_datetime && (
+          {task.due_datetime && (
             <Chip
               sx={{
                 color: "text.secondary",
@@ -128,7 +127,7 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
               }}
               variant="outlined"
               size="small"
-              label={formatDate(task.end_datetime)}
+              label={formatDate(task.due_datetime)}
               icon={<CalendarMonthIcon />}
               onDelete={
                 task.is_completed

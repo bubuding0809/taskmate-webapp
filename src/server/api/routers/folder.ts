@@ -1,9 +1,28 @@
-import { Board, Folder } from "@prisma/client";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 
+import type {
+  Board,
+  Board_Collaborator,
+  Board_Message,
+  Board_Tag,
+  Team_Board_Rel,
+  Team,
+  User,
+} from "@prisma/client";
+
+export type BoardDetailed = Board & {
+  user: User;
+  Board_Collaborator: (Board_Collaborator & {
+    User: User;
+  })[];
+  Board_Message: Board_Message[];
+  Board_Tag: Board_Tag[];
+  Team_Board_Rel: (Team_Board_Rel & { Team: Team })[];
+};
+
 export type FolderWithBoards = {
-  boards: Map<string, Board>;
+  boards: Map<string, BoardDetailed>;
   id: string;
   folder_name: string;
   thumbnail_image: string | null;
@@ -22,7 +41,24 @@ export const folderRouter = createTRPCRouter({
           user_id: input.userId,
         },
         include: {
-          boards: true,
+          user: true,
+          boards: {
+            include: {
+              user: true,
+              Board_Collaborator: {
+                include: {
+                  User: true,
+                },
+              },
+              Board_Message: true,
+              Board_Tag: true,
+              Team_Board_Rel: {
+                include: {
+                  Team: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -41,7 +77,7 @@ export const folderRouter = createTRPCRouter({
           folder.id,
           {
             ...folder,
-            boards: new Map<string, Board>(
+            boards: new Map<string, BoardDetailed>(
               folder.boards.map((board) => [board.id, board])
             ),
             board_order: folder.board_order?.split(",") || [],

@@ -4,27 +4,28 @@ import { EllipsisVerticalIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils/helper";
 import { PencilIcon } from "@heroicons/react/24/outline";
 import useClickAway from "@/utils/hooks/useClickAway";
-import { api } from "@/utils/api";
-import { Board } from "@prisma/client";
 
 interface DropDownMenuProps {
-  user_id: string;
-  setDropDownMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setDropDownMenuOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  setMenuButtonVisible?: React.Dispatch<React.SetStateAction<boolean>>;
   setFolderRenameInputVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  setmenuButtonVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setDeleteModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  dashboard?: boolean;
 }
 
 const FolderDropDownMenu: React.FC<DropDownMenuProps> = ({
-  user_id,
   setDropDownMenuOpen,
   setFolderRenameInputVisible,
-  setmenuButtonVisible,
+  setMenuButtonVisible,
   setDeleteModalOpen,
+  dashboard,
 }) => {
   // Ref for detecting click outside of drop down menu
   const wrapperRef = useRef<HTMLDivElement>(null);
-  useClickAway(wrapperRef, () => setmenuButtonVisible(false));
+  useClickAway(
+    wrapperRef,
+    () => !!setMenuButtonVisible && setMenuButtonVisible(false)
+  );
 
   // Keep track of mouse position state to position the menu
   const [mousePostion, setMousePosition] = useState({ x: 0, y: 0 });
@@ -53,16 +54,23 @@ const FolderDropDownMenu: React.FC<DropDownMenuProps> = ({
       >
         <Menu.Items
           ref={wrapperRef}
-          className={`fixed z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}
-          style={{
-            left: mousePostion.x,
-            top: mousePostion.y,
-          }}
+          className={classNames(
+            dashboard ? "absolute right-0" : "fixed",
+            "z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+          )}
+          style={
+            dashboard
+              ? {}
+              : {
+                  left: mousePostion.x,
+                  top: mousePostion.y,
+                }
+          }
         >
           {({ open }) => {
-            setDropDownMenuOpen(open);
+            !!setDropDownMenuOpen && setDropDownMenuOpen(open);
             return (
-              <div className="py-1">
+              <div className="cursor-pointer py-1">
                 <Menu.Item>
                   {({ active }) => (
                     <div
@@ -102,21 +110,6 @@ const FolderDropDownMenu: React.FC<DropDownMenuProps> = ({
                     </div>
                   )}
                 </Menu.Item>
-                {/* <form method="POST" action="#">
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    type="submit"
-                    className={classNames(
-                      active ? "bg-gray-100 text-gray-900" : "text-gray-700",
-                      "block w-full px-4 py-2 text-left text-sm"
-                    )}
-                  >
-                    Sign out
-                  </button>
-                )}
-              </Menu.Item>
-            </form> */}
               </div>
             );
           }}

@@ -17,11 +17,32 @@ import { classNames } from "@/utils/helper";
 
 interface BoardViewProps {
   bid: string;
-  sessionData: Session | null;
 }
 
-const BoardView: React.FC<BoardViewProps> = ({ bid, sessionData }) => {
+// TODO - tempory background images, to be replaced with hitting a unsplash API
+const backgroundImages: {
+  name: string;
+  url: string;
+}[] = [
+  {
+    name: "🌲",
+    url: "/images/paul-weaver-unsplash.jpeg",
+  },
+  {
+    name: "🌳",
+    url: "https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2600&q=80",
+  },
+  {
+    name: "🌊",
+    url: "https://images.unsplash.com/photo-1518623489648-a173ef7824f3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2462&q=80",
+  },
+];
+
+const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
   const [isItemCombineEnabled, setIsItemCombineEnabled] = useState(false);
+  const [bgImage, setBgImage] = useState<string>(
+    "/images/paul-weaver-unsplash.jpeg"
+  );
 
   // Query to get board data
   const { data: boardQueryData } = api.board.getBoardById.useQuery({
@@ -279,16 +300,43 @@ const BoardView: React.FC<BoardViewProps> = ({ bid, sessionData }) => {
 
   return (
     <div
-      className="
-        flex h-full flex-1 flex-col items-start gap-3 overflow-auto
-        bg-green-image bg-cover p-4
-        "
+      className={classNames(
+        bgImage,
+        "flex h-full flex-1 flex-col items-start gap-3 overflow-auto bg-cover p-4"
+      )}
+      style={{
+        backgroundImage: `url('${bgImage}')`,
+      }}
     >
-      <div className="min-w-max rounded-md border bg-white px-4 py-2 text-2xl font-bold shadow-md">
-        <span className="mr-2">{boardQueryData?.thumbnail_image}</span>
-        {boardQueryData?.board_title}
+      {/* Board header */}
+      <div className="flex min-w-max gap-2 rounded-md border bg-white px-4 py-2 text-2xl font-bold shadow-md">
+        <div>
+          <span className="mr-2">{boardQueryData?.thumbnail_image}</span>
+          {boardQueryData?.board_title}
+        </div>
+        {/* Create a select dropdown to choose background images */}
+        <div className="flex items-center gap-2">
+          <select
+            className="rounded-md text-sm text-gray-500"
+            onChange={(e) => {
+              setBgImage(e.target.value);
+            }}
+            value={bgImage}
+            id="bg-image"
+          >
+            {backgroundImages.map((image) => {
+              return (
+                <option key={image.url} value={image.url}>
+                  {image.name}
+                </option>
+              );
+            })}
+          </select>
+        </div>
       </div>
-      <div className="flex h-full items-start">
+
+      {/* Board Main*/}
+      <div className="flex flex-1 items-start">
         <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
           {/* Droppable zone for panels */}
           <Droppable droppableId={bid} type="board" direction="horizontal">
@@ -338,6 +386,28 @@ const BoardView: React.FC<BoardViewProps> = ({ bid, sessionData }) => {
           <PlusIcon className="h-6 w-6" aria-hidden="true" />
         </button>
       </div>
+
+      {/* Attribution to unsplash image creator */}
+      <p className="absolute bottom-2 right-3 text-xs text-gray-700">
+        Photo by{" "}
+        <a
+          href="https://unsplash.com/@willianjusten"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-gray-800"
+        >
+          Willian Justen de Vasconcellos
+        </a>{" "}
+        on{" "}
+        <a
+          href="https://unsplash.com/photos/7kCNXfo35aU"
+          target="_blank"
+          rel="noreferrer"
+          className="underline hover:text-gray-800"
+        >
+          Unsplash
+        </a>
+      </p>
     </div>
   );
 };

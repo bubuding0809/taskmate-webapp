@@ -1,9 +1,12 @@
-import { Board, Folder } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
-import _ from "lodash";
-import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
+import _ from "lodash";
+
+import type {
+  BoardDetailed,
+  FolderWithBoards,
+} from "server/api/routers/folder";
 
 const useCreateFolder = () => {
   const queryClient = useQueryClient();
@@ -38,7 +41,7 @@ const useCreateFolder = () => {
         folder_name: name,
         thumbnail_image: "📂",
         user_id: userId,
-        boards: new Map<string, Board>(),
+        boards: new Map<string, BoardDetailed>(),
         collapsed: false,
         board_order: [],
       });

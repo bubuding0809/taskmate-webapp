@@ -7,16 +7,20 @@ import type {
 } from "@prisma/client";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { BoardDetailed } from "./folder";
 
 export type TaskDetailed = Task & {
   Attachment: Attachment[];
   Task_Activity: Task_Activity[];
   subtasks: Task[];
 };
+
 export type TaskWithSubtasks = Task & { subtasks: Task[] };
+
 export type PanelWithTasks = Panel & {
   Task: TaskWithSubtasks[];
 };
+
 export type BoardWithPanelsAndTasks = Board & {
   Panel: PanelWithTasks[];
 };
@@ -127,6 +131,21 @@ export const boardRouter = createTRPCRouter({
           user_id: input.userId,
           folder_id: null,
         },
+        include: {
+          user: true,
+          Board_Collaborator: {
+            include: {
+              User: true,
+            },
+          },
+          Board_Message: true,
+          Board_Tag: true,
+          Team_Board_Rel: {
+            include: {
+              Team: true,
+            },
+          },
+        },
       });
 
       const boardOrder = await ctx.prisma.user.findUnique({
@@ -139,7 +158,7 @@ export const boardRouter = createTRPCRouter({
       });
 
       // create a map of board id to board
-      const boardMap = new Map<string, Board>(
+      const boardMap = new Map<string, BoardDetailed>(
         boards.map((board) => [board.id, board])
       );
 
@@ -157,35 +176,72 @@ export const boardRouter = createTRPCRouter({
         title: z.string(),
         userId: z.string(),
         currentBoardOrder: z.array(z.string()),
+        folderId: z.string().optional(),
+        folderBoardOrder: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       return await ctx.prisma.$transaction(async (tx) => {
-        // Create a new board and connect it to the user
-        const newBoard = await tx.board.create({
-          data: {
-            user: {
-              connect: {
-                id: input.userId,
+        // Create a new board and connect it to the user and folder
+        if (input.folderBoardOrder && input.folderId) {
+          const newBoard = await tx.board.create({
+            data: {
+              user: {
+                connect: {
+                  id: input.userId,
+                },
               },
+              folder: {
+                connect: {
+                  id: input.folderId,
+                },
+              },
+              id: input.boardId,
+              board_title: input.title,
+              thumbnail_image: "📝",
             },
-            id: input.boardId,
-            board_title: input.title,
-            thumbnail_image: "📝",
-          },
-        });
+          });
 
-        // Add the board to the unorganized boards order
-        await tx.user.update({
-          where: {
-            id: input.userId,
-          },
-          data: {
-            board_order: [...input.currentBoardOrder, newBoard.id].join(","),
-          },
-        });
+          // Add the board to the folder's board order
+          await tx.folder.update({
+            where: {
+              id: input.folderId,
+            },
+            data: {
+              board_order: [...input.folderBoardOrder, newBoard.id].join(","),
+            },
+          });
 
-        return newBoard;
+          return newBoard;
+        }
+
+        // Create a new board and connect it to the user without a folder
+        else {
+          const newBoard = await tx.board.create({
+            data: {
+              user: {
+                connect: {
+                  id: input.userId,
+                },
+              },
+              id: input.boardId,
+              board_title: input.title,
+              thumbnail_image: "📝",
+            },
+          });
+
+          // Add the board to the unorganized boards order
+          await tx.user.update({
+            where: {
+              id: input.userId,
+            },
+            data: {
+              board_order: [...input.currentBoardOrder, newBoard.id].join(","),
+            },
+          });
+
+          return newBoard;
+        }
       });
 
       // Update user's board_order

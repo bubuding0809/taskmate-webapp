@@ -20,7 +20,6 @@ interface BreadCrumbsProps {
 }
 
 const BreadCrumbs: React.FC<BreadCrumbsProps> = ({ pages }) => {
-  console.log("BreadCrumbs pages: ", pages);
   return (
     <nav className="flex" aria-label="Breadcrumb">
       <ol

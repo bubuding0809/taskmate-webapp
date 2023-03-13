@@ -1,19 +1,23 @@
-import { useRef, useEffect, useState } from "react";
-import { classNames } from "../../utils/helper";
 import Link from "next/link";
-import { Board } from "@prisma/client";
-import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
-import useClickAway from "@/utils/hooks/useClickAway";
 import BoardDropDownMenu from "./BoardDropDownMenu";
-import useRenameBoard from "@/utils/mutations/useRenameBoard";
-import { FolderWithBoards } from "server/api/routers/folder";
-import { Fade, Tooltip } from "@mui/material";
 import ConfirmationModal from "@/components/Layout/ConfirmationModal";
-import useDeleteBoard from "@/utils/mutations/useDeleteBoard";
 import { api } from "@/utils/api";
-import { QueryClient, useQueryClient } from "@tanstack/react-query";
+import { useRef, useEffect, useState } from "react";
+import { classNames, trimChar } from "../../utils/helper";
+import { Fade, Tooltip } from "@mui/material";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
+import useDeleteBoard from "@/utils/mutations/useDeleteBoard";
+import useClickAway from "@/utils/hooks/useClickAway";
+import useRenameBoard from "@/utils/mutations/useRenameBoard";
+
+import type { Board } from "@prisma/client";
+import type { FolderWithBoards } from "server/api/routers/folder";
+import type {
+  DraggableProvided,
+  DraggableStateSnapshot,
+} from "react-beautiful-dnd";
+import { useToastContext } from "@/utils/context/ToastContext";
 
 interface BoardDisclosureProps {
   provided: DraggableProvided;
@@ -31,6 +35,7 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
   sidebarExpanded,
 }) => {
   const router = useRouter();
+  const addToast = useToastContext();
 
   const [menuButtonVisible, setMenuButtonVisible] = useState(false);
   const [dropDownMenuOpen, setDropDownMenuOpen] = useState(false);
@@ -38,6 +43,7 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
   const [renameInputValue, setRenameInputValue] = useState(
     boardItem.board_title ?? ""
   );
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   // Effect for setting rename input value to folder name when clicked away
   useEffect(() => {
@@ -58,16 +64,13 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
   const { mutate: renameBoard } = useRenameBoard();
   const { mutateAsync: deleteBoard } = useDeleteBoard();
 
-  // Confirmation modal state
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-
   return (
     <>
       {/* Board name input form, is postioned fixed */}
       {boardRenameInputVisible && (
         <div
           ref={wrapperRef}
-          className="form-input absolute z-30 w-60 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus-within:border-indigo-600 focus-within:ring-1 focus-within:ring-indigo-600"
+          className="absolute z-30 w-60 rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus-within:border-indigo-600 focus-within:ring-1 focus-within:ring-indigo-600"
         >
           <label
             htmlFor="name"
@@ -79,8 +82,8 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
             type="text"
             name="name"
             id="name"
-            className="form-input block w-full border-0 p-0 text-gray-900 placeholder-gray-500 focus:ring-0 sm:text-sm"
-            placeholder="Jane Smith"
+            className="block w-full border-0 p-0 text-gray-900 placeholder-gray-500 focus:ring-0 sm:text-sm"
+            placeholder="Board name"
             autoFocus
             value={renameInputValue ?? ""}
             onChange={(e) => setRenameInputValue(e.target.value)}
@@ -105,6 +108,8 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
           />
         </div>
       )}
+
+      {/* Link element for board */}
       <Tooltip
         title="Drop to add"
         open={!!snapshot.combineWith}
@@ -162,13 +167,15 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
                 folderItem={folderItem}
                 setDropDownMenuOpen={setDropDownMenuOpen}
                 setBoardRenameInputVisible={setBoardRenameInputVisible}
-                setmenuButtonVisible={setMenuButtonVisible}
+                setMenuButtonVisible={setMenuButtonVisible}
                 setDeleteModalOpen={setDeleteModalOpen}
               />
             </div>
           )}
         </Link>
       </Tooltip>
+
+      {/* Confirmation modal for deleting a board */}
       <ConfirmationModal
         open={deleteModalOpen}
         setOpen={setDeleteModalOpen}
@@ -176,22 +183,66 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
         title="Delete Board"
         description="Are you sure you want to delete this board? This action cannot be undone."
         confirmText="Delete Board"
-        onConfirm={() =>
-          void deleteBoard({
-            boardId: boardItem.id,
-            userId: boardItem.user_id,
-            isOrganized: boardItem.folder_id ? true : false,
-            rootBoardOrder: boardsWithoutFolderData!.boardOrder,
-            folderBoardOrder: folderItem?.board_order ?? null,
-            folderId: boardItem.folder_id,
-          })
-            .then(
+        onConfirm={
+          async () => {
+            await deleteBoard({
+              boardId: boardItem.id,
+              userId: boardItem.user_id,
+              isOrganized: boardItem.folder_id ? true : false,
+              rootBoardOrder: boardsWithoutFolderData!.boardOrder,
+              folderBoardOrder: folderItem?.board_order ?? null,
+              folderId: boardItem.folder_id,
+            });
+            // Redirect to dashboard if deleting board that is currently open
+            const pathParams = trimChar(["/"], router.asPath).split("/");
+            if (pathParams[pathParams.length - 1] === boardItem.id) {
+              await router.push("/dashboard");
+              setTimeout(
+                () =>
+                  addToast({
+                    title: "Board deleted successfully",
+                    description: `Your board with the title "${boardItem.board_title}" was deleted successfully`,
+                    icon: TrashIcon,
+                  }),
+                300
+              );
+              return;
+            }
+            setTimeout(
               () =>
-                // Redirect to dashboard if deleting board that is currently open
-                router.asPath.split("/")[2] === boardItem.id &&
-                router.push("/dashboard")
-            )
-            .catch((err) => console.log(err))
+                addToast({
+                  title: "Board deleted successfully",
+                  description: `Your board with the title "${boardItem.board_title}" was deleted successfully`,
+                  icon: TrashIcon,
+                }),
+              300
+            );
+          }
+          // TODO - Clean up commented code when done testing
+          // () =>
+          // void deleteBoard({
+          //   boardId: boardItem.id,
+          //   userId: boardItem.user_id,
+          //   isOrganized: boardItem.folder_id ? true : false,
+          //   rootBoardOrder: boardsWithoutFolderData!.boardOrder,
+          //   folderBoardOrder: folderItem?.board_order ?? null,
+          //   folderId: boardItem.folder_id,
+          // })
+          //   .then(() => {
+          //     // Redirect to dashboard if deleting board that is currently open
+          //     router.asPath.split("/")[2] === boardItem.id &&
+          //       void router.push("/dashboard").then(() =>
+          //         setTimeout(
+          //           () =>
+          //             addToast({
+          //               title: "Board deleted successfully",
+          //               description: "Your board was deleted successfully",
+          //             }),
+          //           300
+          //         )
+          //       );
+          //   })
+          //   .catch((err) => console.log(err))
         }
       />
     </>

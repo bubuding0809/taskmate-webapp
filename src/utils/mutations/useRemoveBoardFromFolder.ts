@@ -27,12 +27,22 @@ const useRemoveBoardFromFolder = () => {
         "query"
       );
 
+      // Create query key to access the board map data
+      const boardMapQueryKey = getQueryKey(
+        api.board.getUserBoardMap,
+        { userId },
+        "query"
+      );
+
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({
         queryKey: boardQueryKey,
       });
       await queryClient.cancelQueries({
         queryKey: folderQueryKey,
+      });
+      await queryClient.cancelQueries({
+        queryKey: boardMapQueryKey,
       });
 
       // Snapshot the previous value for boards
@@ -73,11 +83,20 @@ const useRemoveBoardFromFolder = () => {
             await queryClient.cancelQueries({
               queryKey: boardQueryKey,
             });
+            await queryClient.cancelQueries({
+              queryKey: boardMapQueryKey,
+            });
           })(),
         1
       );
 
-      return { oldBoardData, boardQueryKey, folderQueryKey, oldFolderData };
+      return {
+        oldBoardData,
+        boardQueryKey,
+        folderQueryKey,
+        oldFolderData,
+        boardMapQueryKey,
+      };
     },
     onError: (_error, _variables, ctx) => {
       // If the mutation fails, use the context returned from onMutate to roll back
@@ -91,6 +110,9 @@ const useRemoveBoardFromFolder = () => {
       });
       await queryClient.invalidateQueries({
         queryKey: ctx?.folderQueryKey,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ctx?.boardMapQueryKey,
       });
     },
   });

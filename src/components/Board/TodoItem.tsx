@@ -24,9 +24,9 @@ interface TodoItemProps {
   taskListType: "active" | "completed";
   task: TaskDetailed | TaskWithSubtasks;
   panelItem: PanelWithTasks;
-  provided: DraggableProvided;
-  snapshot: DraggableStateSnapshot;
-  style: DraggingStyle | NotDraggingStyle | undefined;
+  provided?: DraggableProvided;
+  snapshot?: DraggableStateSnapshot;
+  style?: DraggingStyle | NotDraggingStyle;
 }
 
 export const TodoItem: React.FC<TodoItemProps> = ({
@@ -68,24 +68,22 @@ export const TodoItem: React.FC<TodoItemProps> = ({
 
   return (
     <div
-      ref={provided.innerRef}
-      {...provided.draggableProps}
-      className={`
-        flex flex-col rounded p-1 shadow hover:shadow-inner
-        ${task.is_completed ? "bg-gray-300" : "bg-white"}
-        ${
-          snapshot.isDragging
-            ? "border-3 border-slate-700 bg-slate-50/80 shadow-solid-small"
-            : "border"
-        }
-      `}
+      ref={provided?.innerRef}
+      {...provided?.draggableProps}
+      className={classNames(
+        task.is_completed ? "bg-gray-300" : "bg-white",
+        snapshot?.isDragging
+          ? "border-3 border-slate-700 bg-slate-50/80 shadow-solid-small"
+          : "border",
+        "flex flex-col rounded p-1 shadow hover:shadow-inner"
+      )}
       style={style}
     >
       {/* Render parent task here */}
       <TodoTask
         task={task}
         panelItem={panelItem}
-        provided={provided}
+        provided={provided ?? undefined}
         handleRemoveDateTime={() => alert("yet to be implemented")}
       />
 

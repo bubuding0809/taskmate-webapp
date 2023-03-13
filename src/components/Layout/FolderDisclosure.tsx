@@ -14,11 +14,13 @@ import autoAnimate from "@formkit/auto-animate";
 import BoardDisclosure from "./BoardDisclosure";
 import { FolderWithBoards } from "server/api/routers/folder";
 import ConfirmationModal from "@/components/Layout/ConfirmationModal";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
 import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
 import { api } from "@/utils/api";
 import useCreateBoard from "@/utils/mutations/useCreateBoard";
 import { nanoid } from "nanoid";
+import { useRouter } from "next/router";
+import { useToastContext } from "@/utils/context/ToastContext";
 
 interface FolderDisclosureProps {
   provided: DraggableProvided;
@@ -35,7 +37,12 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
   sidebarExpanded,
   folder_order,
 }) => {
-  const [menuButtonVisible, setmenuButtonVisible] = useState(false);
+  const router = useRouter();
+
+  // Get add toast function from context
+  const addToast = useToastContext();
+
+  const [menuButtonVisible, setMenuButtonVisible] = useState(false);
   const [dropDownMenuOpen, setDropDownMenuOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [folderRenameInputVisible, setFolderRenameInputVisible] =
@@ -68,7 +75,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
   // folder mutations
   const { mutate: renameFolder } = useRenameFolder();
   const { mutate: deleteFolder } = useDeleteFolder();
-  const { mutate: createBoard } = useCreateBoard();
+  const { mutateAsync: createBoard } = useCreateBoard();
 
   return (
     <Disclosure
@@ -79,8 +86,8 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
           "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-small shadow-gray-900",
         "rounded-md border border-dashed border-gray-200 bg-gray-600/10"
       )}
-      onMouseEnter={() => setmenuButtonVisible(true)}
-      onMouseLeave={() => !dropDownMenuOpen && setmenuButtonVisible(false)}
+      onMouseEnter={() => setMenuButtonVisible(true)}
+      onMouseLeave={() => !dropDownMenuOpen && setMenuButtonVisible(false)}
       ref={provided.innerRef}
       {...provided.draggableProps}
       {...provided.dragHandleProps}
@@ -91,7 +98,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
           {folderRenameInputVisible && (
             <div
               ref={wrapperRef}
-              className="form-input absolute z-30 w-60 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus-within:border-indigo-600 focus-within:ring-1 focus-within:ring-indigo-600"
+              className="absolute z-30 w-60 rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus-within:border-indigo-600 focus-within:ring-1 focus-within:ring-indigo-600"
             >
               <label
                 htmlFor="name"
@@ -103,7 +110,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                 type="text"
                 name="name"
                 id="name"
-                className="form-input block w-full border-0 p-0 text-gray-900 placeholder-gray-500 focus:ring-0 sm:text-sm"
+                className="block w-full border-0 p-0 text-gray-900 placeholder-gray-500 focus:ring-0 sm:text-sm"
                 placeholder="Jane Smith"
                 value={renameInputValue}
                 onChange={(e) => setRenameInputValue(e.target.value)}
@@ -174,12 +181,11 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                       )}
                     >
                       <DropDownMenu
-                        user_id={folderItem.user_id}
                         setDropDownMenuOpen={setDropDownMenuOpen}
                         setFolderRenameInputVisible={
                           setFolderRenameInputVisible
                         }
-                        setmenuButtonVisible={setmenuButtonVisible}
+                        setMenuButtonVisible={setMenuButtonVisible}
                         setDeleteModalOpen={setDeleteModalOpen}
                       />
                     </div>
@@ -227,36 +233,55 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                           )}
                         </Draggable>
                       ))}
-                      {/* Drop zone indicator if folder is empty */}
-                      {folderItem.board_order.length === 0 && (
-                        <button
-                          className={classNames(
-                            snapshot.isDraggingOver && "bg-slate-800",
-                            "flex h-10 w-full items-center justify-center rounded-md border border-dashed border-gray-500 hover:bg-slate-600"
-                          )}
-                          onClick={() =>
-                            // TODO - Currently this creates the board in the unorganized area. It should be created in the folder
-                            createBoard({
-                              boardId: nanoid(),
-                              userId: folderItem.user_id,
-                              currentBoardOrder:
-                                boardsWithoutFolderData?.boardOrder ?? [],
-                              title: "New Board",
-                            })
-                          }
-                        >
-                          <p className="text-sm text-white">Add a board here</p>
-                        </button>
-                      )}
-                      {/* Only active placeholder if there are boards in the folder */}
-                      {folderItem.board_order.length > 0 &&
-                        provided.placeholder}
+
+                      {provided.placeholder}
                     </div>
                   );
                 }}
               </Droppable>
+
+              {/* Add board to folder button*/}
+              <button
+                className={classNames(
+                  "flex h-10 w-full items-center justify-center border-t border-dashed border-gray-500 hover:bg-slate-600"
+                )}
+                onClick={async () => {
+                  try {
+                    const board = await createBoard({
+                      boardId: nanoid(),
+                      userId: folderItem.user_id,
+                      title: "New Board",
+                      currentBoardOrder:
+                        boardsWithoutFolderData?.boardOrder ?? [],
+                      folderId: folderItem.id,
+                      folderBoardOrder: folderItem.board_order ?? [],
+                    });
+
+                    // Redirect to new board
+                    await router.push(
+                      `/board/${folderItem.folder_name}/${board.id}`
+                    );
+
+                    // Show success toast 300ms after redirect
+                    setTimeout(() => {
+                      addToast({
+                        title: "Board Created",
+                        description:
+                          "Start adding panels and tasks to your board!",
+                        icon: CheckCircleIcon,
+                      });
+                    }, 300);
+                  } catch (error) {
+                    console.log(error);
+                  }
+                }}
+              >
+                <p className="text-sm text-white">Add a board here</p>
+              </button>
             </Disclosure.Panel>
           )}
+
+          {/* Delete folder modal */}
           <ConfirmationModal
             open={deleteModalOpen}
             setOpen={setDeleteModalOpen}

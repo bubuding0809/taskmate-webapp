@@ -1,21 +1,23 @@
 import { Fragment, useRef, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon, TrashIcon } from "@heroicons/react/20/solid";
-import { classNames } from "@/utils/helper";
+import { classNames, trimChar } from "@/utils/helper";
 import { BarsArrowUpIcon, PencilIcon } from "@heroicons/react/24/outline";
 import useClickAway from "@/utils/hooks/useClickAway";
 import { api } from "@/utils/api";
 import { Board } from "@prisma/client";
 import { FolderWithBoards } from "server/api/routers/folder";
 import useRemoveBoardFromFolder from "@/utils/mutations/useRemoveBoardFromFolder";
+import { useRouter } from "next/router";
 
 interface BoardDropDownMenuProps {
   boardItem: Board;
   folderItem: FolderWithBoards | null;
-  setDropDownMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setBoardRenameInputVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  setmenuButtonVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setDeleteModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setMenuButtonVisible?: React.Dispatch<React.SetStateAction<boolean>>;
+  setDropDownMenuOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  setBoardRenameInputVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  dashboard?: boolean;
 }
 
 const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
@@ -23,12 +25,18 @@ const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
   folderItem,
   setDropDownMenuOpen,
   setBoardRenameInputVisible,
-  setmenuButtonVisible,
+  setMenuButtonVisible,
   setDeleteModalOpen,
+  dashboard,
 }) => {
+  const router = useRouter();
+
   // Ref for detecting click outside of drop down menu
   const wrapperRef = useRef<HTMLDivElement>(null);
-  useClickAway(wrapperRef, () => setmenuButtonVisible(false));
+  useClickAway(
+    wrapperRef,
+    () => !!setMenuButtonVisible && setMenuButtonVisible(false)
+  );
 
   // Keep track of mouse position state to position the menu
   const [mousePostion, setMousePosition] = useState({ x: 0, y: 0 });
@@ -39,7 +47,7 @@ const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
       userId: boardItem.user_id,
     });
 
-  const { mutate: removeBoardFromFolder } = useRemoveBoardFromFolder();
+  const { mutateAsync: removeBoardFromFolder } = useRemoveBoardFromFolder();
 
   return (
     <Menu as="div" className="relative text-left">
@@ -65,16 +73,27 @@ const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
       >
         <Menu.Items
           ref={wrapperRef}
-          className="fixed z-10 mt-2 w-56 origin-top-right cursor-pointer rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-          style={{
-            left: mousePostion.x,
-            top: mousePostion.y,
+          className={classNames(
+            dashboard ? "absolute right-0" : "fixed",
+            "z-10 mt-2 w-56 origin-top-right cursor-pointer rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+          )}
+          style={
+            dashboard
+              ? {}
+              : {
+                  left: mousePostion.x,
+                  top: mousePostion.y,
+                }
+          }
+          onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+            // Prevent click event of a menu item from bubbling up to the menu button
+            e.preventDefault();
           }}
         >
           {({ open }) => {
-            setDropDownMenuOpen(open);
+            !!setDropDownMenuOpen && setDropDownMenuOpen(open);
             return (
-              <div className="py-1">
+              <div className="py-1 font-normal">
                 {/* Menu option to rename board */}
                 <Menu.Item>
                   {({ active }) => (
@@ -129,15 +148,26 @@ const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
                             : "text-gray-700",
                           "group flex items-center px-4 py-2 text-sm"
                         )}
-                        onClick={(e) => {
+                        onClick={async () => {
                           // Call remove board from folder mutation
-                          removeBoardFromFolder({
+                          await removeBoardFromFolder({
                             boardId: boardItem.id,
                             folderId: folderItem.id,
                             folderBoardOrder: folderItem.board_order,
                             rootBoardOrder: boardsWithoutFolderData!.boardOrder,
                             userId: boardItem.user_id,
                           });
+                          const pathParams = trimChar(
+                            ["/"],
+                            router.asPath
+                          ).split("/");
+
+                          // Redirect to dashboard if deleting board that is currently open
+                          if (
+                            pathParams[pathParams.length - 1] === boardItem.id
+                          ) {
+                            router.push(`/board/${boardItem.id}`);
+                          }
                         }}
                       >
                         <BarsArrowUpIcon
@@ -149,21 +179,6 @@ const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
                     )}
                   </Menu.Item>
                 )}
-                {/* <form method="POST" action="#">
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    type="submit"
-                    className={classNames(
-                      active ? "bg-gray-100 text-gray-900" : "text-gray-700",
-                      "block w-full px-4 py-2 text-left text-sm"
-                    )}
-                  >
-                    Sign out
-                  </button>
-                )}
-              </Menu.Item>
-            </form> */}
               </div>
             );
           }}

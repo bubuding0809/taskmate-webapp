@@ -1,12 +1,5 @@
 import { useRouter } from "next/router";
-import {
-  Fragment,
-  ReactNode,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Fragment, ReactNode, useEffect, useMemo, useState } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
   Bars3BottomLeftIcon,
@@ -19,6 +12,7 @@ import {
   ChevronRightIcon,
   FolderPlusIcon,
   DocumentPlusIcon,
+  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { DocumentTextIcon, FolderIcon } from "@heroicons/react/20/solid";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
@@ -35,7 +29,6 @@ import useCreateFolder from "@/utils/mutations/useCreateFolder";
 import useUpdateFolderOrder from "@/utils/mutations/useUpdateFolderOrder";
 import useUpdateBoardOrder from "@/utils/mutations/useUpdateBoardOrder";
 import useAddBoardToFolder from "@/utils/mutations/useAddBoardToFolder";
-import autoAnimate from "@formkit/auto-animate";
 import useCreateBoard from "@/utils/mutations/useCreateBoard";
 import BoardDisclosure from "./BoardDisclosure";
 import useUpdateNestedBoardOrder from "@/utils/mutations/useUpdateNestedBoardOrder";
@@ -46,6 +39,9 @@ import { useDebounceBool } from "@/utils/hooks/useDebounceBool";
 import { classNames, trimChar } from "@/utils/helper";
 
 import type { DragStart, DropResult } from "react-beautiful-dnd";
+import { useToastContext } from "@/utils/context/ToastContext";
+import Link from "next/link";
+import Loader from "../custom/Loader";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
@@ -71,6 +67,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Get router to get the current path to populate the breadcrumbs
   const router = useRouter();
 
+  // get toast context to add toast
+  const addToast = useToastContext();
   // Get session data
   const { data: sessionData, status: sessionStatus } = useSession({
     required: true,
@@ -110,16 +108,16 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Mutation hooks
   const { mutate: createFolder } = useCreateFolder();
   const { mutate: reorderFolder } = useUpdateFolderOrder();
-  const { mutate: addBoardToFolder } = useAddBoardToFolder();
+  const { mutateAsync: addBoardToFolder } = useAddBoardToFolder();
   const { mutate: reorderBoard } = useUpdateBoardOrder();
-  const { mutate: createBoard } = useCreateBoard();
+  const { mutateAsync: createBoard } = useCreateBoard();
   const { mutate: reorderNestedBoard } = useUpdateNestedBoardOrder();
 
   // Set up sidebar open state
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Set up sidebar expand state
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
   // state to handle drop enabled or disabled for folders and boards
   const [boardsDropDisabled, setBoardsDropDropDisabled] = useState(false);
@@ -183,19 +181,49 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
     boardsWithoutFolderData,
   ]);
 
-  // Set up autoAnimation of folder boards element
-  const parent = useRef<HTMLDivElement>(null);
+  // TODO - To be extracted to a separate file
+  // Bind key bindings to the document on mount
   useEffect(() => {
-    parent.current && autoAnimate(parent.current);
-  }, [parent]);
+    // bind key down event to document
+    const keyShortcuts = (e: KeyboardEvent) => {
+      // if user presses cmd + b, toggle the sidebar
+      if (e.metaKey) {
+        switch (e.key) {
+          case "b":
+            setSidebarExpanded((prev) => !prev);
+            break;
+          case "k":
+            alert("TODO - open command palette");
+          // TODO - add more key bindings
+          default:
+            break;
+        }
+      }
+    };
+
+    // bind key down event to document
+    window.document.addEventListener("keydown", keyShortcuts);
+
+    // unbind key down event to document on unmount
+    return () => window.document.removeEventListener("keydown", keyShortcuts);
+  }, []);
+
+  // TODO - To be extracted to a separate file and optimized
+  // Set up sidebar expanded state in local storage
+  useEffect(() => {
+    const sidebarExpandedState = localStorage.getItem("sidebarExpanded");
+    setSidebarExpanded(sidebarExpandedState === "true");
+  }, []);
+
+  // Set the sidebar expanded state in local storage on change
+  useEffect(() => {
+    // Set the sidebar expanded state in local storage
+    localStorage.setItem("sidebarExpanded", sidebarExpanded.toString());
+  }, [sidebarExpanded]);
 
   // Return loading screen while session is loading
   if (sessionStatus === "loading") {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center">
-        <h1 className="text-4xl font-bold text-white">Loading...</h1>
-      </div>
-    );
+    return <Loader />;
   }
 
   /* Drag and Drop handlers for Drag Drop Context */
@@ -216,7 +244,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
         boardOrder: newBoardOrder,
         folderBoardOrder:
           folderData?.folders.get(combine.draggableId)?.board_order ?? [],
-      });
+      })
+        .then(() => {
+          // Redirect to the folder
+          void router.push(
+            `/board/${
+              folderData?.folders.get(combine.draggableId)?.folder_name
+            }/${draggableId}`
+          );
+        })
+        .catch((err) => {
+          console.log(err);
+        });
 
       return;
     }
@@ -392,7 +431,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                   <div className="mt-5 h-0 flex-1 overflow-y-auto">
                     <nav className="space-y-1 px-2">
                       {navigation.map((item) => (
-                        <a
+                        <Link
                           key={item.name}
                           href={item.href}
                           className={classNames(
@@ -412,7 +451,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                             aria-hidden="true"
                           />
                           {item.name}
-                        </a>
+                        </Link>
                       ))}
                     </nav>
                   </div>
@@ -477,7 +516,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
               {/* Sidebar navigation content */}
               <div className="space-y-1">
                 {navigation.map((item) => (
-                  <a
+                  <Link
                     key={item.name}
                     href={item.href}
                     className={classNames(
@@ -499,7 +538,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                       aria-hidden="true"
                     />
                     {sidebarExpanded && item.name}
-                  </a>
+                  </Link>
                 ))}
               </div>
 
@@ -545,32 +584,31 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                               "rounded border-2 border-gray-500 bg-gray-700 transition delay-150 duration-200"
                           )}
                         >
-                          {boardsWithoutFolderData &&
-                            boardsWithoutFolderData.boardOrder?.map(
-                              (boardId, index) => {
-                                const boardItem =
-                                  boardsWithoutFolderData.boards.get(boardId);
-                                return (
-                                  !!boardItem && (
-                                    <Draggable
-                                      key={boardId}
-                                      draggableId={boardId}
-                                      index={index}
-                                    >
-                                      {(provided, snapshot) => (
-                                        <BoardDisclosure
-                                          folderItem={null}
-                                          boardItem={boardItem}
-                                          provided={provided}
-                                          snapshot={snapshot}
-                                          sidebarExpanded={sidebarExpanded}
-                                        />
-                                      )}
-                                    </Draggable>
-                                  )
-                                );
-                              }
-                            )}
+                          {boardsWithoutFolderData?.boardOrder?.map(
+                            (boardId, index) => {
+                              const boardItem =
+                                boardsWithoutFolderData.boards.get(boardId);
+                              return (
+                                !!boardItem && (
+                                  <Draggable
+                                    key={boardId}
+                                    draggableId={boardId}
+                                    index={index}
+                                  >
+                                    {(provided, snapshot) => (
+                                      <BoardDisclosure
+                                        folderItem={null}
+                                        boardItem={boardItem}
+                                        provided={provided}
+                                        snapshot={snapshot}
+                                        sidebarExpanded={sidebarExpanded}
+                                      />
+                                    )}
+                                  </Draggable>
+                                )
+                              );
+                            }
+                          )}
                           {provided.placeholder}
                         </div>
                       )}
@@ -667,15 +705,38 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                 type="button"
                 className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 onClick={() => {
-                  mutationAvail &&
-                    createBoard({
+                  // If mutation timer is available, create a new board
+                  if (mutationAvail) {
+                    // Once mutation is sent, set mutationAvail to false, it will only be set back to true after a delay
+                    setMutationAvail(false);
+
+                    // Create a new board
+                    void createBoard({
                       boardId: nanoid(),
                       userId: sessionData.user.id,
                       currentBoardOrder:
                         boardsWithoutFolderData?.boardOrder ?? [],
                       title: "New Board",
-                    });
-                  setMutationAvail(false);
+                    }).then(
+                      (board) =>
+                        // Once board is created, redirect to the board page and open the toast
+                        void router
+                          .push(`/board/${board.id}`)
+                          .then(() => {
+                            setTimeout(
+                              () =>
+                                addToast({
+                                  title: "Board Created",
+                                  description:
+                                    "Start adding panels and tasks to your board!",
+                                  icon: CheckCircleIcon,
+                                }),
+                              300
+                            );
+                          })
+                          .catch((err) => console.log(err))
+                    );
+                  }
                 }}
               >
                 {sidebarExpanded ? (
@@ -711,9 +772,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
             {/* Top Nav content */}
             <div className="flex flex-1 items-center justify-between gap-2 px-4">
               <BreadCrumbs pages={breadCrumbs} />
-              {/* <h1 className="hidden text-2xl font-semibold text-gray-900 md:block">
-                {title}
-              </h1> */}
 
               {/* Search bar */}
               <div className="flex flex-1 items-center justify-center px-2 lg:ml-6 lg:justify-end">
@@ -810,7 +868,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
 
           {/* Main content goes here */}
           <main
-            className="flex flex-1 flex-col overflow-x-auto
+            className="overlay flex flex-1 flex-col
           "
           >
             {/* Replace with your content */}

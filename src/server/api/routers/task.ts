@@ -13,9 +13,10 @@ export const taskRouter = createTRPCRouter({
         taskId: z.string(),
         postTaskOrder: z.number(),
         title: z.string(),
-        details: z.string().optional(),
-        startDate: z.date().optional(),
-        dueDate: z.date().optional(),
+        details: z.string().nullable(),
+        startDate: z.date().nullable(),
+        endDate: z.date().nullable(),
+        dueDate: z.date().nullable(),
         parentTaskId: z.string().optional(),
       })
     )
@@ -34,9 +35,10 @@ export const taskRouter = createTRPCRouter({
               ? Math.floor(input.postTaskOrder / 2)
               : TASK_ORDER_STEP,
             task_title: input.title,
-            task_details: input.details ?? null,
-            start_datetime: input.startDate ?? null,
-            end_datetime: input.dueDate ?? null,
+            task_details: input.details,
+            start_datetime: input.startDate,
+            end_datetime: input.endDate,
+            due_datetime: input.dueDate,
             // If parentTaskId is provided then connect the task to the parent task
             parentTask: {
               connect: {
@@ -60,9 +62,10 @@ export const taskRouter = createTRPCRouter({
             ? Math.floor(input.postTaskOrder / 2)
             : TASK_ORDER_STEP,
           task_title: input.title,
-          task_details: input.details ?? null,
-          start_datetime: input.startDate ?? null,
-          end_datetime: input.dueDate ?? null,
+          task_details: input.details,
+          start_datetime: input.startDate,
+          end_datetime: input.endDate,
+          due_datetime: input.dueDate,
         },
       });
     }),

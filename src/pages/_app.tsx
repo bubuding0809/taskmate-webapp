@@ -10,6 +10,7 @@ import "../styles/globals.css";
 import "animate.css";
 import { ReactElement, ReactNode } from "react";
 import { NextPage } from "next";
+import { ToastContextProvider } from "@/utils/context/ToastContext";
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -27,7 +28,10 @@ const MyApp = ({
   const getLayout = Component.getLayout ?? ((page) => page);
   return (
     <SessionProvider session={session}>
-      {getLayout(<Component {...pageProps} />)}
+      {/* Provide toast context to app */}
+      <ToastContextProvider duration={3000}>
+        {getLayout(<Component {...pageProps} />)}
+      </ToastContextProvider>
     </SessionProvider>
   );
 };
