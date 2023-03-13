@@ -97,15 +97,15 @@ const navigation = [
 const LandingPage: NextPage = () => {
   const ref = useRef();
 
-  const slideLeft = () => {
-    let slider: HTMLElement = document.getElementById("slider")!;
-    slider.scrollLeft = slider.scrollLeft - 500;
-  };
+  // const slideLeft = () => {
+  //   let slider: HTMLElement = document.getElementById("slider")!;
+  //   slider.scrollLeft = slider.scrollLeft - 500;
+  // };
 
-  const slideRight = () => {
-    let slider: HTMLElement = document.getElementById("slider")!;
-    slider.scrollLeft = slider.scrollLeft + 500;
-  };
+  // const slideRight = () => {
+  //   let slider: HTMLElement = document.getElementById("slider")!;
+  //   slider.scrollLeft = slider.scrollLeft + 500;
+  // };
 
   return (
     <>
