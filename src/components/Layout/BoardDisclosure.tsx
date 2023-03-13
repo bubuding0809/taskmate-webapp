@@ -201,7 +201,9 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
                 () =>
                   addToast({
                     title: "Board deleted successfully",
-                    description: `Your board with the title "${boardItem.board_title}" was deleted successfully`,
+                    description: `Your board with the title "${
+                      boardItem.board_title ?? "NULL"
+                    }" was deleted successfully`,
                     icon: TrashIcon,
                   }),
                 300
@@ -212,7 +214,9 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
               () =>
                 addToast({
                   title: "Board deleted successfully",
-                  description: `Your board with the title "${boardItem.board_title}" was deleted successfully`,
+                  description: `Your board with the title "${
+                    boardItem.board_title ?? "NULL"
+                  }" was deleted successfully`,
                   icon: TrashIcon,
                 }),
               300
