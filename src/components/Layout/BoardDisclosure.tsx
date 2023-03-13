@@ -183,8 +183,8 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
         title="Delete Board"
         description="Are you sure you want to delete this board? This action cannot be undone."
         confirmText="Delete Board"
-        onConfirm={
-          async () => {
+        onConfirm={() => {
+          void (async () => {
             await deleteBoard({
               boardId: boardItem.id,
               userId: boardItem.user_id,
@@ -217,33 +217,34 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
                 }),
               300
             );
-          }
-          // TODO - Clean up commented code when done testing
-          // () =>
-          // void deleteBoard({
-          //   boardId: boardItem.id,
-          //   userId: boardItem.user_id,
-          //   isOrganized: boardItem.folder_id ? true : false,
-          //   rootBoardOrder: boardsWithoutFolderData!.boardOrder,
-          //   folderBoardOrder: folderItem?.board_order ?? null,
-          //   folderId: boardItem.folder_id,
-          // })
-          //   .then(() => {
-          //     // Redirect to dashboard if deleting board that is currently open
-          //     router.asPath.split("/")[2] === boardItem.id &&
-          //       void router.push("/dashboard").then(() =>
-          //         setTimeout(
-          //           () =>
-          //             addToast({
-          //               title: "Board deleted successfully",
-          //               description: "Your board was deleted successfully",
-          //             }),
-          //           300
-          //         )
-          //       );
-          //   })
-          //   .catch((err) => console.log(err))
-        }
+          });
+        }}
+
+        // TODO - Clean up commented code when done testing
+        // () =>
+        // void deleteBoard({
+        //   boardId: boardItem.id,
+        //   userId: boardItem.user_id,
+        //   isOrganized: boardItem.folder_id ? true : false,
+        //   rootBoardOrder: boardsWithoutFolderData!.boardOrder,
+        //   folderBoardOrder: folderItem?.board_order ?? null,
+        //   folderId: boardItem.folder_id,
+        // })
+        //   .then(() => {
+        //     // Redirect to dashboard if deleting board that is currently open
+        //     router.asPath.split("/")[2] === boardItem.id &&
+        //       void router.push("/dashboard").then(() =>
+        //         setTimeout(
+        //           () =>
+        //             addToast({
+        //               title: "Board deleted successfully",
+        //               description: "Your board was deleted successfully",
+        //             }),
+        //           300
+        //         )
+        //       );
+        //   })
+        //   .catch((err) => console.log(err))
       />
     </>
   );
