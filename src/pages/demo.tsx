@@ -12,10 +12,7 @@ const DemoPage: React.FC = () => {
       <Link legacyBehavior href="/">
         <a className="text-white">← Back to home</a>
       </Link>
-      <BoardView
-        bid="a4e8ecd8-ba6a-11ed-9704-025df7c84b2c"
-        sessionData={sessionData}
-      />
+      <BoardView bid="a4e8ecd8-ba6a-11ed-9704-025df7c84b2c" />
     </div>
   );
 };
