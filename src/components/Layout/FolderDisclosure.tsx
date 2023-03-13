@@ -275,7 +275,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                     } catch (error) {
                       console.log(error);
                     }
-                  });
+                  })();
                 }}
               >
                 <p className="text-sm text-white">Add a board here</p>

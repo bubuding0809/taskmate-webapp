@@ -366,7 +366,7 @@ const Board: React.FC<BoardProps> = ({
                 }),
               300
             );
-          });
+          })();
         }}
       />
     </div>

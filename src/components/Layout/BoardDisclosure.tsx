@@ -221,7 +221,7 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
                 }),
               300
             );
-          });
+          })();
         }}
 
         // TODO - Clean up commented code when done testing

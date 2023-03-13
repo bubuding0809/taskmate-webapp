@@ -170,7 +170,7 @@ const BoardDropDownMenu: React.FC<BoardDropDownMenuProps> = ({
                             ) {
                               await router.push(`/board/${boardItem.id}`);
                             }
-                          });
+                          })();
                         }}
                       >
                         <BarsArrowUpIcon
