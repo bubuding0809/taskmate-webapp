@@ -66,7 +66,6 @@ const DashboardPage: NextPageWithLayout = () => {
   );
 
   // Set up autoAnimation for div and form elements
-  const [folderParent] = useAutoAnimate<HTMLDivElement>();
   const [boardParent] = useAutoAnimate<HTMLDivElement>();
 
   // Scroll to bottom of folder when a new folder is added
@@ -303,10 +302,7 @@ const DashboardPage: NextPageWithLayout = () => {
             </div>
           </div>
 
-          <div
-            ref={folderParent}
-            className="z-0 col-span-full grid grid-cols-1 gap-4 bg-white px-4 py-4 2xl:grid-cols-2"
-          >
+          <div className="z-0 col-span-full grid grid-cols-1 gap-4 bg-white px-4 py-4 2xl:grid-cols-2">
             <div className="col-span-full flex justify-between">
               <h2 className="indent-2 text-3xl font-semibold">🗂️ Folders</h2>
               <button

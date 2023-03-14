@@ -351,7 +351,7 @@ const Board: React.FC<BoardProps> = ({
                   addToast({
                     title: "Board deleted successfully",
                     description: `Your board with the title "${
-                      boardItem.board_title ?? "null"
+                      boardItem.board_title ?? "NULL"
                     }" was deleted successfully`,
                     icon: TrashIcon,
                   }),
@@ -364,7 +364,7 @@ const Board: React.FC<BoardProps> = ({
                 addToast({
                   title: "Board deleted successfully",
                   description: `Your board with the title "${
-                    boardItem.board_title ?? "null"
+                    boardItem.board_title ?? "NULL"
                   }" was deleted successfully`,
                   icon: TrashIcon,
                 }),
