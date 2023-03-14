@@ -246,13 +246,16 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
           folderData?.folders.get(combine.draggableId)?.board_order ?? [],
       })
         .then(() => {
-          // Redirect to the folder
-          void router.push(
-            `/board/${
-              folderData?.folders.get(combine.draggableId)?.folder_name ??
-              "undefined"
-            }/${draggableId}`
-          );
+          // Redirect to the folder if you are on the board page
+          const pathParams = trimChar(["/"], router.asPath).split("/");
+          if (pathParams[pathParams.length - 1] === draggableId) {
+            void router.push(
+              `/board/${
+                folderData?.folders.get(combine.draggableId)?.folder_name ??
+                "undefined"
+              }/${draggableId}`
+            );
+          }
         })
         .catch((err) => {
           console.log(err);

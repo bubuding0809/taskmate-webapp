@@ -3,7 +3,6 @@ import { getQueryKey } from "@trpc/react-query";
 import { api } from "../api";
 import _ from "lodash";
 
-import type { Board } from "@prisma/client";
 import type {
   BoardDetailed,
   FolderWithBoards,
