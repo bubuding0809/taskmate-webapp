@@ -346,7 +346,7 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
                                 className="group inline-flex items-center font-medium text-indigo-600 hover:text-indigo-900"
                                 onClick={() => {
                                   // Copy the link to the clipboard
-                                  navigator.clipboard
+                                  void navigator.clipboard
                                     .writeText(
                                       `https://taskmate-webapp.vercel.app/board/${newBoardForm.id}`
                                     )
@@ -359,7 +359,8 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
                                           "You can now share the link with your anyone after you have created the board.",
                                         position: "start",
                                       });
-                                    });
+                                    })
+                                    .catch((err) => console.log(err));
                                 }}
                               >
                                 <LinkIcon
