@@ -126,46 +126,48 @@ export const boardRouter = createTRPCRouter({
       })
     )
     .query(async ({ input, ctx }) => {
-      const boards = await ctx.prisma.board.findMany({
-        where: {
-          user_id: input.userId,
-          folder_id: null,
-        },
-        include: {
-          user: true,
-          Board_Collaborator: {
-            include: {
-              User: true,
+      return await ctx.prisma.$transaction(async (tx) => {
+        const boards = await tx.board.findMany({
+          where: {
+            user_id: input.userId,
+            folder_id: null,
+          },
+          include: {
+            user: true,
+            Board_Collaborator: {
+              include: {
+                User: true,
+              },
+            },
+            Board_Message: true,
+            Board_Tag: true,
+            Team_Board_Rel: {
+              include: {
+                Team: true,
+              },
             },
           },
-          Board_Message: true,
-          Board_Tag: true,
-          Team_Board_Rel: {
-            include: {
-              Team: true,
-            },
+        });
+
+        const boardOrder = await tx.user.findUnique({
+          where: {
+            id: input.userId,
           },
-        },
+          select: {
+            board_order: true,
+          },
+        });
+
+        // create a map of board id to board
+        const boardMap = new Map<string, BoardDetailed>(
+          boards.map((board) => [board.id, board])
+        );
+
+        return {
+          boards: boardMap,
+          boardOrder: boardOrder!.board_order?.split(",") || [],
+        };
       });
-
-      const boardOrder = await ctx.prisma.user.findUnique({
-        where: {
-          id: input.userId,
-        },
-        select: {
-          board_order: true,
-        },
-      });
-
-      // create a map of board id to board
-      const boardMap = new Map<string, BoardDetailed>(
-        boards.map((board) => [board.id, board])
-      );
-
-      return {
-        boards: boardMap,
-        boardOrder: boardOrder!.board_order?.split(",") || [],
-      };
     }),
 
   // Mutation to create a new board

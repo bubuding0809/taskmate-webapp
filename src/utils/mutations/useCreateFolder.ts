@@ -13,7 +13,6 @@ const useCreateFolder = () => {
 
   return api.folder.createFolder.useMutation({
     onMutate: async (newFolder) => {
-      console.time("createFolder");
       const { name, userId, folderId } = newFolder;
 
       const folderQueryKey = getQueryKey(
@@ -59,7 +58,6 @@ const useCreateFolder = () => {
       queryClient.setQueryData(ctx!.folderQueryKey, ctx!.oldFolderData);
     },
     onSettled: async (_data, _error, _variables, ctx) => {
-      console.timeEnd("createFolder");
       // Always refetch query after error or success to make sure the server state is correct
       await queryClient.invalidateQueries({
         queryKey: ctx?.folderQueryKey,

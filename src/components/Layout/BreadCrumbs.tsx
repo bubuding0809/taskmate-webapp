@@ -3,7 +3,7 @@ import { HomeIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
 import FlyOutFolderMenu from "./FlyOutFolderMenu";
 
-export type BreadCrumbPage = {
+export type BreadCrumbType = {
   name: string;
   href: string;
   current: boolean;
@@ -15,8 +15,9 @@ export type BreadCrumbPage = {
     }
   >;
 };
+
 interface BreadCrumbsProps {
-  pages: BreadCrumbPage[];
+  pages: BreadCrumbType[];
 }
 
 const BreadCrumbs: React.FC<BreadCrumbsProps> = ({ pages }) => {

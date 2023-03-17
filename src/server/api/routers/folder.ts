@@ -121,6 +121,7 @@ export const folderRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       return await ctx.prisma.$transaction(async (tx) => {
+        // Create a new folder
         const newFolder = await tx.folder.create({
           data: {
             id: input.folderId,
@@ -134,6 +135,7 @@ export const folderRouter = createTRPCRouter({
           },
         });
 
+        // Update the user's folder order
         await tx.user.update({
           where: {
             id: input.userId,

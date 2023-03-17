@@ -61,24 +61,25 @@ const DashboardPage: NextPageWithLayout = () => {
   });
 
   // Store previous folder length to check if a new folder was added
-  const [prevFolderLength, setPrevFolderLength] = useState(
-    folderData?.folderOrder.length ?? 0
-  );
+  const [prevFolderLength, setPrevFolderLength] = useState(Infinity);
 
   // Set up autoAnimation for div and form elements
   const [boardParent] = useAutoAnimate<HTMLDivElement>();
 
   // Scroll to bottom of folder when a new folder is added
   useEffect(() => {
+    // Only run if folderData has been loaded
+    if (!folderData) return;
+
     // If a new folder was added, scroll to bottom of folder
-    if (prevFolderLength < (folderData?.folderOrder.length ?? 0)) {
+    if (prevFolderLength < folderData.folderOrder.length) {
       folderEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      setPrevFolderLength(folderData?.folderOrder.length ?? 0);
+      setPrevFolderLength(folderData?.folderOrder.length);
     }
 
     // If a folder was deleted, update the prevFolderLength
-    if (prevFolderLength > (folderData?.folderOrder.length ?? 0)) {
-      setPrevFolderLength(folderData?.folderOrder.length ?? 0);
+    if (prevFolderLength > folderData.folderOrder.length) {
+      setPrevFolderLength(folderData.folderOrder.length);
     }
   }, [folderData, prevFolderLength]);
 
@@ -328,6 +329,7 @@ const DashboardPage: NextPageWithLayout = () => {
               return (
                 !!folderItem && (
                   <Folder
+                    key={folderItem.id}
                     folderItem={folderItem}
                     folderOrder={folderData.folderOrder}
                   />
