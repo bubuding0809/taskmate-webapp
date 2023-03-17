@@ -12,7 +12,6 @@ import {
   ChevronRightIcon,
   FolderPlusIcon,
   DocumentPlusIcon,
-  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { DocumentTextIcon, FolderIcon } from "@heroicons/react/20/solid";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
@@ -25,23 +24,24 @@ import {
   Droppable,
   resetServerContext,
 } from "react-beautiful-dnd";
+import CreateBoardSlideOver from "./CreateBoardSliderOver";
 import useCreateFolder from "@/utils/mutations/useCreateFolder";
 import useUpdateFolderOrder from "@/utils/mutations/useUpdateFolderOrder";
 import useUpdateBoardOrder from "@/utils/mutations/useUpdateBoardOrder";
 import useAddBoardToFolder from "@/utils/mutations/useAddBoardToFolder";
-import useCreateBoard from "@/utils/mutations/useCreateBoard";
 import BoardDisclosure from "./BoardDisclosure";
 import useUpdateNestedBoardOrder from "@/utils/mutations/useUpdateNestedBoardOrder";
-import BreadCrumbs, { BreadCrumbPage } from "./BreadCrumbs";
+import BreadCrumbs from "./BreadCrumbs";
 import { api } from "@/utils/api";
 import { nanoid } from "nanoid";
 import { useDebounceBool } from "@/utils/hooks/useDebounceBool";
 import { classNames, trimChar } from "@/utils/helper";
-
-import type { DragStart, DropResult } from "react-beautiful-dnd";
 import { useToastContext } from "@/utils/context/ToastContext";
 import Link from "next/link";
 import Loader from "../custom/Loader";
+
+import type { DragStart, DropResult } from "react-beautiful-dnd";
+import type { BreadCrumbType } from "./BreadCrumbs";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
@@ -110,7 +110,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   const { mutate: reorderFolder } = useUpdateFolderOrder();
   const { mutateAsync: addBoardToFolder } = useAddBoardToFolder();
   const { mutate: reorderBoard } = useUpdateBoardOrder();
-  const { mutateAsync: createBoard } = useCreateBoard();
   const { mutate: reorderNestedBoard } = useUpdateNestedBoardOrder();
 
   // Set up sidebar open state
@@ -125,11 +124,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Debounce function to prevent spamming of folder creation or board creation
   const [mutationAvail, setMutationAvail] = useDebounceBool(400);
 
+  // Setup open state for board creation slideover
+  const [boardCreationOpen, setBoardCreationOpen] = useState(false);
+
   // function to generate breadcrumbs based on the current path
   const getBreadCrumbPages = () => {
     // Trim the leading and trailing slashes from the path
     const params = trimChar(["/"], router.asPath).split("/");
-    const pages: BreadCrumbPage[] = params
+    const pages: BreadCrumbType[] = params
       // Map the pages to an object with the name and href
       .map((page) => {
         // If the page is a board, set the name to the board title by getting the board title from the boardMapData
@@ -714,32 +716,35 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                     // Once mutation is sent, set mutationAvail to false, it will only be set back to true after a delay
                     setMutationAvail(false);
 
-                    // Create a new board
-                    void createBoard({
-                      boardId: nanoid(),
-                      userId: sessionData.user.id,
-                      currentBoardOrder:
-                        boardsWithoutFolderData?.boardOrder ?? [],
-                      title: "New Board",
-                    }).then(
-                      (board) =>
-                        // Once board is created, redirect to the board page and open the toast
-                        void router
-                          .push(`/board/${board.id}`)
-                          .then(() => {
-                            setTimeout(
-                              () =>
-                                addToast({
-                                  title: "Board Created",
-                                  description:
-                                    "Start adding panels and tasks to your board!",
-                                  icon: CheckCircleIcon,
-                                }),
-                              300
-                            );
-                          })
-                          .catch((err) => console.log(err))
-                    );
+                    // Open the create board slide over
+                    setBoardCreationOpen(true);
+
+                    // TODO - move create board mutation to CreateBoardSlideOver component
+                    // void createBoard({
+                    //   boardId: nanoid(),
+                    //   userId: sessionData.user.id,
+                    //   currentBoardOrder:
+                    //     boardsWithoutFolderData?.boardOrder ?? [],
+                    //   title: "New Board",
+                    // }).then(
+                    //   (board) =>
+                    //     // Once board is created, redirect to the board page and open the toast
+                    //     void router
+                    //       .push(`/board/${board.id}`)
+                    //       .then(() => {
+                    //         setTimeout(
+                    //           () =>
+                    //             addToast({
+                    //               title: "Board Created",
+                    //               description:
+                    //                 "Start adding panels and tasks to your board!",
+                    //               icon: CheckCircleIcon,
+                    //             }),
+                    //           300
+                    //         );
+                    //       })
+                    //       .catch((err) => console.log(err))
+                    // );
                   }
                 }}
               >
@@ -881,6 +886,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
           </main>
         </div>
       </div>
+
+      {/* Board creation sliderover */}
+      <CreateBoardSlideOver
+        open={boardCreationOpen}
+        setOpen={setBoardCreationOpen}
+      />
     </>
   );
 };
