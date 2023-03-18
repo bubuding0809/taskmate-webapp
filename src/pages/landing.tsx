@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, Fragment } from "react";
 import { type NextPage } from "next";
 import Head from "next/head";
 import { signIn, signOut, useSession } from "next-auth/react";
@@ -6,25 +6,26 @@ import { animated } from "@react-spring/web";
 import { Parallax, ParallaxLayer } from "@react-spring/parallax";
 import { ClassNames } from "@emotion/react";
 import { positions } from "@mui/system";
-
+import { Dialog, Transition } from "@headlessui/react";
+import { CheckIcon } from "@heroicons/react/24/outline";
 import {
   BsFacebook,
   BsInstagram,
   BsTwitter,
   BsGithub,
-  BsToggleOn,
-  BsToggleOff,
+  BsLinkedin,
 } from "react-icons/bs";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import { cpuUsage } from "process";
-import { Preview } from "@mui/icons-material";
+import Carousel from "react-multi-carousel";
+import "react-multi-carousel/lib/styles.css";
+import { Instagram } from "@mui/icons-material";
 
 // TO BE DONE BY: Jansonn
 // This is the landing page for the app. It should be the first page that the user sees when they visit the site.
 // The page can be accessed at http://localhost:3000/landing
 const navigation = [
     { name: "About Us", href: "#aboutus" },
-    { name: "Features", href: "#features" },
+    { name: "Features", href: "#feature" },
     { name: "Contact", href: "#contacts" },
     { name: "Log In", href: "/auth/signin" },
   ],
@@ -46,7 +47,7 @@ const navigation = [
     },
     {
       name: "GitHub",
-      href: "https://www.github.com/",
+      href: "https://github.com/bubuding0809/taskmate-webapp",
       icon: <BsGithub />,
     },
   ],
@@ -55,31 +56,50 @@ const navigation = [
       name: "Ding Ruoqian",
       role: "Software Architect",
       image: "./images/ding.jpg",
+      icon: <BsInstagram />,
+      igurl: "https://www.instagram.com/ruoqianbubu/",
+      linkedurl: "https://www.linkedin.com/in/ruoqian-ding-270329175",
+      icon2: <BsLinkedin />,
     },
     {
       name: "Jansonn Lim",
       role: "Frontend Developer",
       image: "./images/jansonn.jpg",
+      icon: <BsInstagram />,
+      igurl: "https://www.instagram.com/nikubaoo/",
+      linkedurl: "https://www.linkedin.com/in/jansonn-lim-071705145/",
+      icon2: <BsLinkedin />,
     },
     {
       name: "Chua Chen yu",
       role: "Frontend Developer",
       image: "./images/chenyu.jpg",
+      icon: <BsInstagram />,
+      igurl: "https://www.instagram.com/chenyu.ig/",
+      linkedurl: "https://www.linkedin.com/mwlite/in/chua-chen-yu-880b62143",
+      icon2: <BsLinkedin />,
     },
     {
       name: "Amri Bin Mohd Sazali",
       role: "Project Manager , Backend Developer",
       image: "./images/Amri.jpg",
+      icon: <BsInstagram />,
+      igurl: "https://www.instagram.com/amri_sazali/",
+      linkedurl: "https://www.youtube.com",
+      icon2: <BsLinkedin />,
     },
     {
       name: "Chua Jin Tian",
       role: "UI/UX Designer , Frontend Developer",
       image: "./images/jake.jpg",
+      icon: <BsInstagram />,
+      igurl: "https://www.instagram.com/jakechua_/",
+      linkedurl: "https://www.youtube.com",
+      icon2: <BsLinkedin />,
     },
   ],
   features = [
     {
-      id: 1,
       header: "Track Your Task Easily",
       description:
         "Manage any type of project with our powerful task management system.",
@@ -111,35 +131,44 @@ const navigation = [
   ];
 
 const LandingPage: NextPage = () => {
-  const cardRef1 = useRef<HTMLDivElement>(null);
-  const cardRef2 = useRef<HTMLDivElement>(null);
-  const cardRef3 = useRef<HTMLDivElement>(null);
-  const cardRef4 = useRef<HTMLDivElement>(null);
-
-  const [currCard, setCurrCard] = useState(0);
-
-  useEffect(() => {
-    const cardRef = [cardRef1, cardRef2, cardRef3, cardRef4];
-    cardRef[currCard]!.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "center",
-    });
-  }, [currCard]);
-
   const home = useRef<HTMLDivElement>(null);
   const aboutus = useRef<HTMLDivElement>(null);
-  const features = useRef<HTMLDivElement>(null);
+  const feature = useRef<HTMLDivElement>(null);
   const contacts = useRef<HTMLDivElement>(null);
 
   const [currSection, setCurrSection] = useState(0);
 
   useEffect(() => {
-    const sectionRef = [home, aboutus, features, contacts];
+    const sectionRef = [home, aboutus, feature, contacts];
     sectionRef[currSection]!.current?.scrollIntoView({
       behavior: "smooth",
     });
   }, [currSection]);
+
+  const [open, setOpen] = useState(false);
+
+  const myForm = useRef<HTMLFormElement>(null);
+  const resetForm = () => {
+    myForm.current?.reset();
+  };
+
+  const responsive = {
+    desktop: {
+      breakpoint: { max: 3000, min: 1024 },
+      items: 2,
+      slidesToSlide: 2, // optional, default to 1.
+    },
+    tablet: {
+      breakpoint: { max: 1024, min: 464 },
+      items: 1,
+      slidesToSlide: 1, // optional, default to 1.
+    },
+    mobile: {
+      breakpoint: { max: 464, min: 0 },
+      items: 1,
+      slidesToSlide: 1, // optional, default to 1.
+    },
+  };
 
   return (
     <>
@@ -151,179 +180,176 @@ const LandingPage: NextPage = () => {
 
       {/* navbar */}
 
-      <div className="bg-white">
-        <nav className="sticky top-0 flex bg-black">
+      <div className="">
+        <nav className="z-100 sticky top-0 flex bg-transparent ">
           <div>
             <img
-              className="hidden aspect-auto h-16 md:flex md:w-36 "
+              className="hidden aspect-auto h-14 md:flex md:w-36 "
               src="./images/TaskMate.png"
               alt="logo"
             />
           </div>
           <div>
             <img
-              className="flex h-16 justify-center md:hidden md:w-36 "
+              className="flex aspect-auto h-10 md:hidden md:w-36 "
               src="./images/Tmlogo.png"
               alt="logo"
             />
           </div>
-          <div className="my-5 ml-auto mr-10 space-x-8 text-right">
+          <div className="mr-10 mt-2 ml-auto flex space-x-8 md:mt-4">
             {navigation.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
-                className="flex-row scroll-smooth text-xs font-medium text-white hover:text-[#B97E7E] md:text-base"
+                className="md:flex-end text-xs font-medium text-white hover:text-indigo-600 md:text-base"
               >
                 {item.name}
               </a>
             ))}
           </div>
         </nav>
-
         {/* hero section */}
-        <div
-          ref={home}
-          className="mx-auto max-w-7xl animate-fade py-24 px-6 sm:py-32 lg:px-8"
-        >
-          <h2 className="text-center text-6xl font-bold tracking-tight text-[#595e64] sm:text-8xl">
-            New Generation
+        <div ref={home} className="z-1 mx-auto max-w-6xl  py-24 px-6 sm:py-28">
+          <img
+            src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2830&q=80&blend=111827&sat=-100&exp=15&blend-mode=multiply"
+            alt=""
+            className="absolute inset-0 -z-10 h-full w-full object-cover"
+          />
+          <div className="animate-fade">
+            <h2 className="text-center text-6xl font-bold tracking-tight text-white sm:text-8xl">
+              New Generation
+              <br />
+              <span className="text-indigo-600">Task Manager</span>
+            </h2>
             <br />
-            <span className="text-[#CEAAAA]">Task Manager</span>
-          </h2>
-          <br />
-          <div className="ml-2">
-            <span className="flex justify-center text-center text-2xl text-[#000000] sm:text-3xl">
-              The New All-In-One Project Management
-            </span>
-            <span className="flex justify-center text-2xl text-black sm:text-3xl">
-              Catered For Your Team
-            </span>
-          </div>
+            <div className="ml-2">
+              <span className="flex justify-center text-center text-2xl text-white sm:text-3xl">
+                The New All-In-One Project Management
+              </span>
+              <span className="flex justify-center text-2xl text-white sm:text-3xl">
+                Catered For Your Team
+              </span>
+            </div>
 
-          <div className="mt-10 flex items-center justify-center gap-x-3">
-            <a
-              href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-              className="rounded-md bg-[#BD9999] px-3.5 py-2.5 text-2xl text-white shadow-sm  hover:bg-[#b17e7e]"
-            >
-              Try Now
-            </a>
-            <a
-              href="#"
-              className="rounded-md bg-[#D9D9D9] px-3.5 py-2.5 text-2xl text-black shadow-sm hover:bg-[#c6c3c3]"
-            >
-              Live Demo
-            </a>
+            <div className="mt-10 flex items-center justify-center gap-x-3">
+              <a
+                href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                className="rounded-md bg-indigo-500 px-3.5 py-2.5 text-2xl text-white shadow-sm  hover:bg-indigo-400"
+              >
+                Try Now
+              </a>
+              <a
+                href="#"
+                className="rounded-md bg-white px-3.5 py-2.5 text-2xl text-black shadow-sm hover:bg-[#c6c3c3]"
+              >
+                Live Demo
+              </a>
+            </div>
           </div>
         </div>
-
         {/* features */}
-        <div id="features" ref={features} className="pt-10">
-          <div className="group mb-8 flex snap-x snap-mandatory items-center gap-52 overflow-x-scroll scroll-smooth py-10 px-5 scrollbar-none md:pl-36 ">
-            <button
-              className="invisible absolute left-2 p-2 text-2xl opacity-0 group-hover:opacity-100 sm:visible"
-              onClick={() => setCurrCard((prev) => (prev > 0 ? prev - 1 : 0))}
-            >
-              <FiChevronLeft />
-            </button>
-
-            <div
-              ref={cardRef1}
-              className="w-5/5 ml-8 flex h-40 flex-none snap-end items-center rounded-lg bg-[#f8efef] px-5 shadow-md md:mr-72 md:ml-32 md:h-96 md:w-4/6 md:py-4"
-            >
-              <div>
+        <Carousel
+          swipeable={true}
+          draggable={true}
+          responsive={responsive}
+          ssr={true} // means to render carousel on server-side.
+          infinite={false}
+          keyBoardControl={true}
+          containerClass="carousel-container"
+          itemClass="carousel-item-padding-40-px"
+          className="z-0 bg-gray-900 px-5 py-10"
+        >
+          <div id="feature" ref={feature}>
+            <div className="mr-10 flex items-center justify-center rounded-md bg-indigo-600 shadow-lg">
+              <div className="my-10 flex">
                 <img
-                  className="hidden md:mt-8 lg:flex lg:w-52"
+                  className="mr-10 h-36 w-36 md:h-52 md:w-52"
                   src="./images/calendar.jpg"
-                  alt="calendar"
+                  alt="logo"
+                />
+                <div className="flex-row">
+                  <h1 className="mt-4 block text-2xl font-bold text-white">
+                    Task Management
+                  </h1>
+                  <p className="mt-2 flex text-center text-white">
+                    Manage your tasks and projects with ease
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="mr-10 flex items-center justify-center rounded-md bg-indigo-600 shadow-lg">
+              <div className="my-10 flex">
+                <div className="flex-row">
+                  <h1 className="mt-4 block text-2xl font-bold text-white">
+                    Ideal Workspace
+                  </h1>
+                  <p className="mt-2 flex text-center text-white">
+                    Create your own workspace and invite your team
+                  </p>
+                </div>
+                <img
+                  className="ml-10 h-36 w-36 md:h-52 md:w-52"
+                  src="./images/kanban.jpg"
+                  alt="logo"
                 />
               </div>
-              <div className="md:mt-10 md:ml-5">
-                <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
-                  <span className="block text-[#595e64]">
-                    Track Your Task Easily
-                  </span>
-                </h1>
-                <div className="mt-3 ml-2 text-[#CDAAAA] md:text-xl">
-                  <p>Manage any type of project more efficiently.</p>
-                  <p>No separate, clunky system</p>
-                </div>
-              </div>
             </div>
-
-            <div
-              ref={cardRef2}
-              className="w-5/5 flex h-40 flex-none snap-center items-center rounded-lg bg-[#f8efef] px-5 shadow-md md:mr-24  md:h-96 md:w-4/6 md:py-4"
-            >
-              <div className="pl-3 md:ml-5">
-                <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
-                  <span className="block text-[#595e64]">
-                    Fully Customisable
-                  </span>
-                </h1>
-                <div className="mt-2 text-[#CDAAAA] md:text-xl">
-                  <p>Create your own labels, tags, owners, and more, </p>
-                  <p>where everyone has context.</p>
-                  <p>Everything stays organized.</p>
-                </div>
-              </div>
-              <div className="mt-2 hidden pl-4 lg:flex lg:w-56">
-                <img src="./images/kanban.jpg" />
-              </div>
-            </div>
-
-            <div
-              ref={cardRef3}
-              className="flex h-40 w-4/5 flex-none snap-center items-center rounded-lg bg-[#f8efef] px-5 shadow-md  md:h-96 md:w-4/6 md:py-4"
-            >
-              <div className="hidden lg:flex lg:w-64">
-                <img src="./images/planning.jpg" />
-              </div>
-              <div className="md:ml-10">
-                <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
-                  <span className="block text-[#595e64]">Plan accordingly</span>
-                </h1>
-                <div className="mt-1 text-[#CDAAAA] md:mt-5 md:text-xl">
-                  <p>Work With Team</p>
-                  <p>With No Communication</p>
-                </div>
-              </div>
-            </div>
-
-            <div
-              ref={cardRef4}
-              className="mr-60 flex h-40 w-4/5 flex-none snap-center items-center rounded-lg bg-[#f8efef] px-5 shadow-md md:ml-28 md:h-96 md:w-4/6 md:py-4"
-            >
-              <div className="md:mr-10 md:ml-10 md:mt-8">
-                <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
-                  <span className="block text-[#595e64]">Ideal Workspace</span>
-                </h1>
-                <div className="mt-2 text-[#CDAAAA] md:text-xl">
-                  <p>Build custom roadmaps and Gantt charts </p>
-                  <p>so you monitor everything from the start.</p>
-                </div>
-              </div>
-              <div className="hidden md:flex md:pl-4">
-                <img src="./images/teamplan.jpg" className="w-64" />
-              </div>
-            </div>
-
-            <button
-              className="invisible absolute right-2 p-2 text-2xl opacity-0 group-hover:opacity-100 sm:visible"
-              onClick={() => setCurrCard((prev) => (prev < 3 ? prev + 1 : 3))}
-            >
-              <FiChevronRight />
-            </button>
           </div>
-        </div>
+          <div>
+            <div className="mr-10 flex items-center justify-center rounded-md bg-indigo-600 shadow-lg">
+              <div className="my-10 mx-2 flex">
+                <img
+                  className="mr-10 h-36 w-36 md:h-52 md:w-52"
+                  src="./images/puren.jpg"
+                  alt="logo"
+                />
+                <div className="flex-row">
+                  <h1 className="mt-10 block text-2xl font-bold text-white">
+                    Track Your Task Easily
+                  </h1>
+                  <p className="mt-2 flex text-center text-white">
+                    Manage your tasks and projects with ease.
+                  </p>
+                  <p className="text-white">No separate, clunky system.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="mr-10  flex items-center justify-center rounded-xl bg-indigo-600 shadow-lg">
+              <div className="my-10 flex">
+                <div className="ml-5 flex-row">
+                  <h1 className="mt-8 block text-2xl font-bold text-white">
+                    Plan accordingly
+                  </h1>
+                  <p className="mt-2 flex text-center text-white">
+                    Work With Team.
+                  </p>
+                  <p className="text-white">
+                    Plan to acheive objectives and work with your team to
+                    achieve it.
+                  </p>
+                </div>
+                <img
+                  className="ml-10 mr-4 h-36 w-36 md:h-52 md:w-52"
+                  src="./images/kanban.jpg"
+                  alt="logo"
+                />
+              </div>
+            </div>
+          </div>
+        </Carousel>
 
         {/* About Us */}
-        <div id="aboutus" ref={aboutus} className="bg-white py-24 sm:py-32">
+        <div id="aboutus" ref={aboutus} className=" bg-gray-900 py-32">
           <div className="mx-auto max-w-7xl px-6 text-center lg:px-8">
             <div className="mx-auto max-w-2xl">
-              <h2 className="text-3xl font-bold tracking-tight text-black sm:text-4xl">
+              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
                 Meet our team
               </h2>
-              <p className="mt-4 text-lg leading-8 text-gray-400">
+              <p className="mt-4 text-lg leading-8 text-indigo-300">
                 We are a dynamic group of individuals who are passionate about
                 what we do.
               </p>
@@ -335,133 +361,63 @@ const LandingPage: NextPage = () => {
               {people.map((person) => (
                 <li
                   key={person.name}
-                  className="rounded-2xl bg-[#F8EFEF] py-10 px-8"
+                  className="rounded-2xl bg-gray-800 py-10 px-8"
                 >
                   <img
-                    className="mx-auto h-52 w-52 rounded-full bg-green-50 object-cover"
+                    className="mx-auto h-52 w-52 rounded-full object-cover"
                     src={person.image}
                     alt=""
                   />
-                  <h3 className="mt-6 text-base font-semibold leading-7 tracking-tight text-[#595e64]">
+                  <h3 className="mt-6 text-base font-semibold leading-7 tracking-tight text-white">
                     {person.name}
                   </h3>
                   <p className="text-sm leading-6 text-gray-400">
                     {person.role}
                   </p>
+                  <div className="flex justify-center space-x-2">
+                    <a
+                      href={person.igurl}
+                      className="text-2xl text-white hover:text-indigo-500"
+                    >
+                      <p className="mt-2 flex justify-center">{person.icon}</p>
+                    </a>
+                    <a
+                      href={person.linkedurl}
+                      className="text-2xl text-white hover:text-indigo-500"
+                    >
+                      <p className="mt-2 flex justify-center">{person.icon2}</p>
+                    </a>
+                  </div>
                 </li>
               ))}
             </ul>
           </div>
         </div>
         {/* Contact Us */}
-
-        <div id="contacts" ref={contacts} className="bg-[#F8EFEF] py-5">
-          {/* <div className="mx-auto max-w-7xl px-6 text-start lg:px-8">
-            <div className="mx-auto max-w-2xl">
-              <h2 className="text-center text-3xl font-bold tracking-tight text-black sm:text-4xl">
-                Contact Us
-              </h2>
-            </div>
-            <div className="mx-auto mt-10 max-w-2xl">
-              <form className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8">
-                <div>
-                  <label
-                    htmlFor="first-name"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    First name
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      type="text"
-                      name="first-name"
-                      id="first-name"
-                      autoComplete="given-name"
-                      className="block w-52 rounded-md border-gray-300 shadow-sm focus:border-[#B97E7E] focus:ring-[#B97E7E] sm:text-lg"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label
-                    htmlFor="last-name"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Last name
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      type="text"
-                      name="last-name"
-                      id="last-name"
-                      autoComplete="family-name"
-                      className="block w-52 rounded-md border border-gray-300 shadow-sm focus:border-[#B97E7E] focus:ring-[#B97E7E] sm:text-lg"
-                    />
-                  </div>
-                </div>
-                <div className="sm:col-span-2">
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Email
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#B97E7E] focus:ring-[#B97E7E] sm:text-lg"
-                    />
-                  </div>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label
-                    htmlFor="message"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Message
-                  </label>
-                  <div className="mt-1">
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows={4}
-                      className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                      defaultValue={""}
-                    />
-                  </div>
-                </div>
-                <div className="sm:col-span-2">
-                  <button
-                    type="submit"
-                    className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#BD9999] py-3 px-6 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#B97E7E] focus:ring-offset-2 hover:bg-[#b17e7e]"
-                  >
-                    Submit
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div> */}
+        <div id="contacts" ref={contacts} className="bg-gray-900 py-5">
           <div className="mx-auto max-w-7xl  text-start">
             <div className="mx-auto max-w-2xl">
-              <h2 className="text-center text-3xl font-bold tracking-tight text-black sm:text-4xl">
+              <h2 className="text-center text-3xl font-bold tracking-tight text-white sm:text-4xl">
                 Contact Us
               </h2>
             </div>
           </div>
 
           <form
+            ref={myForm}
             action="#"
             method="POST"
-            className="mx-auto mt-16 max-w-xl px-2 sm:mt-20"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setOpen(true);
+            }}
+            className="mx-auto mt-10 max-w-xl px-2 "
           >
             <div className="grid grid-cols-1 gap-y-6 gap-x-8 sm:grid-cols-2">
               <div>
                 <label
                   htmlFor="first-name"
-                  className="block text-sm font-semibold leading-6 text-gray-900"
+                  className="block text-sm font-semibold leading-6 text-white"
                 >
                   First name
                 </label>
@@ -471,14 +427,14 @@ const LandingPage: NextPage = () => {
                     name="first-name"
                     id="first-name"
                     autoComplete="given-name"
-                    className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
               <div>
                 <label
                   htmlFor="last-name"
-                  className="block text-sm font-semibold leading-6 text-gray-900"
+                  className="block text-sm font-semibold leading-6 text-white"
                 >
                   Last name
                 </label>
@@ -488,7 +444,7 @@ const LandingPage: NextPage = () => {
                     name="last-name"
                     id="last-name"
                     autoComplete="family-name"
-                    className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -496,7 +452,7 @@ const LandingPage: NextPage = () => {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="email"
-                  className="block text-sm font-semibold leading-6 text-gray-900"
+                  className="block text-sm font-semibold leading-6 text-white"
                 >
                   Email
                 </label>
@@ -506,7 +462,7 @@ const LandingPage: NextPage = () => {
                     name="email"
                     id="email"
                     autoComplete="email"
-                    className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -514,7 +470,7 @@ const LandingPage: NextPage = () => {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="phone-number"
-                  className="block text-sm font-semibold leading-6 text-gray-900"
+                  className="block text-sm font-semibold leading-6 text-white"
                 >
                   Phone number
                 </label>
@@ -524,7 +480,7 @@ const LandingPage: NextPage = () => {
                     name="phone-number"
                     id="phone-number"
                     autoComplete="tel"
-                    className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -532,7 +488,7 @@ const LandingPage: NextPage = () => {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="message"
-                  className="block text-sm font-semibold leading-6 text-gray-900"
+                  className="block text-sm font-semibold leading-6 text-white"
                 >
                   Message
                 </label>
@@ -541,7 +497,7 @@ const LandingPage: NextPage = () => {
                     name="message"
                     id="message"
                     rows={4}
-                    className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 sm:text-sm sm:leading-6"
                     defaultValue={""}
                   />
                 </div>
@@ -550,30 +506,94 @@ const LandingPage: NextPage = () => {
             <div className="mt-10">
               <button
                 type="submit"
-                className="block w-full rounded-md bg-[#bd9999] px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 hover:bg-[#b17e7e]"
+                onClick={resetForm}
+                className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2  hover:bg-indigo-500"
               >
                 Submit
               </button>
             </div>
           </form>
-        </div>
 
+          <Transition.Root show={open} as={Fragment}>
+            <Dialog as="div" className="relative z-10" onClose={setOpen}>
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+              </Transition.Child>
+
+              <div className="fixed inset-0 z-10 overflow-y-auto">
+                <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    enterTo="opacity-100 translate-y-0 sm:scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                    leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                  >
+                    <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
+                      <div>
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600">
+                          <CheckIcon
+                            className="h-6 w-6 text-white"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div className="mt-3 text-center sm:mt-5">
+                          <Dialog.Title
+                            as="h3"
+                            className="text-base font-semibold leading-6 text-gray-900"
+                          >
+                            Submission received!
+                          </Dialog.Title>
+                          <div className="mt-2">
+                            <p className="text-sm text-gray-500">
+                              We've received your submission. We'll get back to
+                              you as soon as possible.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-5 sm:mt-6">
+                        <button
+                          type="button"
+                          className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 hover:bg-indigo-500"
+                          onClick={() => setOpen(false)}
+                        >
+                          Thanks!
+                        </button>
+                      </div>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
+              </div>
+            </Dialog>
+          </Transition.Root>
+        </div>
         {/* footer */}
-        <footer>
+        <footer className="bg-gray-900">
           <div className="mx-auto max-w-7xl py-12 px-6 md:flex md:items-center md:justify-between lg:px-8">
             <div className="flex justify-center space-x-6 md:order-2">
               {social.map((item) => (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-2xl text-gray-500 hover:text-[#B97E7E]"
+                  className="text-2xl text-white hover:text-indigo-500"
                 >
                   <span>{item.icon}</span>
                 </a>
               ))}
             </div>
             <div className="order-1 mt-8 md:mt-0">
-              <p className="text-center text-sm text-gray-500">
+              <p className="text-center text-sm text-white">
                 &copy; 2023 TaskMate, Inc. All rights reserved.
               </p>
             </div>
