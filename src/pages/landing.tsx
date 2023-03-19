@@ -89,8 +89,8 @@ const navigation = [
       role: "UI/UX Designer , Frontend Developer",
       image: "./images/jake.jpg",
       icon: <BsInstagram />,
-      igurl: "https://www.instagram.com/jakechua_/",
-      linkedurl: "https://www.youtube.com",
+      igurl: "https://instagram.com/naitnijauhc?igshid=ZDdkNTZiNTM=",
+      linkedurl: "https://www.linkedin.com/in/jake-chua-37ba4026a/",
       icon2: <BsLinkedin />,
     },
   ],
@@ -177,7 +177,7 @@ const LandingPage: NextPage = () => {
       {/* navbar */}
 
       <div className="">
-        <nav className="z-100 sticky top-0 flex bg-transparent ">
+        <nav className="sticky top-0 z-20 flex bg-gray-800 ">
           <div>
             <img
               className="hidden aspect-auto h-14 md:flex md:w-36 "
@@ -205,7 +205,10 @@ const LandingPage: NextPage = () => {
           </div>
         </nav>
         {/* hero section */}
-        <div ref={home} className="z-1 mx-auto max-w-6xl  py-24 px-6 sm:py-28">
+        <div
+          ref={home}
+          className="z-1 mx-auto max-w-7xl  py-24 px-6 sm:py-20 md:py-28"
+        >
           <img
             src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2830&q=80&blend=111827&sat=-100&exp=15&blend-mode=multiply"
             alt=""
@@ -253,21 +256,22 @@ const LandingPage: NextPage = () => {
           keyBoardControl={true}
           containerClass="carousel-container"
           itemClass="carousel-item-padding-40-px"
-          className="z-0 bg-gray-900 px-5 py-10"
+          className="z-10 bg-gray-900 px-5 py-10"
+          removeArrowOnDeviceType={["tablet", "mobile"]}
         >
           <div id="feature" ref={feature}>
             <div className="mr-10 flex items-center justify-center rounded-md bg-indigo-600 shadow-lg">
-              <div className="my-10 flex">
+              <div className="my-10 mx-2 flex">
                 <img
                   className="mr-10 h-36 w-36 md:h-52 md:w-52"
                   src="./images/calendar.jpg"
                   alt="logo"
                 />
                 <div className="flex-row">
-                  <h1 className="mt-4 block text-2xl font-bold text-white">
+                  <h1 className="text-2xl font-bold text-white md:mt-4">
                     Task Management
                   </h1>
-                  <p className="mt-2 flex text-center text-white">
+                  <p className="mt-2 flex text-white">
                     Manage your tasks and projects with ease
                   </p>
                 </div>
@@ -276,12 +280,12 @@ const LandingPage: NextPage = () => {
           </div>
           <div>
             <div className="mr-10 flex items-center justify-center rounded-md bg-indigo-600 shadow-lg">
-              <div className="my-10 flex">
+              <div className="my-10 mx-2 flex">
                 <div className="flex-row">
-                  <h1 className="mt-4 block text-2xl font-bold text-white">
+                  <h1 className="block text-2xl font-bold text-white md:mt-4">
                     Ideal Workspace
                   </h1>
-                  <p className="mt-2 flex text-center text-white">
+                  <p className="mt-2 text-white">
                     Create your own workspace and invite your team
                   </p>
                 </div>
@@ -302,30 +306,25 @@ const LandingPage: NextPage = () => {
                   alt="logo"
                 />
                 <div className="flex-row">
-                  <h1 className="mt-10 block text-2xl font-bold text-white">
+                  <h1 className="block text-2xl font-bold text-white md:mt-10">
                     Track Your Task Easily
                   </h1>
-                  <p className="mt-2 flex text-center text-white">
+                  <p className="mt-2 flex  text-white">
                     Manage your tasks and projects with ease.
                   </p>
-                  <p className="text-white">No separate, clunky system.</p>
                 </div>
               </div>
             </div>
           </div>
           <div>
-            <div className="mr-10  flex items-center justify-center rounded-xl bg-indigo-600 shadow-lg">
+            <div className="mr-10  flex items-center justify-center rounded-md bg-indigo-600 shadow-lg">
               <div className="my-10 flex">
                 <div className="ml-5 flex-row">
-                  <h1 className="mt-8 block text-2xl font-bold text-white">
+                  <h1 className="block text-2xl font-bold text-white md:mt-8">
                     Plan accordingly
                   </h1>
                   <p className="mt-2 flex text-center text-white">
-                    Work With Team.
-                  </p>
-                  <p className="text-white">
-                    Plan to acheive objectives and work with your team to
-                    achieve it.
+                    Work with team with no miscommunication.
                   </p>
                 </div>
                 <img
@@ -553,7 +552,7 @@ const LandingPage: NextPage = () => {
 
                           <div className="mt-2">
                             <p className="text-sm text-gray-500">
-                              We have received your submission. We will get back
+                              We have received your submission! We will get back
                               to you as soon as possible.
                             </p>
                           </div>
