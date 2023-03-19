@@ -205,14 +205,11 @@ const LandingPage: NextPage = () => {
           </div>
         </nav>
         {/* hero section */}
-        <div
-          ref={home}
-          className="z-1 mx-auto max-w-7xl  py-24 px-6 sm:py-20 md:py-28"
-        >
+        <div ref={home} className="z-1 mx-auto py-20">
           <img
             src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2830&q=80&blend=111827&sat=-100&exp=15&blend-mode=multiply"
             alt=""
-            className="absolute inset-0 -z-10 h-full w-full object-cover"
+            className="absolute inset-0 -z-10 h-full w-full bg-slate-900 object-cover"
           />
           <div className="animate-fade">
             <h2 className="text-center text-6xl font-bold tracking-tight text-white sm:text-8xl">
@@ -323,7 +320,7 @@ const LandingPage: NextPage = () => {
                   <h1 className="block text-2xl font-bold text-white md:mt-8">
                     Plan accordingly
                   </h1>
-                  <p className="mt-2 flex text-center text-white">
+                  <p className="mt-2 flex text-white">
                     Work with team with no miscommunication.
                   </p>
                 </div>
@@ -338,7 +335,7 @@ const LandingPage: NextPage = () => {
         </Carousel>
 
         {/* About Us */}
-        <div id="aboutus" ref={aboutus} className=" bg-gray-900 py-32">
+        <div id="aboutus" ref={aboutus} className=" bg-gray-900 py-16">
           <div className="mx-auto max-w-7xl px-6 text-center lg:px-8">
             <div className="mx-auto max-w-2xl">
               <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
