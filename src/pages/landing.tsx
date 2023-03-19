@@ -2,8 +2,6 @@ import React, { useRef, useEffect, useState, Fragment } from "react";
 import { type NextPage } from "next";
 import Head from "next/head";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { animated } from "@react-spring/web";
-import { Parallax, ParallaxLayer } from "@react-spring/parallax";
 import { ClassNames } from "@emotion/react";
 import { positions } from "@mui/system";
 import { Dialog, Transition } from "@headlessui/react";
@@ -15,10 +13,8 @@ import {
   BsGithub,
   BsLinkedin,
 } from "react-icons/bs";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import { Instagram } from "@mui/icons-material";
 
 // TO BE DONE BY: Jansonn
 // This is the landing page for the app. It should be the first page that the user sees when they visit the site.
@@ -554,10 +550,11 @@ const LandingPage: NextPage = () => {
                           >
                             Submission received!
                           </Dialog.Title>
+
                           <div className="mt-2">
                             <p className="text-sm text-gray-500">
-                              We've received your submission. We'll get back to
-                              you as soon as possible.
+                              We have received your submission. We will get back
+                              to you as soon as possible.
                             </p>
                           </div>
                         </div>
