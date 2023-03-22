@@ -41,6 +41,8 @@ export function formatDate(date: Date): string {
   return `${dayOfWeekName}, ${day} ${monthName}, ${time}`;
 }
 
+// This helper function is used to trim a string from the beginning and end of the string
+// Users can specify which characters to trim from the string
 /**
   @param {string[]} characters - An array of characters to trim from the string
   @param {string} str - The string to trim
