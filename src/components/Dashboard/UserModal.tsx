@@ -7,16 +7,19 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/20/solid";
 import type { User } from "@prisma/client";
+import { nanoid } from "nanoid";
 
 interface UserModalProps {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
-  user: User;
+  user: User | null;
 }
 
 const person = {
+  id: nanoid(),
   name: "Jane Cooper",
   title: "Paradigm Representative",
+  statusMessage: "I am a placeholder for a user's status message.",
   role: "Admin",
   email: "janecooper@example.com",
   telephone: "+1-202-555-0170",
@@ -55,21 +58,21 @@ const UserModal: React.FC<UserModalProps> = ({ open, setOpen, user }) => {
                 <div className="flex flex-1 flex-col p-8">
                   <img
                     className="mx-auto h-32 w-32 flex-shrink-0 rounded-full"
-                    src={user.image || person.imageUrl}
+                    src={user?.image ?? person.imageUrl}
                     alt=""
                   />
                   <h3 className="mt-6 text-sm font-medium text-gray-900">
-                    {user.name}
+                    {user?.name ?? person.name}
                   </h3>
                   <dl className="mt-1 flex flex-grow flex-col justify-between">
                     <dt className="sr-only">Title</dt>
                     <dd className="text-sm text-gray-500">
-                      {user.status_message}
+                      {user?.status_message ?? person.statusMessage}
                     </dd>
                     <dt className="sr-only">Role</dt>
                     <dd className="mt-3">
                       <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
-                        {user.email}
+                        {user?.email ?? person.email}
                       </span>
                     </dd>
                   </dl>
@@ -79,7 +82,7 @@ const UserModal: React.FC<UserModalProps> = ({ open, setOpen, user }) => {
                     <div className="flex w-0 flex-1">
                       <a
                         href={`mailto:${
-                          user.email ?? "bubuding0809@gmail.com"
+                          user?.email ?? "bubuding0809@gmail.com"
                         }`}
                         className="relative -mr-px inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-bl-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
                       >
@@ -92,7 +95,7 @@ const UserModal: React.FC<UserModalProps> = ({ open, setOpen, user }) => {
                     </div>
                     <div className="-ml-px flex w-0 flex-1">
                       <a
-                        href={`/profile/${user.id}`}
+                        href={`/profile/${user?.id ?? person.id}`}
                         className="relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold text-gray-900"
                       >
                         <UserCircleIcon

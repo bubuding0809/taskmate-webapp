@@ -116,6 +116,7 @@ const Board: React.FC<BoardProps> = ({
   const getCollaboratorsAvatar = (
     collaborators: ({ User: User } | (Board_Collaborator & { User: User }))[]
   ) => {
+    // Set max display count to 5
     const count = 5;
     const collaboratorAvatars = collaborators
       .map((collaborator, index) => {
@@ -267,16 +268,18 @@ const Board: React.FC<BoardProps> = ({
                     </h4>
                   </Link>
                 </Tooltip>
+
+                {/* TODO to be refactored- Render pills */}
                 <div className="flex gap-1">
                   {/* Create pills with colors */}
-                  {pills.map(
+                  {/* {pills.map(
                     (pill, index) =>
                       Math.random() > 0.5 && (
                         <Tooltip key={index} title={pill.name}>
                           {pill.element}
                         </Tooltip>
                       )
-                  )}
+                  )} */}
                 </div>
               </div>
               <CircularProgressWithLabel

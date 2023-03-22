@@ -174,9 +174,12 @@ export const boardRouter = createTRPCRouter({
   createBoard: protectedProcedure
     .input(
       z.object({
+        userId: z.string(),
         boardId: z.string(),
         title: z.string(),
-        userId: z.string(),
+        description: z.string().optional(),
+        collaborators: z.array(z.string()).optional(),
+        privacy: z.enum(["PRIVATE", "PUBLIC", "TEAM"]).optional(),
         currentBoardOrder: z.array(z.string()),
         folderId: z.string().optional(),
         folderBoardOrder: z.array(z.string()).optional(),
@@ -184,6 +187,11 @@ export const boardRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       return await ctx.prisma.$transaction(async (tx) => {
+        const collaboratorCreate =
+          input.collaborators?.map((collaboratorId) => ({
+            user_id: collaboratorId,
+          })) ?? [];
+
         // Create a new board and connect it to the user and folder
         if (input.folderBoardOrder && input.folderId) {
           const newBoard = await tx.board.create({
@@ -201,6 +209,13 @@ export const boardRouter = createTRPCRouter({
               id: input.boardId,
               board_title: input.title,
               thumbnail_image: "📝",
+              board_description: input.description ?? null,
+              visibility: input.privacy ?? "PRIVATE",
+              Board_Collaborator: {
+                createMany: {
+                  data: collaboratorCreate,
+                },
+              },
             },
           });
 
@@ -229,6 +244,13 @@ export const boardRouter = createTRPCRouter({
               id: input.boardId,
               board_title: input.title,
               thumbnail_image: "📝",
+              board_description: input.description ?? null,
+              visibility: input.privacy ?? "PRIVATE",
+              Board_Collaborator: {
+                createMany: {
+                  data: collaboratorCreate,
+                },
+              },
             },
           });
 

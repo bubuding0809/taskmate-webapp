@@ -1,59 +1,29 @@
-import { Dispatch, Fragment, SetStateAction, useState } from "react";
+import {
+  ChangeEventHandler,
+  Dispatch,
+  FormEventHandler,
+  Fragment,
+  SetStateAction,
+  useState,
+} from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
   CheckCircleIcon,
   ClipboardDocumentCheckIcon,
+  XCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import {
-  LinkIcon,
-  PlusIcon,
-  QuestionMarkCircleIcon,
-} from "@heroicons/react/20/solid";
+import { LinkIcon, QuestionMarkCircleIcon } from "@heroicons/react/20/solid";
 import useCreateBoard from "@/utils/mutations/useCreateBoard";
 import { nanoid } from "nanoid";
 import { useRouter } from "next/router";
 import { useToastContext } from "@/utils/context/ToastContext";
 import { useSession } from "next-auth/react";
 import { api } from "@/utils/api";
-
-const team = [
-  {
-    name: "Tom Cook",
-    email: "tom.cook@example.com",
-    href: "#",
-    imageUrl:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-  {
-    name: "Whitney Francis",
-    email: "whitney.francis@example.com",
-    href: "#",
-    imageUrl:
-      "https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-  {
-    name: "Leonard Krasner",
-    email: "leonard.krasner@example.com",
-    href: "#",
-    imageUrl:
-      "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-  {
-    name: "Floyd Miles",
-    email: "floyd.miles@example.com",
-    href: "#",
-    imageUrl:
-      "https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-  {
-    name: "Emily Selman",
-    email: "emily.selman@example.com",
-    href: "#",
-    imageUrl:
-      "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  },
-];
+import { User } from "@prisma/client";
+import { Tooltip } from "@mui/material";
+import UserModal from "../Dashboard/UserModal";
+import UserSearchPopover from "../Dashboard/UserSearchPopover";
 
 interface CreateBoardSliderOverProps {
   open: boolean;
@@ -81,9 +51,20 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
   //Mutation to create a new board
   const { mutateAsync: createBoard } = useCreateBoard();
 
-  const [newBoardForm, setNewBoardForm] = useState({
+  // State to hold the form data
+  const [newBoardForm, setNewBoardForm] = useState<{
+    id: string;
+    title: string;
+    description: string;
+    folderId: string;
+    privacy: "PRIVATE" | "PUBLIC" | "TEAM";
+    backgroundImage: string | null;
+    thumbnailImage: string | null;
+    collaborators: User[];
+    teams: string[];
+  }>({
     id: nanoid(),
-    name: "",
+    title: "",
     description: "",
     folderId: "",
     privacy: "PRIVATE",
@@ -93,9 +74,13 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
     teams: [],
   });
 
-  const handleFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const [openUserModal, setOpenUserModal] = useState(false);
+  const [currUser, setCurrUser] = useState<User | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleFormChange: ChangeEventHandler<
+    HTMLInputElement | HTMLTextAreaElement
+  > = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setNewBoardForm({
       ...newBoardForm,
@@ -103,7 +88,68 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
     });
   };
 
-  console.log(newBoardForm);
+  const handleFormSubmit: FormEventHandler<HTMLFormElement> = (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    // Create the board
+    setIsCreating(true);
+
+    const newBoard = {
+      boardId: newBoardForm.id,
+      userId: sessionData?.user.id ?? "",
+      currentBoardOrder: boardsWithoutFolderData?.boardOrder ?? [],
+      title: newBoardForm.title,
+      description: newBoardForm.description,
+      collaborators: newBoardForm.collaborators.map((user) => user.id),
+      privacy: newBoardForm.privacy,
+    };
+
+    void createBoard(newBoard)
+      .then((board) => {
+        // Close the slide over
+        setOpen(false);
+
+        // Reset the form
+        setNewBoardForm({
+          id: nanoid(),
+          title: "",
+          description: "",
+          folderId: "",
+          privacy: "PRIVATE",
+          backgroundImage: null,
+          thumbnailImage: "📝",
+          collaborators: [],
+          teams: [],
+        });
+
+        // Once board is created, redirect to the board page and open the toast
+        void router.push(`/board/${board.id}`).then(() => {
+          // Open the toast after 300ms
+          setTimeout(
+            () =>
+              addToast({
+                title: "Board Created",
+                description: "Start adding panels and tasks to your board!",
+                icon: CheckCircleIcon,
+              }),
+            300
+          );
+        });
+      })
+      .catch((err) => {
+        addToast({
+          title: "Error",
+          description: "Something went wrong. Please try again later.",
+          icon: XCircleIcon,
+          position: "start",
+        });
+      })
+      .finally(() => {
+        setIsCreating(false);
+      });
+  };
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -125,7 +171,7 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
                   <form
                     className="flex h-full flex-col divide-y divide-gray-200 bg-white shadow-xl"
-                    onSubmit={(e) => e.preventDefault()}
+                    onSubmit={handleFormSubmit}
                   >
                     <div className="h-0 flex-1 overflow-y-auto">
                       <div className="bg-indigo-700 py-6 px-4 sm:px-6">
@@ -167,11 +213,12 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
                               </label>
                               <div className="mt-2">
                                 <input
+                                  required
                                   type="text"
-                                  name="name"
+                                  name="title"
                                   id="board-name"
                                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                  value={newBoardForm.name}
+                                  value={newBoardForm.title}
                                   onChange={handleFormChange}
                                 />
                               </div>
@@ -196,37 +243,68 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
                             </div>
                             <div>
                               <h3 className="text-sm font-medium leading-6 text-gray-900">
-                                Team Members
+                                Collaborators
                               </h3>
-                              <div className="mt-2">
-                                <div className="flex space-x-2">
-                                  {team.map((person) => (
-                                    <a
-                                      key={person.email}
-                                      href={person.href}
-                                      className="rounded-full hover:opacity-75"
-                                    >
-                                      <img
-                                        className="inline-block h-8 w-8 rounded-full"
-                                        src={person.imageUrl}
-                                        alt={person.name}
-                                      />
-                                    </a>
+                              <div className="mt-2 flex space-x-2">
+                                <div className="flex items-center gap-2">
+                                  {newBoardForm.collaborators.map((user) => (
+                                    <div key={user.id} className="relative">
+                                      <Tooltip
+                                        title={user.name}
+                                        className="cursor-pointer rounded-full hover:opacity-75"
+                                        onClick={() => {
+                                          setCurrUser(user);
+                                          setOpenUserModal(true);
+                                        }}
+                                      >
+                                        <img
+                                          // prevent images from being compressed
+                                          className="h=[26px] inline-block w-[26px] rounded-full sm:h-8 sm:w-8"
+                                          src={user.image ?? ""}
+                                          alt={user.name ?? ""}
+                                        />
+                                      </Tooltip>
+                                      {/* Remove button */}
+                                      <button
+                                        type="button"
+                                        className="absolute -bottom-4 left-1/2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full border bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:h-6 sm:w-6"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setNewBoardForm({
+                                            ...newBoardForm,
+                                            collaborators:
+                                              newBoardForm.collaborators.filter(
+                                                (u) => u.id !== user.id
+                                              ),
+                                          });
+                                        }}
+                                      >
+                                        <span className="sr-only">
+                                          Remove {user.name}
+                                        </span>
+                                        <XMarkIcon
+                                          className="h-3 w-3 sm:h-4 sm:w-4"
+                                          aria-hidden="true"
+                                        />
+                                      </button>
+                                    </div>
                                   ))}
-                                  <button
-                                    type="button"
-                                    className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 border-dashed border-gray-200 bg-white text-gray-400 hover:border-gray-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                  >
-                                    <span className="sr-only">
-                                      Add team member
-                                    </span>
-                                    <PlusIcon
-                                      className="h-5 w-5"
-                                      aria-hidden="true"
-                                    />
-                                  </button>
                                 </div>
+                                {/* Maximum of 10 collaborators */}
+                                {newBoardForm.collaborators.length < 10 && (
+                                  <UserSearchPopover
+                                    setNewBoardForm={setNewBoardForm}
+                                    newBoardForm={newBoardForm}
+                                  />
+                                )}
                               </div>
+
+                              {/* Only shown when collaborator avatar is clicked */}
+                              <UserModal
+                                open={openUserModal}
+                                setOpen={setOpenUserModal}
+                                user={currUser}
+                              />
                             </div>
                             <fieldset>
                               <legend className="text-sm font-medium leading-6 text-gray-900">
@@ -390,45 +468,42 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
                     </div>
                     <div className="flex flex-shrink-0 justify-end px-4 py-4">
                       <button
+                        disabled={isCreating}
                         type="button"
-                        className="rounded-md bg-white py-2 px-3 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                        className="rounded-md bg-white py-2 px-3 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:bg-gray-300 disabled:text-white"
                         onClick={() => setOpen(false)}
                       >
                         Cancel
                       </button>
                       <button
+                        disabled={isCreating}
                         type="submit"
-                        className="ml-4 inline-flex justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                        onClick={() => {
-                          void createBoard({
-                            boardId: nanoid(),
-                            userId: sessionData?.user.id ?? "",
-                            currentBoardOrder:
-                              boardsWithoutFolderData?.boardOrder ?? [],
-                            title: "New Board",
-                          }).then(
-                            (board) =>
-                              // Once board is created, redirect to the board page and open the toast
-                              void router
-                                .push(`/board/${board.id}`)
-                                .then(() => {
-                                  setTimeout(
-                                    () =>
-                                      addToast({
-                                        title: "Board Created",
-                                        description:
-                                          "Start adding panels and tasks to your board!",
-                                        icon: CheckCircleIcon,
-                                      }),
-                                    300
-                                  );
-                                })
-                                .catch((err) => console.log(err))
-                          );
-                          setOpen(false);
-                        }}
+                        className="ml-4 inline-flex items-center justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:bg-indigo-600/50"
                       >
-                        Save
+                        {isCreating ? (
+                          <>
+                            <svg
+                              aria-hidden="true"
+                              role="status"
+                              className="mr-2 inline h-4 w-4 animate-spin"
+                              viewBox="0 0 100 101"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                fill="currentColor"
+                              />
+                              <path
+                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                fill="#1C64F2"
+                              />
+                            </svg>
+                            Creating...
+                          </>
+                        ) : (
+                          "Create"
+                        )}
                       </button>
                     </div>
                   </form>

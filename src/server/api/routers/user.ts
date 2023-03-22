@@ -18,4 +18,29 @@ export const userRouter = createTRPCRouter({
   getSecretMessage: protectedProcedure.query(() => {
     return "you can now see this secret message!";
   }),
+
+  getUsersByNameOrEmail: publicProcedure
+    .input(
+      z.object({
+        query: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      return ctx.prisma.user.findMany({
+        where: {
+          OR: [
+            {
+              name: {
+                contains: input.query,
+              },
+            },
+            {
+              email: {
+                contains: input.query,
+              },
+            },
+          ],
+        },
+      });
+    }),
 });
