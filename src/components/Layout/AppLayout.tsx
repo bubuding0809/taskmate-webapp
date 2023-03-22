@@ -711,41 +711,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                 type="button"
                 className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 onClick={() => {
-                  // If mutation timer is available, create a new board
-                  if (mutationAvail) {
-                    // Once mutation is sent, set mutationAvail to false, it will only be set back to true after a delay
-                    setMutationAvail(false);
-
-                    // Open the create board slide over
-                    setBoardCreationOpen(true);
-
-                    // TODO - move create board mutation to CreateBoardSlideOver component
-                    // void createBoard({
-                    //   boardId: nanoid(),
-                    //   userId: sessionData.user.id,
-                    //   currentBoardOrder:
-                    //     boardsWithoutFolderData?.boardOrder ?? [],
-                    //   title: "New Board",
-                    // }).then(
-                    //   (board) =>
-                    //     // Once board is created, redirect to the board page and open the toast
-                    //     void router
-                    //       .push(`/board/${board.id}`)
-                    //       .then(() => {
-                    //         setTimeout(
-                    //           () =>
-                    //             addToast({
-                    //               title: "Board Created",
-                    //               description:
-                    //                 "Start adding panels and tasks to your board!",
-                    //               icon: CheckCircleIcon,
-                    //             }),
-                    //           300
-                    //         );
-                    //       })
-                    //       .catch((err) => console.log(err))
-                    // );
-                  }
+                  // Open the create board slide over
+                  setBoardCreationOpen(true);
                 }}
               >
                 {sidebarExpanded ? (

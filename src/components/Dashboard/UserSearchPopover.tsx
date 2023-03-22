@@ -8,7 +8,11 @@ import {
 } from "react";
 import { Combobox, Popover, Transition } from "@headlessui/react";
 import { UsersIcon } from "@heroicons/react/20/solid";
-import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  PlusIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import { classNames } from "@/utils/helper";
 import { api } from "@/utils/api";
 import { User } from "@prisma/client";
@@ -56,9 +60,7 @@ const UserSearchPopover: React.FC<UserSearchPopoverProps> = ({
     { enabled: debouncedQuery !== "" }
   );
 
-  const [selectedUsers, setSelectedUsers] = useState<{
-    [key: string]: User;
-  }>({});
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
   const filteredUsersData = useMemo(() => {
     if (!usersData) return [];
@@ -78,15 +80,16 @@ const UserSearchPopover: React.FC<UserSearchPopoverProps> = ({
   ) => {
     e.preventDefault();
     e.stopPropagation();
+
     // Add selected users to the collaborator list, prevent duplicates
-    if (Object.keys(selectedUsers).length === 0) return;
+    if (!selectedUsers.length) return;
 
     setNewBoardForm((prev) => {
       // Get the IDs of the current users
       const currentUsers = prev.collaborators.map((user) => user.id);
 
       // Get the IDs of the new users to be added, filter out duplicates that are already in current users
-      const newUsers = Object.values(selectedUsers).filter(
+      const newUsers = selectedUsers.filter(
         (user) => user && !currentUsers.includes(user.id)
       );
 
@@ -104,7 +107,7 @@ const UserSearchPopover: React.FC<UserSearchPopoverProps> = ({
     });
 
     // Clear the selected users
-    setSelectedUsers({});
+    setSelectedUsers([]);
   };
 
   return (
@@ -127,130 +130,169 @@ const UserSearchPopover: React.FC<UserSearchPopoverProps> = ({
         leaveTo="opacity-0 translate-y-1"
       >
         <Popover.Panel className="fixed left-1/2 z-10 mt-5 flex w-screen max-w-max -translate-x-1/2 px-4">
-          <div className="max-w-md flex-auto overflow-hidden rounded-3xl bg-white text-sm leading-6 shadow-lg ring-1 ring-gray-900/5">
-            {/* Popover body */}
-            <div className="p-4">
-              <Combobox>
-                <Combobox.Input
-                  autoFocus
-                  className="w-full rounded-md border-0 bg-gray-100 px-4 py-2.5 text-gray-900 focus:ring-0 sm:text-sm"
-                  placeholder="Search for a user..."
-                  onChange={(event) => setQuery(event.target.value)}
-                />
-
-                <Combobox.Options
-                  static
-                  className="mt-2 flex max-h-96 w-96 scroll-py-3 flex-col overflow-y-auto"
+          {({ close }) => (
+            <div className="max-w-[26rem] flex-auto overflow-hidden rounded-3xl bg-white text-sm leading-6 shadow-lg ring-1 ring-gray-900/5">
+              {/* Popover body */}
+              <div className="p-4">
+                <Combobox
+                  value={selectedUsers}
+                  onChange={(person) => {
+                    setSelectedUsers(person);
+                  }}
+                  by={(userA, userB) => userA.id === userB.id}
+                  multiple
                 >
-                  {filteredUsersData?.map((user) => (
-                    <Combobox.Option
-                      key={user.id}
-                      value={user.email}
-                      className={({ active }) =>
-                        classNames(
-                          "flex cursor-default select-none rounded-xl p-3",
-                          active && "bg-gray-100"
-                        )
-                      }
-                    >
-                      {({ active }) => (
-                        <>
-                          <div
-                            className={classNames(
-                              "flex h-10 w-10 flex-none items-center justify-center rounded-lg"
-                            )}
-                          >
-                            <img
-                              className="h-10 w-10 rounded-full"
-                              src={user.image ?? ""}
-                              alt={user.name ?? ""}
-                            />
-                          </div>
-                          <div className="ml-4 flex-auto">
-                            <p
+                  <div className="relative">
+                    <Combobox.Input
+                      autoFocus
+                      className="w-full rounded-md border border-gray-300 px-4 py-2.5 indent-5 text-gray-900 shadow-sm focus:border-gray-300 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 sm:text-sm"
+                      placeholder="Search for collaborators"
+                      onChange={(event) => setQuery(event.target.value)}
+                      displayValue={() => query}
+                    />
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <MagnifyingGlassIcon
+                        className="h-5 w-5 text-gray-400"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Render selected people names */}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {selectedUsers.map((person) => (
+                      <div
+                        key={person.id}
+                        className="flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1"
+                      >
+                        <img
+                          className="h-6 w-6 rounded-full"
+                          src={person.image ?? ""}
+                          alt={person.name ?? ""}
+                        />
+                        <span>{person.name}</span>
+
+                        {/* X button to remove user from selected */}
+                        <button
+                          type="button"
+                          className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                          onClick={() => {
+                            setSelectedUsers((prev) =>
+                              prev.filter((user) => user.id !== person.id)
+                            );
+                          }}
+                        >
+                          <span className="sr-only">Remove {person.name}</span>
+                          <XMarkIcon className="h-3 w-3 text-gray-500" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Combobox.Options
+                    static
+                    className="mt-2 flex max-h-96 w-96 scroll-py-3 flex-col overflow-y-auto"
+                  >
+                    {filteredUsersData?.map((user) => (
+                      <Combobox.Option
+                        key={user.id}
+                        value={user}
+                        className={({ active }) =>
+                          classNames(
+                            "flex cursor-default select-none rounded-xl p-3",
+                            active && "bg-gray-100"
+                          )
+                        }
+                      >
+                        {({ active, selected }) => (
+                          <>
+                            <div
                               className={classNames(
-                                "text-sm font-medium",
-                                active ? "text-gray-900" : "text-gray-700"
+                                "flex h-10 w-10 flex-none items-center justify-center rounded-lg"
                               )}
                             >
-                              {user.name}
-                            </p>
-                            <p
-                              className={classNames(
-                                "text-sm",
-                                active ? "text-gray-700" : "text-gray-500"
-                              )}
-                            >
-                              {user.email}
-                            </p>
-                          </div>
-                          <div className="ml-3 flex h-6 items-center">
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                              checked={!!selectedUsers[user.id]}
-                              onChange={(event) => {
-                                if (event.target.checked) {
-                                  setSelectedUsers((prev) => ({
-                                    ...prev,
-                                    [user.id]: user,
-                                  }));
-                                } else {
-                                  setSelectedUsers((prev) => {
-                                    const newSelectedUsers = { ...prev };
-                                    delete newSelectedUsers[user.id];
-                                    return newSelectedUsers;
-                                  });
-                                }
-                              }}
-                            />
-                          </div>
-                        </>
-                      )}
-                    </Combobox.Option>
-                  ))}
-                </Combobox.Options>
+                              <img
+                                className="h-10 w-10 rounded-full"
+                                src={user.image ?? ""}
+                                alt={user.name ?? ""}
+                              />
+                            </div>
+                            <div className="ml-4 flex-auto">
+                              <p
+                                className={classNames(
+                                  "text-sm font-medium",
+                                  active ? "text-gray-900" : "text-gray-700"
+                                )}
+                              >
+                                {user.name}
+                              </p>
+                              <p
+                                className={classNames(
+                                  "text-sm",
+                                  active ? "text-gray-700" : "text-gray-500"
+                                )}
+                              >
+                                {user.email}
+                              </p>
+                            </div>
+                            <div className="ml-3 flex items-center">
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                checked={selected}
+                                readOnly
+                              />
+                            </div>
+                          </>
+                        )}
+                      </Combobox.Option>
+                    ))}
+                  </Combobox.Options>
 
-                {query !== "" && filteredUsersData?.length === 0 && (
-                  <div className="py-14 px-4 text-center sm:px-14">
-                    <UsersIcon
-                      className="mx-auto h-6 w-6 text-gray-400"
-                      aria-hidden="true"
-                    />
-                    <p className="mt-4 text-sm text-gray-900">
-                      No people found using that search term.
-                    </p>
-                  </div>
-                )}
+                  {query !== "" && filteredUsersData?.length === 0 && (
+                    <div className="py-14 px-4 text-center sm:px-14">
+                      <UsersIcon
+                        className="mx-auto h-6 w-6 text-gray-400"
+                        aria-hidden="true"
+                      />
+                      <p className="mt-4 text-sm text-gray-900">
+                        No people found using that search term.
+                      </p>
+                    </div>
+                  )}
 
-                {!query.length && !filteredUsersData.length && (
-                  <div className="py-14 px-4 text-center sm:px-14">
-                    <MagnifyingGlassIcon
-                      className="mx-auto h-6 w-6 text-gray-400"
-                      aria-hidden="true"
-                    />
-                    <p className="mt-4 text-sm text-gray-900">
-                      Search for people by name or email.
-                    </p>
-                  </div>
-                )}
-              </Combobox>
+                  {!query.length && !filteredUsersData.length && (
+                    <div className="py-14 px-4 text-center sm:px-14">
+                      <MagnifyingGlassIcon
+                        className="mx-auto h-6 w-6 text-gray-400"
+                        aria-hidden="true"
+                      />
+                      <p className="mt-4 text-sm text-gray-900">
+                        Search for people by name or email.
+                      </p>
+                    </div>
+                  )}
+                </Combobox>
+              </div>
+
+              {/* Popover footer */}
+              <div className="grid grid-cols-1 divide-x divide-gray-900/5 bg-gray-50">
+                <button
+                  className="flex items-center justify-center gap-x-2.5 p-3 font-semibold text-gray-900 hover:bg-gray-100"
+                  onClick={(e) => {
+                    handleAddSelectedUsers(e);
+                    close();
+                  }}
+                >
+                  <PlusIcon
+                    className="h-5 w-5 flex-none text-gray-400"
+                    aria-hidden="true"
+                  />
+                  Invite selected people
+                </button>
+              </div>
             </div>
-
-            {/* Popover footer */}
-            <div className="grid grid-cols-1 divide-x divide-gray-900/5 bg-gray-50">
-              <button
-                className="flex items-center justify-center gap-x-2.5 p-3 font-semibold text-gray-900 hover:bg-gray-100"
-                onClick={handleAddSelectedUsers}
-              >
-                <PlusIcon
-                  className="h-5 w-5 flex-none text-gray-400"
-                  aria-hidden="true"
-                />
-                Invite selected people
-              </button>
-            </div>
-          </div>
+          )}
         </Popover.Panel>
       </Transition>
     </Popover>

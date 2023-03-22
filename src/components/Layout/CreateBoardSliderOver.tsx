@@ -29,6 +29,7 @@ interface CreateBoardSliderOverProps {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
 }
+
 const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
   open,
   setOpen,
@@ -74,10 +75,16 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
     teams: [],
   });
 
+  // State for whether the user modal is open
   const [openUserModal, setOpenUserModal] = useState(false);
+
+  // State for the current user in the user modal
   const [currUser, setCurrUser] = useState<User | null>(null);
+
+  // State for whether the board is being created
   const [isCreating, setIsCreating] = useState(false);
 
+  // Handle form change callback for controlled inputs
   const handleFormChange: ChangeEventHandler<
     HTMLInputElement | HTMLTextAreaElement
   > = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -88,6 +95,7 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
     });
   };
 
+  // Handle form submit callback for creating a new board
   const handleFormSubmit: FormEventHandler<HTMLFormElement> = (
     e: React.FormEvent<HTMLFormElement>
   ) => {
@@ -96,7 +104,8 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
     // Create the board
     setIsCreating(true);
 
-    const newBoard = {
+    // Call the mutation to create the board
+    void createBoard({
       boardId: newBoardForm.id,
       userId: sessionData?.user.id ?? "",
       currentBoardOrder: boardsWithoutFolderData?.boardOrder ?? [],
@@ -104,14 +113,10 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
       description: newBoardForm.description,
       collaborators: newBoardForm.collaborators.map((user) => user.id),
       privacy: newBoardForm.privacy,
-    };
-
-    void createBoard(newBoard)
+    })
       .then((board) => {
-        // Close the slide over
+        // On success close the slide over and reset the form
         setOpen(false);
-
-        // Reset the form
         setNewBoardForm({
           id: nanoid(),
           title: "",
@@ -138,7 +143,7 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
           );
         });
       })
-      .catch((err) => {
+      .catch(() => {
         addToast({
           title: "Error",
           description: "Something went wrong. Please try again later.",
@@ -184,6 +189,7 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
                               type="button"
                               className="rounded-md bg-indigo-700 text-indigo-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
                               onClick={() => setOpen(false)}
+                              tabIndex={-1}
                             >
                               <span className="sr-only">Close panel</span>
                               <XMarkIcon
@@ -213,6 +219,7 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
                               </label>
                               <div className="mt-2">
                                 <input
+                                  autoFocus
                                   required
                                   type="text"
                                   name="title"
@@ -471,7 +478,22 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
                         disabled={isCreating}
                         type="button"
                         className="rounded-md bg-white py-2 px-3 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:bg-gray-300 disabled:text-white"
-                        onClick={() => setOpen(false)}
+                        onClick={() => {
+                          setOpen(false);
+
+                          // Reset the form
+                          setNewBoardForm({
+                            id: nanoid(),
+                            title: "",
+                            description: "",
+                            folderId: "",
+                            privacy: "PRIVATE",
+                            backgroundImage: null,
+                            thumbnailImage: "📝",
+                            collaborators: [],
+                            teams: [],
+                          });
+                        }}
                       >
                         Cancel
                       </button>
