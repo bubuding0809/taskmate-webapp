@@ -54,6 +54,11 @@ export const boardRouter = createTRPCRouter({
               order: "asc",
             },
           },
+          Board_Collaborator: {
+            include: {
+              User: true,
+            },
+          },
         },
       });
     }),
