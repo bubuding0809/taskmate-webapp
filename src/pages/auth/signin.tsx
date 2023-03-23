@@ -58,13 +58,13 @@ const SignIn: NextPage<
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
               Or
-              <a
+              <link
                 href="/auth/register"
                 className="font-medium text-indigo-600 hover:text-indigo-500"
               >
                 {" "}
                 Click here to Register
-              </a>
+              </link>
             </p>
 
             {/*Credential Login*/}

@@ -37,13 +37,13 @@ export default function SignIn({
             <div>
               <p className="mt-2 text-center text-sm text-gray-600">
                 Start planning in seconds, Already have an account?
-                <a
+                <link
                   href="/auth/signin"
                   className="font-medium text-indigo-600 hover:text-indigo-500"
                 >
                   {" "}
                   Login here
-                </a>
+                </link>
               </p>
             </div>
 
