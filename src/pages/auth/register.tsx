@@ -8,11 +8,13 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../server/auth";
 import Head from "next/head";
 import { BsFacebook, BsGoogle, BsDiscord } from "react-icons/bs";
+import { IconType } from "react-icons";
+import Link from "next/link";
 
-const providerLogos: { [key: string]: any } = {
-  Discord: <BsDiscord />,
-  Facebook: <BsFacebook />,
-  Google: <BsGoogle />,
+const providerLogos: { [key: string]: IconType } = {
+  Discord: BsDiscord,
+  Facebook: BsFacebook,
+  Google: BsGoogle,
 };
 
 export default function SignIn({
@@ -37,13 +39,13 @@ export default function SignIn({
             <div>
               <p className="mt-2 text-center text-sm text-gray-600">
                 Start planning in seconds, Already have an account?
-                <link
+                <Link
                   href="/auth/signin"
                   className="font-medium text-indigo-600 hover:text-indigo-500"
                 >
                   {" "}
                   Login here
-                </link>
+                </Link>
               </p>
             </div>
 
@@ -132,7 +134,7 @@ export default function SignIn({
 
                 <div className="flex items-center justify-center ">
                   {Object.values(providers).map((provider) => {
-                    const logo = providerLogos[provider.name];
+                    const logo = providerLogos[provider.name]!;
                     return (
                       <div key={provider.name}>
                         <button
@@ -143,7 +145,10 @@ export default function SignIn({
                             })
                           }
                         >
-                          <div className="m-1.5">{logo}</div>
+                          <div className="m-1.5">
+                            {/* render logo */}
+                            {}
+                          </div>
                           {provider.name}
                         </button>
                       </div>

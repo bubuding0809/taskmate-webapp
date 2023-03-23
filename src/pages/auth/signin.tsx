@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../server/auth";
 import Head from "next/head";
 import { BsFacebook, BsGoogle, BsDiscord } from "react-icons/bs";
+import Link from "next/link";
 
 // TO BE DONE BY: Chen Yu
 // This is the sign in page for the app. It should be the page that the user sees when they press get started or sign in.
@@ -58,13 +59,13 @@ const SignIn: NextPage<
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
               Or
-              <link
+              <Link
                 href="/auth/register"
                 className="font-medium text-indigo-600 hover:text-indigo-500"
               >
                 {" "}
                 Click here to Register
-              </link>
+              </Link>
             </p>
 
             {/*Credential Login*/}
