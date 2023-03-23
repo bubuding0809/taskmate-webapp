@@ -9,6 +9,7 @@ import { authOptions } from "../../server/auth";
 import Head from "next/head";
 import { BsFacebook, BsGoogle, BsDiscord } from "react-icons/bs";
 import Link from "next/link";
+import { IconType } from "react-icons/lib";
 
 // TO BE DONE BY: Chen Yu
 // This is the sign in page for the app. It should be the page that the user sees when they press get started or sign in.
@@ -20,10 +21,10 @@ import Link from "next/link";
 // You can also refer to the documentation here: https://next-auth.js.org/getting-started/client
 // You can customize the authentication providers in the server/auth.ts file.
 
-const providerLogos: { [key: string]: any } = {
-  Discord: <BsDiscord />,
-  Facebook: <BsFacebook />,
-  Google: <BsGoogle />,
+const providerLogos: { [key: string]: IconType } = {
+  Discord: BsDiscord,
+  Facebook: BsFacebook,
+  Google: BsGoogle,
 };
 
 const SignIn: NextPage<
@@ -166,7 +167,7 @@ const SignIn: NextPage<
             {/* Social Login */}
             <div className="flex items-center justify-center ">
               {Object.values(providers).map((provider) => {
-                const logo = providerLogos[provider.name];
+                const Logo = providerLogos[provider.name]!;
                 return (
                   <div key={provider.name}>
                     <button
@@ -175,7 +176,9 @@ const SignIn: NextPage<
                         void signIn(provider.id, { callbackUrl: "/dashboard" })
                       }
                     >
-                      <div className="m-1.5">{logo}</div>
+                      <div className="m-1.5">
+                        <Logo />
+                      </div>
                       {provider.name}
                     </button>
                   </div>
