@@ -49,6 +49,7 @@ model User {
     email              String?              @unique
     emailVerified      DateTime?
     image              String?
+    password           String?
     folder_order       String?              @db.VarChar(1000)
     board_order        String?              @db.VarChar(1000)
     status_message     String?              @default("I'm using TaskMate!") @db.VarChar(1000)
