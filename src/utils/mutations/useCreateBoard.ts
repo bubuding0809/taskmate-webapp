@@ -97,6 +97,7 @@ const useCreateBoard = () => {
           board_order: "",
           folder_order: "",
           status_message: "Im using TaskMate!",
+          password: "",
         },
       };
 
