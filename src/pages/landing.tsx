@@ -78,10 +78,10 @@ const navigation = [
     {
       name: "Amri Bin Mohd Sazali",
       role: "Project Manager , Backend Developer",
-      image: "./images/Amri.jpg",
+      image: "./images/Amri.JPG",
       icon: <BsInstagram />,
       igurl: "https://www.instagram.com/amri_sazali/",
-      linkedurl: "https://www.youtube.com",
+      linkedurl: "https://www.linkedin.com/in/amrisazali",
       icon2: <BsLinkedin />,
     },
     {
@@ -131,6 +131,26 @@ const LandingPage: NextPage = () => {
   const aboutus = useRef<HTMLDivElement>(null);
   const feature = useRef<HTMLDivElement>(null);
   const contacts = useRef<HTMLDivElement>(null);
+  const [navbar, setNavbar] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    firstName: "",
+    lastName: "",
+    phoneNo: "",
+    email: "",
+    message: "",
+  });
+
+  const changeBackground = () => {
+    if (window.scrollY >= 70) {
+      setNavbar(true);
+    } else {
+      setNavbar(false);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", changeBackground);
+  }, [navbar]);
 
   const [currSection, setCurrSection] = useState(0);
 
@@ -142,11 +162,6 @@ const LandingPage: NextPage = () => {
   }, [currSection]);
 
   const [open, setOpen] = useState(false);
-
-  const myForm = useRef<HTMLFormElement>(null);
-  const resetForm = () => {
-    myForm.current?.reset();
-  };
 
   const responsive = {
     desktop: {
@@ -166,6 +181,13 @@ const LandingPage: NextPage = () => {
     },
   };
 
+  const onContactFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setContactForm({ ...contactForm, [name]: value });
+  };
+
   return (
     <>
       <Head>
@@ -177,33 +199,44 @@ const LandingPage: NextPage = () => {
       {/* navbar */}
 
       <div className="">
-        <nav className="sticky top-0 z-20 flex bg-gray-800 ">
+        <nav
+          className={
+            navbar
+              ? "sticky top-0 z-20 flex bg-indigo-700  "
+              : "navbar flex bg-transparent"
+          }
+        >
           <div>
             <img
-              className="hidden aspect-auto h-14 md:flex md:w-36 "
-              src="./images/TaskMate.png"
+              className="hidden aspect-auto h-10 md:flex md:w-36 "
+              src="./images/TaskMate White 2.png"
               alt="logo"
             />
           </div>
           <div>
             <img
               className="flex aspect-auto h-10 md:hidden md:w-36 "
-              src="./images/Tmlogo.png"
+              src="./images/logo white 2.png"
               alt="logo"
             />
           </div>
-          <div className="mr-10 mt-2 ml-auto flex space-x-8 md:mt-4">
+          <div className="mr-5 mt-2 ml-auto flex space-x-8">
             {navigation.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
-                className="md:flex-end text-xs font-medium text-white hover:text-indigo-600 md:text-base"
+                className={
+                  navbar
+                    ? "text-xs font-medium text-white hover:text-black  md:flex md:text-base"
+                    : "text-xs font-medium text-white hover:text-indigo-600  md:flex md:text-base"
+                }
               >
                 {item.name}
               </a>
             ))}
           </div>
         </nav>
+
         {/* hero section */}
         <div ref={home} className="z-1 mx-auto py-20">
           <img
@@ -396,12 +429,39 @@ const LandingPage: NextPage = () => {
           </div>
 
           <form
-            ref={myForm}
-            action="#"
-            method="POST"
             onSubmit={(event) => {
+              const sendContactForm = async () => {
+                const res = await fetch("http://localhost:3000/api/email", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(contactForm),
+                });
+                return await res.json();
+              };
               event.preventDefault();
-              setOpen(true);
+
+              // Make request to backend
+              sendContactForm()
+                .then((res) => {
+                  console.log("Frontend received: ", res);
+
+                  // Open the modal to show success
+                  setOpen(true);
+
+                  // Reset the form
+                  setContactForm({
+                    firstName: "",
+                    lastName: "",
+                    phoneNo: "",
+                    email: "",
+                    message: "",
+                  });
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
             }}
             className="mx-auto mt-10 max-w-xl px-2 "
           >
@@ -415,11 +475,14 @@ const LandingPage: NextPage = () => {
                 </label>
                 <div className="mt-2.5">
                   <input
+                    required
                     type="text"
-                    name="first-name"
+                    name="firstName"
                     id="first-name"
                     autoComplete="given-name"
                     className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm sm:leading-6"
+                    value={contactForm.firstName}
+                    onChange={onContactFormChange}
                   />
                 </div>
               </div>
@@ -432,11 +495,14 @@ const LandingPage: NextPage = () => {
                 </label>
                 <div className="mt-2.5">
                   <input
+                    required
                     type="text"
-                    name="last-name"
+                    name="lastName"
                     id="last-name"
                     autoComplete="family-name"
                     className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm sm:leading-6"
+                    value={contactForm.lastName}
+                    onChange={onContactFormChange}
                   />
                 </div>
               </div>
@@ -450,11 +516,14 @@ const LandingPage: NextPage = () => {
                 </label>
                 <div className="mt-2.5">
                   <input
+                    required
                     type="email"
                     name="email"
                     id="email"
                     autoComplete="email"
                     className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 sm:text-sm sm:leading-6"
+                    value={contactForm.email}
+                    onChange={onContactFormChange}
                   />
                 </div>
               </div>
@@ -462,17 +531,19 @@ const LandingPage: NextPage = () => {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="phone-number"
-                  className="block text-sm font-semibold leading-6 text-white"
+                  className="flex text-sm font-semibold leading-6 text-white"
                 >
-                  Phone number
+                  Phone number <p className="text-gray-400">(optional)</p>
                 </label>
                 <div className="mt-2.5">
                   <input
                     type="tel"
-                    name="phone-number"
+                    name="phoneNo"
                     id="phone-number"
                     autoComplete="tel"
                     className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 sm:text-sm sm:leading-6"
+                    value={contactForm.phoneNo}
+                    onChange={onContactFormChange}
                   />
                 </div>
               </div>
@@ -490,7 +561,9 @@ const LandingPage: NextPage = () => {
                     id="message"
                     rows={4}
                     className="block w-full rounded-md border-0 py-2 px-3.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 sm:text-sm sm:leading-6"
-                    defaultValue={""}
+                    value={contactForm.message}
+                    onChange={onContactFormChange}
+                    placeholder="Write your message here"
                   />
                 </div>
               </div>
@@ -498,7 +571,6 @@ const LandingPage: NextPage = () => {
             <div className="mt-10">
               <button
                 type="submit"
-                onClick={resetForm}
                 className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2  hover:bg-indigo-500"
               >
                 Submit
