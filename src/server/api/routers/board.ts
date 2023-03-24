@@ -4,6 +4,7 @@ import type {
   Panel,
   Task,
   Task_Activity,
+  User,
 } from "@prisma/client";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
@@ -23,6 +24,13 @@ export type PanelWithTasks = Panel & {
 
 export type BoardWithPanelsAndTasks = Board & {
   Panel: PanelWithTasks[];
+};
+
+export type BoardWithPanelsAndTasksAndCollaborators = Board & {
+  Panel: PanelWithTasks[];
+  Board_Collaborator: {
+    User: User;
+  };
 };
 
 export const boardRouter = createTRPCRouter({

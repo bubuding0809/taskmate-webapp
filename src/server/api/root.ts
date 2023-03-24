@@ -5,6 +5,7 @@ import {
   panelRouter,
   userRouter,
   taskRouter,
+  collaboratorRouter,
 } from "./routers/";
 
 /**
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   board: boardRouter,
   panel: panelRouter,
   task: taskRouter,
+  collaborator: collaboratorRouter,
 });
 
 // export type definition of API
