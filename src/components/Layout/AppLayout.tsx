@@ -136,7 +136,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
 
   // function to generate breadcrumbs based on the current path
   const getBreadCrumbPages = () => {
-    const pathMap = {
+    const pathMap: {
+      [key: string]: string;
+    } = {
       dashboard: "Dashboard",
       collaboration: "Collaboration",
     };
@@ -151,7 +153,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
         const pathName =
           page === currentBoardData?.id ? currentBoardData.board_title! : page;
         return {
-          name: pathMap[pathName as keyof {}] ?? pathName,
+          name: pathMap[pathName] ?? pathName,
           href: page === "collaboration" ? "/collaboration" : page,
           // The current property is used to set the aria-current property of the link
           current: page === router.asPath.split("/").slice(-1)[0],
