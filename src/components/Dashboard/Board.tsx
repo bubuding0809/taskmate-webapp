@@ -21,6 +21,7 @@ import type {
   BoardDetailed,
   FolderWithBoards,
 } from "server/api/routers/folder";
+import { useSession } from "next-auth/react";
 
 const pills = [
   { element: <div className="h-3 w-5 rounded-full bg-red-500" />, name: "red" },
@@ -62,6 +63,7 @@ const Board: React.FC<BoardProps> = ({
   className = "",
 }) => {
   const router = useRouter();
+  const { data: sessionData } = useSession();
   const addToast = useToastContext();
 
   const [openUserModal, setOpenUserModal] = React.useState(false);
@@ -214,11 +216,14 @@ const Board: React.FC<BoardProps> = ({
         ) : (
           <Tooltip title="View board">
             <Link
-              href={
-                boardItem.folder_id
+              href={(() => {
+                if (boardItem.user_id !== sessionData?.user.id) {
+                  return `/board/collaboration/${boardItem.id}`;
+                }
+                return boardItem.folder_id
                   ? `/board/${boardItem.folder_id}/${boardItem.id}`
-                  : `/board/${boardItem.id}`
-              }
+                  : `/board/${boardItem.id}`;
+              })()}
               className="w-6/12"
             >
               <h3 className="truncate text-base font-semibold leading-6 text-gray-900">

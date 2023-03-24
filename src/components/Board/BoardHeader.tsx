@@ -3,7 +3,7 @@ import useRemoveCollaborators from "@/utils/mutations/collaborator/useRemoveColl
 import { UserMinusIcon } from "@heroicons/react/24/solid";
 import { Tooltip } from "@mui/material";
 import { User } from "@prisma/client";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import UserModal from "../Dashboard/UserModal";
 import UserSearchPopover from "../Dashboard/UserSearchPopover";
 
@@ -35,6 +35,33 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
   // State for the current user in the user modal
   const [currUser, setCurrUser] = useState<User | null>(null);
 
+  const boardCollaborators = useMemo(() => {
+    return boardQueryData
+      ? [{ User: boardQueryData.user }, ...boardQueryData.Board_Collaborator]
+      : [];
+  }, [boardQueryData]);
+
+  const userModalActions = useMemo(() => {
+    const actions = [];
+
+    if (currUser?.id !== boardQueryData?.user_id) {
+      actions.push({
+        callback: async () => {
+          await removeCollaborators({
+            boardId: bid,
+            userIds: [currUser?.id ?? ""],
+          });
+          return true;
+        },
+        loading: isRemovingUsers,
+        name: "Remove collaborator",
+        icon: UserMinusIcon,
+      });
+    }
+
+    return actions;
+  }, [boardQueryData, currUser]);
+
   return (
     <div className="sticky top-0 z-10 flex min-w-max items-center gap-2 space-x-2 rounded-md border bg-white px-4 py-2 text-2xl font-bold shadow-md">
       <div>
@@ -46,7 +73,7 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
       <>
         <div className="flex space-x-2 font-normal">
           <div className="flex items-center gap-2">
-            {boardQueryData?.Board_Collaborator.map(({ User: user }) => (
+            {boardCollaborators.map(({ User: user }) => (
               <Tooltip
                 key={user.id}
                 title={user.name ?? ""}
@@ -72,20 +99,7 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
           open={openUserModal}
           setOpen={setOpenUserModal}
           user={currUser}
-          actions={[
-            {
-              callback: async () => {
-                await removeCollaborators({
-                  boardId: bid,
-                  userIds: [currUser?.id ?? ""],
-                });
-                return true;
-              },
-              loading: isRemovingUsers,
-              name: "Remove collaborator",
-              icon: UserMinusIcon,
-            },
-          ]}
+          actions={userModalActions}
         />
       </>
 

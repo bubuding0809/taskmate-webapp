@@ -67,6 +67,7 @@ export const boardRouter = createTRPCRouter({
               User: true,
             },
           },
+          user: true,
         },
       });
     }),
@@ -132,7 +133,7 @@ export const boardRouter = createTRPCRouter({
 
   // Query to get all boards that are not in a folder for a user, and the order of the boards
   // This is used to populate the sidebar with unorganized boards
-  getUserBoardWithoutFolder: publicProcedure
+  getUserBoardWithoutFolder: protectedProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -180,6 +181,49 @@ export const boardRouter = createTRPCRouter({
           boards: boardMap,
           boardOrder: boardOrder!.board_order?.split(",") || [],
         };
+      });
+    }),
+
+  // Query to get all boards that user is a collaborator of
+  getUserCollaboratorBoards: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      return await ctx.prisma.$transaction(async (tx) => {
+        const boards = await tx.board.findMany({
+          where: {
+            Board_Collaborator: {
+              some: {
+                user_id: input.userId,
+              },
+            },
+          },
+          include: {
+            user: true,
+            Board_Collaborator: {
+              include: {
+                User: true,
+              },
+            },
+            Board_Message: true,
+            Board_Tag: true,
+            Team_Board_Rel: {
+              include: {
+                Team: true,
+              },
+            },
+          },
+        });
+
+        // create a map of board id to board
+        const boardMap = new Map<string, BoardDetailed>(
+          boards.map((board) => [board.id, board])
+        );
+
+        return boardMap;
       });
     }),
 

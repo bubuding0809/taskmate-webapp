@@ -8,7 +8,6 @@ import {
   HomeIcon,
   UsersIcon,
   XMarkIcon,
-  ChevronLeftIcon,
   ChevronRightIcon,
   FolderPlusIcon,
   DocumentPlusIcon,
@@ -44,9 +43,13 @@ import type { DragStart, DropResult } from "react-beautiful-dnd";
 import type { BreadCrumbType } from "./BreadCrumbs";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
-  { name: "Teams", href: "#", icon: UsersIcon, current: false },
-  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
+  { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
+  {
+    name: "Collaboration",
+    href: "/collaboration",
+    icon: UsersIcon,
+  },
+  // { name: "Calendar", href: "#", icon: CalendarIcon },
 ];
 
 const userNavigation = [
@@ -67,8 +70,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Get router to get the current path to populate the breadcrumbs
   const router = useRouter();
 
-  // get toast context to add toast
-  const addToast = useToastContext();
+  // Query to get the current board data if the user is on a board page
+  const { data: currentBoardData } = api.board.getBoardById.useQuery({
+    boardId:
+      router.asPath.split("/")[router.asPath.split("/").length - 1] ?? "",
+  });
+
   // Get session data
   const { data: sessionData, status: sessionStatus } = useSession({
     required: true,
@@ -129,6 +136,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
 
   // function to generate breadcrumbs based on the current path
   const getBreadCrumbPages = () => {
+    const pathMap = {
+      dashboard: "Dashboard",
+      collaboration: "Collaboration",
+    };
+
     // Trim the leading and trailing slashes from the path
     const params = trimChar(["/"], router.asPath).split("/");
     const pages: BreadCrumbType[] = params
@@ -136,18 +148,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
       .map((page) => {
         // If the page is a board, set the name to the board title by getting the board title from the boardMapData
         // Else, set the name to the page
-        const pathName = boardMapData?.get(page)?.board_title ?? page;
+        const pathName =
+          page === currentBoardData?.id ? currentBoardData.board_title! : page;
         return {
-          name: pathName,
-          href: page,
+          name: pathMap[pathName as keyof {}] ?? pathName,
+          href: page === "collaboration" ? "/collaboration" : page,
           // The current property is used to set the aria-current property of the link
           current: page === router.asPath.split("/").slice(-1)[0],
           isFolder: false,
         };
       })
+      // Filter out the board page from the breadcrumbs as there is no path to the board page
       .filter((page) => page.name !== "board");
-    // Filter out the board page from the breadcrumbs as there is no path to the board page
-    // .filter((page) => page.name !== "board");
 
     // If the page paths starts with /board, then check if the board is in a folder
     // If the board is in a folder, add the folder to the breadcrumbs
@@ -181,7 +193,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   const breadCrumbs = useMemo(getBreadCrumbPages, [
     router.asPath,
     boardsWithoutFolderData,
+    currentBoardData,
   ]);
+
+  console.log("breadCrumbs", breadCrumbs);
 
   // TODO - To be extracted to a separate file
   // Bind key bindings to the document on mount
@@ -441,7 +456,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                           key={item.name}
                           href={item.href}
                           className={classNames(
-                            item.current
+                            router.pathname === item.href
                               ? "bg-gray-900 text-white"
                               : "text-gray-300 hover:bg-gray-700 hover:text-white",
                             "group flex items-center rounded-md px-2 py-2 text-base font-medium"
@@ -449,7 +464,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                         >
                           <item.icon
                             className={classNames(
-                              item.current
+                              router.pathname === item.href
                                 ? "text-gray-300"
                                 : "text-gray-400 group-hover:text-gray-300",
                               "mr-4 h-6 w-6 flex-shrink-0"
@@ -523,7 +538,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                     key={item.name}
                     href={item.href}
                     className={classNames(
-                      item.current
+                      router.pathname === item.href
                         ? "bg-gray-900 text-white"
                         : "text-gray-300 hover:bg-gray-700 hover:text-white",
                       sidebarExpanded ? "" : "justify-center",
@@ -532,7 +547,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                   >
                     <item.icon
                       className={classNames(
-                        item.current
+                        router.pathname === item.href
                           ? "text-gray-300"
                           : "text-gray-400 group-hover:text-gray-300",
                         sidebarExpanded ? "mr-3" : "mr-0",
