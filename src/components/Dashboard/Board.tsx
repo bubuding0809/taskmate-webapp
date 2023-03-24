@@ -304,17 +304,11 @@ const Board: React.FC<BoardProps> = ({
             type="button"
             className="relative block h-full w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             onClick={() =>
-              void router
-                .push(
-                  folderItem
-                    ? `/board/${folderItem.folder_name}/${boardItem.id}`
-                    : `/board/${boardItem.id}`
-                )
-                .then(() =>
-                  setTimeout(() => {
-                    handleCreateNewPanel();
-                  }, 500)
-                )
+              void router.push(getBoardLink()).then(() =>
+                setTimeout(() => {
+                  handleCreateNewPanel();
+                }, 500)
+              )
             }
           >
             <PlusIcon className="mx-auto h-10 w-10 text-gray-400" />
