@@ -63,7 +63,7 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
   }, [boardQueryData, currUser]);
 
   return (
-    <div className="sticky top-0 z-10 flex min-w-max items-center gap-2 space-x-2 rounded-md border bg-white px-4 py-2 text-2xl font-bold shadow-md">
+    <div className="sticky left-0 top-0 z-10 flex min-w-max items-center gap-2 space-x-2 rounded-md border bg-white px-4 py-2 text-2xl font-bold shadow-md">
       <div>
         <span className="mr-2">{boardQueryData?.thumbnail_image}</span>
         {boardQueryData?.board_title}
