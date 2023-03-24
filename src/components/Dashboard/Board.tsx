@@ -164,6 +164,15 @@ const Board: React.FC<BoardProps> = ({
     return collaboratorAvatars;
   };
 
+  const getBoardLink = () => {
+    if (boardItem.user_id !== sessionData?.user.id) {
+      return `/board/collaboration/${boardItem.id}`;
+    }
+    return boardItem.folder_id
+      ? `/board/${boardItem.folder_id}/${boardItem.id}`
+      : `/board/${boardItem.id}`;
+  };
+
   return (
     <div
       className={classNames(
@@ -215,17 +224,7 @@ const Board: React.FC<BoardProps> = ({
           </div>
         ) : (
           <Tooltip title="View board">
-            <Link
-              href={(() => {
-                if (boardItem.user_id !== sessionData?.user.id) {
-                  return `/board/collaboration/${boardItem.id}`;
-                }
-                return boardItem.folder_id
-                  ? `/board/${boardItem.folder_id}/${boardItem.id}`
-                  : `/board/${boardItem.id}`;
-              })()}
-              className="w-6/12"
-            >
+            <Link href={getBoardLink()} className="w-6/12">
               <h3 className="truncate text-base font-semibold leading-6 text-gray-900">
                 {boardItem.thumbnail_image} {boardItem.board_title}
               </h3>
@@ -261,13 +260,7 @@ const Board: React.FC<BoardProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
                 <Tooltip title="View panel">
-                  <Link
-                    href={
-                      boardItem.folder_id
-                        ? `/board/${boardItem.folder_id}/${boardItem.id}`
-                        : `/board/${boardItem.id}`
-                    }
-                  >
+                  <Link href={getBoardLink()}>
                     <h4 className="text-sm font-medium text-gray-900">
                       {panel.panel_title ?? "Untitled"}
                     </h4>
