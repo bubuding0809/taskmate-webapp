@@ -40,6 +40,22 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  **/
 export const authOptions: NextAuthOptions = {
+  /* 
+  Database adapter is set to use Prisma via the prisma adapter.
+  Next-auth uses its own database schema and we need to use the adapter 
+  to make sure that the next-auth schema and the prisma schema are in sync. 
+  */
+  adapter: PrismaAdapter(prisma),
+
+  /* Session strategy is to write to a database via prisma adapter, other options include JWT */
+  session: {
+    strategy: "database",
+  },
+
+  /*
+  Define callback functions that are called when a user is signed in, get session, etc... or encounters an error
+  This callbacks are accessible via the the provided next-auth hooks or at /api/auth/[callback] 
+  */
   callbacks: {
     session({ session, user }) {
       if (session.user) {
@@ -48,8 +64,32 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
+    async signIn({ user, account, profile, email, credentials }) {
+      const isAllowedToSignIn = true;
+
+      if (isAllowedToSignIn) {
+        return true;
+      } else {
+        // Return false to display a default error message
+        return false;
+        // Or you can return a URL to redirect to:
+        // return '/unauthorized'
+      }
+    },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
   },
-  adapter: PrismaAdapter(prisma),
+
+  /* 
+  Define the providers you want to use for authentication
+  Each provider has its own configuration options
+  Providers includes options for OAuth, OpenID, email, credentials, etc. 
+  */
   providers: [
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,
@@ -73,8 +113,26 @@ export const authOptions: NextAuthOptions = {
      * @see https://next-auth.js.org/providers/github
      **/
   ],
+
+  // The pages object allows you to override the default pages and their URLs.
   pages: {
     signIn: "/auth/signin",
+  },
+
+  // Events are includes callbacks for specific authentication events, they are useful for logging
+  events: {
+    signIn({ account, user, isNewUser, profile }) {
+      console.log("signIn event", account, user, isNewUser, profile, "\n\n");
+    },
+    createUser({ user }) {
+      console.log("createUser event", user, "\n\n");
+    },
+    updateUser({ user }) {
+      console.log("updateUser event", user, "\n\n");
+    },
+    linkAccount({ account, user, profile }) {
+      console.log("linkAccount event", account, user, profile, "\n\n");
+    },
   },
 };
 
