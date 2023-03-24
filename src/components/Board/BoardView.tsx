@@ -1,14 +1,10 @@
 import React, { useState } from "react";
 import Panel from "@/components/Board/Panel";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import { nanoid } from "nanoid";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { api } from "@/utils/api";
 import { classNames } from "@/utils/helper";
-import { Tooltip } from "@mui/material";
-import UserModal from "../Dashboard/UserModal";
-import UserSearchPopover from "../Dashboard/UserSearchPopover";
-import { User } from "@prisma/client";
 
 import useCreatePanel from "@/utils/mutations/panel/useCreatePanel";
 import useUpdatePanelOrder from "@/utils/mutations/panel/useUpdatePanelOrder";
@@ -17,6 +13,7 @@ import useUpdateSubtaskOrder from "@/utils/mutations/task/useUpdateSubtaskOrder"
 import useCombineTask from "@/utils/mutations/task/useCombineTask";
 
 import type { DragStart, DropResult } from "react-beautiful-dnd";
+import BoardHeader from "./BoardHeader";
 
 interface BoardViewProps {
   bid: string;
@@ -63,12 +60,6 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
   const { mutate: reorderTask } = useUpdateTaskOrder();
   const { mutate: combineTaskWithParent } = useCombineTask();
   const { mutate: reorderSubTask } = useUpdateSubtaskOrder();
-
-  // State for whether the user modal is open
-  const [openUserModal, setOpenUserModal] = useState(false);
-
-  // State for the current user in the user modal
-  const [currUser, setCurrUser] = useState<User | null>(null);
 
   const handleCreateNewPanel = () => {
     // Create new panel and update state
@@ -318,66 +309,12 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
       }}
     >
       {/* Board header */}
-      <div className="sticky top-0 z-10 flex min-w-max items-center gap-2 space-x-2 rounded-md border bg-white px-4 py-2 text-2xl font-bold shadow-md">
-        <div>
-          <span className="mr-2">{boardQueryData?.thumbnail_image}</span>
-          {boardQueryData?.board_title}
-        </div>
-
-        {/* Show collaborators of the board */}
-        <>
-          <div className="flex space-x-2">
-            <div className="flex items-center gap-2">
-              {boardQueryData?.Board_Collaborator.map(({ User: user }) => (
-                <div key={user.id} className="relative">
-                  <Tooltip
-                    title={user.name ?? ""}
-                    className="cursor-pointer rounded-full hover:opacity-75"
-                    onClick={() => {
-                      setCurrUser(user);
-                      setOpenUserModal(true);
-                    }}
-                  >
-                    <img
-                      // prevent images from being compressed
-                      className="h=[26px] inline-block w-[26px] rounded-full sm:h-8 sm:w-8"
-                      src={user.image ?? ""}
-                      alt={user.name ?? ""}
-                    />
-                  </Tooltip>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Only shown when collaborator avatar is clicked */}
-          <UserModal
-            open={openUserModal}
-            setOpen={setOpenUserModal}
-            user={currUser}
-          />
-        </>
-
-        {/* Create a select dropdown to choose background images */}
-        <div className="flex items-center gap-2">
-          <select
-            className="rounded-md border-gray-300 text-sm text-gray-500 focus:border-gray-300 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
-            onChange={(e) => {
-              setBgImage(e.target.value);
-            }}
-            value={bgImage}
-            id="bg-image"
-          >
-            {backgroundImages.map((image) => {
-              return (
-                <option key={image.url} value={image.url}>
-                  {image.name}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-      </div>
+      <BoardHeader
+        bid={bid}
+        bgImage={bgImage}
+        setBgImage={setBgImage}
+        backgroundImages={backgroundImages}
+      />
 
       {/* Board Main*/}
       <div className="flex flex-1 items-start">
