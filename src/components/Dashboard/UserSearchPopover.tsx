@@ -341,7 +341,9 @@ const UserSearchPopover: React.FC<UserSearchPopoverProps> = ({
                     disabled={isAddingUsers}
                     className="flex items-center justify-center gap-x-2.5 p-3 font-semibold text-gray-900 hover:bg-gray-100 disabled:bg-indigo-300 disabled:text-white"
                     onClick={(e) =>
-                      handleAddSelectedUsers(e).then(() => close())
+                      void handleAddSelectedUsers(e)
+                        .then(() => close())
+                        .catch((err) => console.log(err))
                     }
                   >
                     {isAddingUsers ? (
