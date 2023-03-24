@@ -48,6 +48,7 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
           <div className="flex items-center gap-2">
             {boardQueryData?.Board_Collaborator.map(({ User: user }) => (
               <Tooltip
+                key={user.id}
                 title={user.name ?? ""}
                 onClick={() => {
                   setCurrUser(user);

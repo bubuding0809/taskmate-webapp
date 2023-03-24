@@ -65,6 +65,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async signIn({ user, account, profile, email, credentials }) {
+      await new Promise((resolve) => resolve("user"));
       const isAllowedToSignIn = true;
 
       if (isAllowedToSignIn) {
@@ -77,6 +78,7 @@ export const authOptions: NextAuthOptions = {
       }
     },
     async redirect({ url, baseUrl }) {
+      await new Promise((resolve) => resolve("url"));
       // Allows relative callback URLs
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       // Allows callback URLs on the same origin
