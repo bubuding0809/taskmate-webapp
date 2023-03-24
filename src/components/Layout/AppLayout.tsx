@@ -198,15 +198,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
     currentBoardData,
   ]);
 
-  console.log("breadCrumbs", breadCrumbs);
-
   // TODO - To be extracted to a separate file
   // Bind key bindings to the document on mount
   useEffect(() => {
     // bind key down event to document
     const keyShortcuts = (e: KeyboardEvent) => {
       // if user presses cmd + b, toggle the sidebar
-      if (e.metaKey) {
+      if (e.metaKey && !e.shiftKey) {
         switch (e.key) {
           case "b":
             setSidebarExpanded((prev) => !prev);
@@ -214,6 +212,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
           case "k":
             alert("TODO - open command palette");
           // TODO - add more key bindings
+          default:
+            break;
+        }
+      }
+
+      // if user presses cmd and shift and b
+      if (e.metaKey && e.shiftKey) {
+        switch (e.key) {
+          case "b":
+            setBoardCreationOpen((prev) => !prev);
+            break;
           default:
             break;
         }
