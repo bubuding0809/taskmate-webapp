@@ -218,39 +218,6 @@ const UserSearchPopover: React.FC<UserSearchPopoverProps> = ({
                       </div>
                     </div>
 
-                    {/* Render selected people names */}
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {selectedUsers.map((person) => (
-                        <div
-                          key={person.id}
-                          className="flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1"
-                        >
-                          <img
-                            className="h-6 w-6 rounded-full"
-                            src={person.image ?? ""}
-                            alt={person.name ?? ""}
-                          />
-                          <span>{person.name}</span>
-
-                          {/* X button to remove user from selected */}
-                          <button
-                            type="button"
-                            className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                            onClick={() => {
-                              setSelectedUsers((prev) =>
-                                prev.filter((user) => user.id !== person.id)
-                              );
-                            }}
-                          >
-                            <span className="sr-only">
-                              Remove {person.name}
-                            </span>
-                            <XMarkIcon className="h-3 w-3 text-gray-500" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-
                     <Combobox.Options
                       static
                       className="mt-2 flex max-h-96 w-96 scroll-py-3 flex-col overflow-y-auto"
@@ -335,6 +302,37 @@ const UserSearchPopover: React.FC<UserSearchPopoverProps> = ({
                       </div>
                     )}
                   </Combobox>
+
+                  {/* Render selected people names */}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {selectedUsers.map((person) => (
+                      <div
+                        key={person.id}
+                        className="flex items-center gap-2 rounded-full bg-gray-100 px-2 py-1"
+                      >
+                        <img
+                          className="h-6 w-6 rounded-full"
+                          src={person.image ?? ""}
+                          alt={person.name ?? ""}
+                        />
+                        <span>{person.name}</span>
+
+                        {/* X button to remove user from selected */}
+                        <button
+                          type="button"
+                          className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                          onClick={() => {
+                            setSelectedUsers((prev) =>
+                              prev.filter((user) => user.id !== person.id)
+                            );
+                          }}
+                        >
+                          <span className="sr-only">Remove {person.name}</span>
+                          <XMarkIcon className="h-3 w-3 text-gray-500" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Popover footer */}
