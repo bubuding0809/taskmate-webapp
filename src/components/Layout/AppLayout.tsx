@@ -503,11 +503,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
               )}
             >
               {sidebarExpanded ? (
-                <img
-                  className="h-12 w-auto"
-                  src="/logo_full.png"
-                  alt="Taskmate"
-                />
+                <img className="h-12 w-auto" src="/main.png" alt="Taskmate" />
               ) : (
                 <img
                   className="h-14 w-auto"
