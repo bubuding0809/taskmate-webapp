@@ -15,6 +15,7 @@ import {
 } from "react-icons/bs";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import Link from "next/link";
 
 // TO BE DONE BY: Jansonn
 // This is the landing page for the app. It should be the first page that the user sees when they visit the site.
@@ -222,7 +223,7 @@ const LandingPage: NextPage = () => {
           </div>
           <div className="mr-5 mt-2 ml-auto flex space-x-8">
             {navigation.map((item) => (
-              <a
+              <Link
                 key={item.name}
                 href={item.href}
                 className={
@@ -232,7 +233,7 @@ const LandingPage: NextPage = () => {
                 }
               >
                 {item.name}
-              </a>
+              </Link>
             ))}
           </div>
         </nav>
@@ -261,12 +262,12 @@ const LandingPage: NextPage = () => {
             </div>
 
             <div className="mt-10 flex items-center justify-center gap-x-3">
-              <a
+              <Link
                 href="/auth/signin"
                 className="rounded-md bg-indigo-500 px-3.5 py-2.5 text-2xl text-white shadow-sm  hover:bg-indigo-400"
               >
                 Try Now
-              </a>
+              </Link>
               <a
                 href="/demo"
                 className="rounded-md bg-white px-3.5 py-2.5 text-2xl text-black shadow-sm hover:bg-[#c6c3c3]"
@@ -651,13 +652,13 @@ const LandingPage: NextPage = () => {
           <div className="mx-auto max-w-7xl py-12 px-6 md:flex md:items-center md:justify-between lg:px-8">
             <div className="flex justify-center space-x-6 md:order-2">
               {social.map((item) => (
-                <a
+                <Link
                   key={item.name}
                   href={item.href}
                   className="text-2xl text-white hover:text-indigo-500"
                 >
                   <span>{item.icon}</span>
-                </a>
+                </Link>
               ))}
             </div>
             <div className="order-1 mt-8 md:mt-0">
