@@ -31,13 +31,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         phoneNo,
         email,
         message,
-    }:{
+    }  = req.body as {
         firstName: string,
         lastName: string,
         phoneNo: string,
         email: string,
         message: string,
-    }  = req.body;
+    }
     
     //sendmail
     try {
