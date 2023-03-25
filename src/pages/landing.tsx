@@ -268,12 +268,12 @@ const LandingPage: NextPage = () => {
               >
                 Try Now
               </Link>
-              <a
+              <Link
                 href="/demo"
                 className="rounded-md bg-white px-3.5 py-2.5 text-2xl text-black shadow-sm hover:bg-[#c6c3c3]"
               >
                 Live Demo
-              </a>
+              </Link>
             </div>
           </div>
         </div>

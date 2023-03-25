@@ -1,6 +1,6 @@
 // Next API ROUTE file
 import { NextApiRequest, NextApiResponse } from 'next';
-import { mailOptions, transporter } from './nodemailer';
+import { mailOptions, transporter } from '../../server/nodemailer';
 import { Html } from '@react-email/html';
 import { Button } from '@react-email/button';
 import { Text } from '@react-email/text';
