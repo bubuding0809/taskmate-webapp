@@ -41,7 +41,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     
     //sendmail
     try {
-        const data = req.body;
         await transporter.sendMail({
             ...mailOptions,
             subject: "Message from TaskMate",
