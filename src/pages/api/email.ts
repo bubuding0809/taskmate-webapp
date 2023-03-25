@@ -1,30 +1,22 @@
 // Next API ROUTE file
 import { NextApiRequest, NextApiResponse } from 'next';
 import { mailOptions, transporter } from './nodemailer';
+import { Html } from '@react-email/html';
+import { Button } from '@react-email/button';
+import { Text } from '@react-email/text';
+import { Hr } from '@react-email/hr';
 
-const sendEmailFunction = async (firstName: string, lastName: string, phoneNo: string, email: string, message: string) => {
-    // Send email with the data
-    try {
-        return await new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (firstName === "Jann") {
-                    reject("Jann is not allowed")
-                }
-                resolve("Email sent")
-            }, 3000)
-        })
-     } catch (error) {
-        throw new Error("Email not sent")
-     }
-}
+
 //generate email content
 const generateEmailContent = (firstName: string, lastName: string, phoneNo: string, email: string, message: string) => {
     return `
-        <h1 className="text-red" >Message from ${firstName} ${lastName}</h1>
-        <p>Phone Number: ${phoneNo}</p>
+        <h1>Message from ${firstName} ${lastName}</h1>
+        <p>Phone No: ${phoneNo}</p>
         <p>Email: ${email}</p>
         <p>Message: ${message}</p>
+
     `
+    
 }
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {

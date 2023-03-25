@@ -209,14 +209,14 @@ const LandingPage: NextPage = () => {
           <div>
             <img
               className="hidden aspect-auto h-10 md:flex md:w-36 "
-              src="./images/TaskMate White 2.png"
+              src="./images/TaskMate_White_2.png"
               alt="logo"
             />
           </div>
           <div>
             <img
               className="flex aspect-auto h-10 md:hidden md:w-36 "
-              src="./images/logo white 2.png"
+              src="./images/logo_white_2.png"
               alt="logo"
             />
           </div>
@@ -262,13 +262,13 @@ const LandingPage: NextPage = () => {
 
             <div className="mt-10 flex items-center justify-center gap-x-3">
               <a
-                href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                href="/auth/signin"
                 className="rounded-md bg-indigo-500 px-3.5 py-2.5 text-2xl text-white shadow-sm  hover:bg-indigo-400"
               >
                 Try Now
               </a>
               <a
-                href="#"
+                href="/demo"
                 className="rounded-md bg-white px-3.5 py-2.5 text-2xl text-black shadow-sm hover:bg-[#c6c3c3]"
               >
                 Live Demo
@@ -332,7 +332,7 @@ const LandingPage: NextPage = () => {
               <div className="my-10 mx-2 flex">
                 <img
                   className="mr-10 h-36 w-36 md:h-52 md:w-52"
-                  src="./images/puren.jpg"
+                  src="./images/teamplan.jpg"
                   alt="logo"
                 />
                 <div className="flex-row">
@@ -359,7 +359,7 @@ const LandingPage: NextPage = () => {
                 </div>
                 <img
                   className="ml-10 mr-4 h-36 w-36 md:h-52 md:w-52"
-                  src="./images/kanban.jpg"
+                  src="./images/planning.jpg"
                   alt="logo"
                 />
               </div>
@@ -431,14 +431,17 @@ const LandingPage: NextPage = () => {
           <form
             onSubmit={(event) => {
               const sendContactForm = async () => {
-                const res = await fetch("http://localhost:3000/api/email", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(contactForm),
-                });
-                return await res.json();
+                const res = await fetch(
+                  "https://taskmate-webapp.vercel.app/api/email",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(contactForm),
+                  }
+                );
+                return (await res.json()) as Promise<{ message: string }>;
               };
               event.preventDefault();
 
