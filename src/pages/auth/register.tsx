@@ -186,14 +186,14 @@ const Register: NextPage = () => {
                       return (
                         <button
                           key={provider.name}
-                          className="flex rounded-md border px-4 py-2 hover:bg-gray-300/50 bg-white justify-center items-center gap-2 shadow w-32"
+                          className="flex w-32 items-center justify-center gap-2 rounded-md border bg-white px-4 py-2 shadow hover:bg-gray-300/50"
                           onClick={() =>
                             void signIn(provider.id, {
                               callbackUrl: "/dashboard",
                             })
                           }
                         >
-                          <Logo className="text-indigo-800"/>
+                          <Logo className="text-indigo-800" />
                           {provider.name}
                         </button>
                       );
@@ -201,7 +201,7 @@ const Register: NextPage = () => {
                 </div>
 
                 <button
-                  className="w-full mt-6 rounded-md py-1.5 px-1.5 hover:bg-indigo-800 hover:text-gray-100 sm:leading-6 bg-indigo-600 text-white h-12"
+                  className="mt-6 h-12 w-full rounded-md bg-indigo-600 py-1.5 px-1.5 text-white hover:bg-indigo-800 hover:text-gray-100 sm:leading-6"
                   type="submit"
                 >
                   Create an account
