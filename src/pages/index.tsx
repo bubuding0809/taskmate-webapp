@@ -269,7 +269,7 @@ const LandingPage: NextPage = () => {
                 Try Now
               </Link>
               <Link
-                href="/demo"
+                href="/auth/signin"
                 className="rounded-md bg-white px-3.5 py-2.5 text-2xl text-black shadow-sm hover:bg-[#c6c3c3]"
               >
                 Live Demo
@@ -277,6 +277,7 @@ const LandingPage: NextPage = () => {
             </div>
           </div>
         </div>
+        
         {/* features */}
         <Carousel
           swipeable={true}
