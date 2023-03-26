@@ -137,7 +137,7 @@ const SignIn: NextPage = () => {
                     name="email"
                     type="email"
                     required
-                    className="relative block w-full rounded-t-md border-0 py-1.5 px-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="relative block w-full rounded-t-md border-0 py-1.5 px-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 indent-1"
                     placeholder="Email address"
                     value={credientialForm.email}
                     onChange={(e) => {
@@ -157,7 +157,7 @@ const SignIn: NextPage = () => {
                     name="password"
                     type="password"
                     required
-                    className="relative block w-full rounded-b-md border-0 py-1.5 px-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="relative block w-full rounded-b-md border-0 py-1.5 px-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 indent-1"
                     placeholder="Password"
                     value={credientialForm.password}
                     onChange={(e) => {
@@ -210,9 +210,9 @@ const SignIn: NextPage = () => {
                       aria-hidden="true"
                     >
                       <path
-                        fill-rule="evenodd"
+                        fillRule="evenodd"
                         d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
-                        clip-rule="evenodd"
+                        clipRule="evenodd"
                       />
                     </svg>
                   </span>
@@ -236,18 +236,18 @@ const SignIn: NextPage = () => {
                 .map((provider) => {
                   const Logo = providerLogos[provider.name]!;
                   return (
-                    <button
-                      key={provider.name}
-                      className="flex w-32 items-center justify-center gap-2 rounded-md border bg-white px-4 py-2 shadow hover:bg-gray-300/50"
-                      onClick={() =>
-                        void signIn(provider.id, {
-                          callbackUrl: "/dashboard",
-                        })
-                      }
-                    >
-                      <Logo className="text-indigo-800" />
-                      {provider.name}
-                    </button>
+                      <button
+                        key={provider.name}
+                        className="flex rounded-md border px-4 py-2 hover:bg-gray-300/50 bg-white justify-center items-center gap-2 shadow w-32"
+                        onClick={() =>
+                          void signIn(provider.id, {
+                            callbackUrl: "/dashboard",
+                          })
+                        }
+                      >
+                        <Logo className="text-indigo-800"/>
+                        {provider.name}
+                      </button>
                   );
                 })}
             </div>
