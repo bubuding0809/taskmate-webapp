@@ -1,6 +1,3 @@
-// ✅ using the async module asynchronously
-import { promises as fsPromises } from "fs";
-import * as path from "path";
 import { NextApiRequest, NextApiResponse } from "next";
 import { tnc } from "../../server/info/tnc.json";
 
