@@ -230,27 +230,24 @@ const SignIn: NextPage = () => {
             </div>
 
             {/* Social Login */}
-            <div className="flex items-center justify-center ">
+            <div className="flex items-center justify-between">
               {Object.values(providers ?? {})
                 .filter((provider) => provider.name !== "Credentials")
                 .map((provider) => {
                   const Logo = providerLogos[provider.name]!;
                   return (
-                    <div key={provider.name}>
-                      <button
-                        className=" justify-item-stretch m-3 flex  rounded-3xl border-3 p-4 hover:bg-gray-300/50"
-                        onClick={() =>
-                          void signIn(provider.id, {
-                            callbackUrl: "/dashboard",
-                          })
-                        }
-                      >
-                        <div className="m-1.5">
-                          <Logo />
-                        </div>
-                        {provider.name}
-                      </button>
-                    </div>
+                    <button
+                      key={provider.name}
+                      className="flex w-32 items-center justify-center gap-2 rounded-md border bg-white px-4 py-2 shadow hover:bg-gray-300/50"
+                      onClick={() =>
+                        void signIn(provider.id, {
+                          callbackUrl: "/dashboard",
+                        })
+                      }
+                    >
+                      <Logo className="text-indigo-800" />
+                      {provider.name}
+                    </button>
                   );
                 })}
             </div>
