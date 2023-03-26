@@ -44,6 +44,15 @@ module.exports = {
         "solid-small": "3px 3px 0.5px #94a3b8",
         "solid-medium": "5px 5px 0.5px #94a3b8",
       },
+      animation: {
+        fade: "fade 5s ",
+      },
+      keyframes: {
+        fade: {
+          "0%": { opacity: 0 },
+          "100%": { opacity: 1 },
+        },
+      },
     },
   },
   plugins: [
