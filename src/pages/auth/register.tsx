@@ -245,7 +245,7 @@ const Register: NextPage = () => {
                     className="ml-2 mt-4 block text-xs text-gray-900"
                   >
                     By signing up, you are creating a TaskMate account, and you
-                    agree to TaskMate's{" "}
+                    agree to TaskMate&apos;s{" "}
                     <Link
                       className=" text-blue-500 underline hover:text-indigo-600"
                       href="#"
