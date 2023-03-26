@@ -77,9 +77,9 @@ const Register: NextPage = () => {
       const data = (await response.json()) as { message: string };
       const termsAndConditions = data.message;
 
-      //open modal
-      setOpen(true);
+      // Set terms and conditions and open modal to display them
       setTermsAndConditions(termsAndConditions);
+      setOpen(true);
     } catch (err) {
       console.log(err);
     }
