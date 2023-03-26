@@ -1,8 +1,4 @@
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-  NextPage,
-} from "next";
+import type { NextPage } from "next";
 import {
   ClientSafeProvider,
   getCsrfToken,
@@ -66,9 +62,12 @@ const Register: NextPage = () => {
 
     try {
       // Make API call to fetch terms and conditions
-      const response = await fetch("/api/tnc", {
-        method: "GET",
-      });
+      const response = await fetch(
+        "https://taskmate-webapp.vercel.app/api/tnc",
+        {
+          method: "GET",
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch terms and conditions");

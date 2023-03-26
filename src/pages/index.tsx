@@ -127,6 +127,24 @@ const navigation = [
     },
   ];
 
+const responsive = {
+  desktop: {
+    breakpoint: { max: 3000, min: 1024 },
+    items: 2,
+    slidesToSlide: 2, // optional, default to 1.
+  },
+  tablet: {
+    breakpoint: { max: 1024, min: 464 },
+    items: 1,
+    slidesToSlide: 1, // optional, default to 1.
+  },
+  mobile: {
+    breakpoint: { max: 464, min: 0 },
+    items: 1,
+    slidesToSlide: 1, // optional, default to 1.
+  },
+};
+
 const LandingPage: NextPage = () => {
   const home = useRef<HTMLDivElement>(null);
   const aboutus = useRef<HTMLDivElement>(null);
@@ -164,23 +182,7 @@ const LandingPage: NextPage = () => {
 
   const [open, setOpen] = useState(false);
 
-  const responsive = {
-    desktop: {
-      breakpoint: { max: 3000, min: 1024 },
-      items: 2,
-      slidesToSlide: 2, // optional, default to 1.
-    },
-    tablet: {
-      breakpoint: { max: 1024, min: 464 },
-      items: 1,
-      slidesToSlide: 1, // optional, default to 1.
-    },
-    mobile: {
-      breakpoint: { max: 464, min: 0 },
-      items: 1,
-      slidesToSlide: 1, // optional, default to 1.
-    },
-  };
+  const [sending, setSending] = useState(false);
 
   const onContactFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -277,7 +279,7 @@ const LandingPage: NextPage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* features */}
         <Carousel
           swipeable={true}
@@ -448,10 +450,9 @@ const LandingPage: NextPage = () => {
               event.preventDefault();
 
               // Make request to backend
+              setSending(true);
               sendContactForm()
                 .then((res) => {
-                  console.log("Frontend received: ", res);
-
                   // Open the modal to show success
                   setOpen(true);
 
@@ -463,6 +464,8 @@ const LandingPage: NextPage = () => {
                     email: "",
                     message: "",
                   });
+
+                  setSending(false);
                 })
                 .catch((err) => {
                   console.log(err);
@@ -575,10 +578,11 @@ const LandingPage: NextPage = () => {
             </div>
             <div className="mt-10">
               <button
+                disabled={sending}
                 type="submit"
-                className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2  hover:bg-indigo-500"
+                className="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2  focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:bg-indigo-400"
               >
-                Submit
+                {sending ? "Sending..." : "Send"}
               </button>
             </div>
           </form>
@@ -635,7 +639,7 @@ const LandingPage: NextPage = () => {
                       <div className="mt-5 sm:mt-6">
                         <button
                           type="button"
-                          className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 hover:bg-indigo-500"
+                          className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                           onClick={() => setOpen(false)}
                         >
                           Thanks!
@@ -675,4 +679,3 @@ const LandingPage: NextPage = () => {
 };
 
 export default LandingPage;
-
