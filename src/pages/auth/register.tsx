@@ -66,7 +66,7 @@ const Register: NextPage = () => {
 
     try {
       // Make API call to fetch terms and conditions
-      const response = await fetch("http://localhost:3000/api/tnc", {
+      const response = await fetch("/api/tnc", {
         method: "GET",
       });
 
