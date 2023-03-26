@@ -1,4 +1,5 @@
-import { Fragment, ReactNode, useState } from "react";
+import { useRouter } from "next/router";
+import { Fragment, ReactNode, useEffect, useMemo, useState } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
   Bars3BottomLeftIcon,
@@ -7,34 +8,48 @@ import {
   HomeIcon,
   UsersIcon,
   XMarkIcon,
-  ChevronLeftIcon,
   ChevronRightIcon,
   FolderPlusIcon,
   DocumentPlusIcon,
 } from "@heroicons/react/24/outline";
+import { DocumentTextIcon, FolderIcon } from "@heroicons/react/20/solid";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { classNames } from "../../utils/helper";
 import FolderDisclosure from "../../components/Layout/FolderDisclosure";
 import Head from "next/head";
 import { signOut, useSession } from "next-auth/react";
-import { api } from "@/utils/api";
-import Link from "next/link";
-import useCreateFolder from "@/utils/mutations/useCreateFolder";
-import { nanoid } from "nanoid";
 import {
   DragDropContext,
   Draggable,
-  DragStart,
   Droppable,
-  DropResult,
   resetServerContext,
 } from "react-beautiful-dnd";
+import CreateBoardSlideOver from "./CreateBoardSliderOver";
+import useCreateFolder from "@/utils/mutations/useCreateFolder";
 import useUpdateFolderOrder from "@/utils/mutations/useUpdateFolderOrder";
+import useUpdateBoardOrder from "@/utils/mutations/useUpdateBoardOrder";
+import useAddBoardToFolder from "@/utils/mutations/useAddBoardToFolder";
+import BoardDisclosure from "./BoardDisclosure";
+import useUpdateNestedBoardOrder from "@/utils/mutations/useUpdateNestedBoardOrder";
+import BreadCrumbs from "./BreadCrumbs";
+import { api } from "@/utils/api";
+import { nanoid } from "nanoid";
+import { useDebounceBool } from "@/utils/hooks/useDebounceBool";
+import { classNames, trimChar } from "@/utils/helper";
+import { useToastContext } from "@/utils/context/ToastContext";
+import Link from "next/link";
+import Loader from "../custom/Loader";
+
+import type { DragStart, DropResult } from "react-beautiful-dnd";
+import type { BreadCrumbType } from "./BreadCrumbs";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: HomeIcon, current: true },
-  { name: "Teams", href: "#", icon: UsersIcon, current: false },
-  { name: "Calendar", href: "#", icon: CalendarIcon, current: false },
+  { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
+  {
+    name: "Collaboration",
+    href: "/collaboration",
+    icon: UsersIcon,
+  },
+  // { name: "Calendar", href: "#", icon: CalendarIcon },
 ];
 
 const userNavigation = [
@@ -51,6 +66,15 @@ type AppLayoutProps = {
 const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Use resetServerContext to prevent react-beautiful-dnd from crashing
   resetServerContext();
+
+  // Get router to get the current path to populate the breadcrumbs
+  const router = useRouter();
+
+  // Query to get the current board data if the user is on a board page
+  const { data: currentBoardData } = api.board.getBoardById.useQuery({
+    boardId:
+      router.asPath.split("/")[router.asPath.split("/").length - 1] ?? "",
+  });
 
   // Get session data
   const { data: sessionData, status: sessionStatus } = useSession({
@@ -78,45 +102,192 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
       }
     );
 
+  // Get a map of all boards for the user
+  const { data: boardMapData } = api.board.getUserBoardMap.useQuery(
+    {
+      userId: sessionData?.user.id ?? "",
+    },
+    {
+      enabled: !!sessionData && sessionData.user.id !== undefined,
+    }
+  );
+
   // Mutation hooks
   const { mutate: createFolder } = useCreateFolder();
   const { mutate: reorderFolder } = useUpdateFolderOrder();
-  const { mutate: addBoardToFolder } = api.board.addBoardToFolder.useMutation();
+  const { mutateAsync: addBoardToFolder } = useAddBoardToFolder();
+  const { mutate: reorderBoard } = useUpdateBoardOrder();
+  const { mutate: reorderNestedBoard } = useUpdateNestedBoardOrder();
 
   // Set up sidebar open state
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Set up sidebar expand state
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
   // state to handle drop enabled or disabled for folders and boards
   const [boardsDropDisabled, setBoardsDropDropDisabled] = useState(false);
 
+  // Debounce function to prevent spamming of folder creation or board creation
+  const [mutationAvail, setMutationAvail] = useDebounceBool(400);
+
+  // Setup open state for board creation slideover
+  const [boardCreationOpen, setBoardCreationOpen] = useState(false);
+
+  // function to generate breadcrumbs based on the current path
+  const getBreadCrumbPages = () => {
+    const pathMap: {
+      [key: string]: string;
+    } = {
+      dashboard: "Dashboard",
+      collaboration: "Collaboration",
+    };
+
+    // Trim the leading and trailing slashes from the path
+    const params = trimChar(["/"], router.asPath).split("/");
+    const pages: BreadCrumbType[] = params
+      // Map the pages to an object with the name and href
+      .map((page) => {
+        // If the page is a board, set the name to the board title by getting the board title from the boardMapData
+        // Else, set the name to the page
+        const pathName =
+          page === currentBoardData?.id ? currentBoardData.board_title! : page;
+        return {
+          name: pathMap[pathName] ?? pathName,
+          href: page === "collaboration" ? "/collaboration" : page,
+          // The current property is used to set the aria-current property of the link
+          current: page === router.asPath.split("/").slice(-1)[0],
+          isFolder: false,
+        };
+      })
+      // Filter out the board page from the breadcrumbs as there is no path to the board page
+      .filter((page) => page.name !== "board");
+
+    // If the page paths starts with /board, then check if the board is in a folder
+    // If the board is in a folder, add the folder to the breadcrumbs
+    if (params[0] === "board") {
+      const boardId = params[params.length - 1];
+      const folderId = boardMapData?.get(boardId!)?.folder_id;
+      const folder = folderData?.folders.get(folderId!);
+
+      // If the board is in a folder, add set the first page to the folder
+      if (folder) {
+        pages[0] = {
+          ...pages[0]!,
+          name: folder.folder_name,
+          href: folder.id,
+          isFolder: true,
+          icon: FolderIcon,
+        };
+      }
+
+      // Add icon to the board page
+      pages[pages.length - 1] = {
+        ...pages[pages.length - 1]!,
+        icon: DocumentTextIcon,
+      };
+    }
+
+    return pages;
+  };
+
+  // Memoize the breadcrumbs function to only run when the path changes or when the boards data changes
+  const breadCrumbs = useMemo(getBreadCrumbPages, [
+    router.asPath,
+    boardsWithoutFolderData,
+    currentBoardData,
+  ]);
+
+  // TODO - To be extracted to a separate file
+  // Bind key bindings to the document on mount
+  useEffect(() => {
+    // bind key down event to document
+    const keyShortcuts = (e: KeyboardEvent) => {
+      // if user presses cmd + b, toggle the sidebar
+      if (e.metaKey && !e.shiftKey) {
+        switch (e.key) {
+          case "b":
+            setSidebarExpanded((prev) => !prev);
+            break;
+          case "k":
+            alert("TODO - open command palette");
+          // TODO - add more key bindings
+          default:
+            break;
+        }
+      }
+
+      // if user presses cmd and shift and b
+      if (e.metaKey && e.shiftKey) {
+        switch (e.key) {
+          case "b":
+            setBoardCreationOpen((prev) => !prev);
+            break;
+          default:
+            break;
+        }
+      }
+    };
+
+    // bind key down event to document
+    window.document.addEventListener("keydown", keyShortcuts);
+
+    // unbind key down event to document on unmount
+    return () => window.document.removeEventListener("keydown", keyShortcuts);
+  }, []);
+
+  // TODO - To be extracted to a separate file and optimized
+  // Set up sidebar expanded state in local storage
+  useEffect(() => {
+    const sidebarExpandedState = localStorage.getItem("sidebarExpanded");
+    setSidebarExpanded(sidebarExpandedState === "true");
+  }, []);
+
+  // Set the sidebar expanded state in local storage on change
+  useEffect(() => {
+    // Set the sidebar expanded state in local storage
+    localStorage.setItem("sidebarExpanded", sidebarExpanded.toString());
+  }, [sidebarExpanded]);
+
   // Return loading screen while session is loading
   if (sessionStatus === "loading") {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center">
-        <h1 className="text-4xl font-bold text-white">Loading...</h1>
-      </div>
-    );
+    return <Loader />;
   }
 
+  /* Drag and Drop handlers for Drag Drop Context */
   const onDragEnd = (result: DropResult) => {
     const { destination, source, draggableId, type, combine } = result;
 
-    console.log(
-      "Drag end info: ",
-      combine,
-      source.droppableId,
-      destination?.droppableId
-    );
     // * Handle combining of board to a folder
     if (combine && source.droppableId === "boards") {
+      const newBoardOrder = [...boardsWithoutFolderData!.boardOrder];
+
+      // Remove the board from the old position
+      newBoardOrder.splice(source.index, 1);
+
       addBoardToFolder({
         boardId: draggableId,
         folderId: combine.draggableId,
         userId: sessionData.user.id,
-      });
+        boardOrder: newBoardOrder,
+        folderBoardOrder:
+          folderData?.folders.get(combine.draggableId)?.board_order ?? [],
+      })
+        .then(() => {
+          // Redirect to the folder if you are on the board page
+          const pathParams = trimChar(["/"], router.asPath).split("/");
+          if (pathParams[pathParams.length - 1] === draggableId) {
+            void router.push(
+              `/board/${
+                folderData?.folders.get(combine.draggableId)?.folder_name ??
+                "undefined"
+              }/${draggableId}`
+            );
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
 
       return;
     }
@@ -131,12 +302,31 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
     )
       return;
 
+    // * Handle reordering of a sidebar board
+    if (
+      source.droppableId === "boards" &&
+      destination?.droppableId === "boards"
+    ) {
+      const newBoardOrder = [...boardsWithoutFolderData!.boardOrder];
+
+      newBoardOrder.splice(source.index, 1);
+
+      newBoardOrder.splice(destination.index, 0, draggableId);
+
+      // Mutate the board order
+      reorderBoard({
+        boardOrder: newBoardOrder,
+        userId: sessionData.user.id,
+      });
+
+      return;
+    }
+
     // * Handle reordering of a sidebar folder
-    /* 
-      This includes reordering of folders and boards
-      Type of droppable zones must be the same for reordering to work
-    */
-    if (type === "sidebar" && source.droppableId === "folders") {
+    if (
+      source.droppableId === "folders" &&
+      destination.droppableId === "folders"
+    ) {
       const newFolderorder = [...folderData!.folderOrder];
 
       // Remove the folder from the old position
@@ -147,7 +337,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
 
       // Mutate the folder order
       reorderFolder({
-        folderId: draggableId,
         folderOrder: newFolderorder,
         userId: sessionData.user.id,
       });
@@ -155,14 +344,41 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
       return;
     }
 
-    // * Handle reorder of a sidebar board
-    if (type === "sidebar" && source.droppableId === "boards") {
-      // TODO : Add board reorder logic
+    // * Handle reordering of a nested folder board
+    if (type === "nested-boards") {
+      const _draggableId = draggableId.replace("nested-board-", "");
+      // Get the new board order for the source folder and destination folder
+      const newSourceBoardOrder = [
+        ...folderData!.folders.get(source.droppableId)!.board_order,
+      ];
+      const newDestinationBoardOrder = [
+        ...folderData!.folders.get(destination.droppableId)!.board_order,
+      ];
+
+      // Remove the board from the old position
+      newSourceBoardOrder.splice(source.index, 1);
+      // If the source folder and destination folder are the same, add the board to the new position in the source folder
+      if (source.droppableId === destination.droppableId) {
+        newSourceBoardOrder.splice(destination.index, 0, _draggableId);
+      } else {
+        // If the source folder and destination folder are different, add the board to the new position in the destination folder
+        newDestinationBoardOrder.splice(destination.index, 0, _draggableId);
+      }
+
+      // Mutate the board order for the source folder and destination folder
+      reorderNestedBoard({
+        userId: sessionData.user.id,
+        boardId: _draggableId,
+        sourceFolderId: source.droppableId,
+        destinationFolderId: destination.droppableId,
+        sourceBoardOrder: newSourceBoardOrder,
+        destinationBoardOrder: newDestinationBoardOrder,
+        isSameFolder: source.droppableId === destination.droppableId,
+      });
     }
   };
 
   const onDragStart = (initial: DragStart) => {
-    // TODO : Add drag start logic
     const { source, type, draggableId } = initial;
 
     if (source.droppableId === "folders") {
@@ -241,17 +457,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                     <img
                       className="h-8 w-auto"
                       src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                      alt="Your Company"
+                      alt="TaskMate"
                     />
                   </div>
                   <div className="mt-5 h-0 flex-1 overflow-y-auto">
                     <nav className="space-y-1 px-2">
                       {navigation.map((item) => (
-                        <a
+                        <Link
                           key={item.name}
                           href={item.href}
                           className={classNames(
-                            item.current
+                            router.pathname === item.href
                               ? "bg-gray-900 text-white"
                               : "text-gray-300 hover:bg-gray-700 hover:text-white",
                             "group flex items-center rounded-md px-2 py-2 text-base font-medium"
@@ -259,7 +475,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                         >
                           <item.icon
                             className={classNames(
-                              item.current
+                              router.pathname === item.href
                                 ? "text-gray-300"
                                 : "text-gray-400 group-hover:text-gray-300",
                               "mr-4 h-6 w-6 flex-shrink-0"
@@ -267,7 +483,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                             aria-hidden="true"
                           />
                           {item.name}
-                        </a>
+                        </Link>
                       ))}
                     </nav>
                   </div>
@@ -290,17 +506,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
           {/* Expand Sidebar button */}
           <button
             className={classNames(
-              sidebarExpanded ? "left-[15.25rem]" : "left-[4.25rem]",
-              "absolute top-12 z-20 flex h-6 w-6 items-center justify-center rounded-md border border-gray-300 bg-gray-900 text-gray-300 hover:bg-gray-700 hover:text-white"
+              sidebarExpanded
+                ? "left-[15.25rem] -rotate-180 transform "
+                : "left-[4.25rem]",
+              "absolute top-12 z-[15] flex h-6 w-6 items-center justify-center rounded-md border border-gray-300 bg-gray-900 text-gray-300 transition duration-200 ease-in-out hover:bg-gray-700 hover:text-white"
             )}
             onClick={() => setSidebarExpanded((prev) => !prev)}
           >
             <span className="sr-only">Open sidebar</span>
-            {sidebarExpanded ? (
-              <ChevronLeftIcon className="text- h-4 w-4" aria-hidden="true" />
-            ) : (
-              <ChevronRightIcon className="h-4 w-4" aria-hidden="true" />
-            )}
+            <ChevronRightIcon
+              className={classNames("h-4 w-4")}
+              aria-hidden="true"
+            />
           </button>
 
           {/* Sidebar*/}
@@ -309,14 +526,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
             <div
               className={classNames(
                 sidebarExpanded ? "justify-start" : "justify-center",
-                "flex h-16 flex-shrink-0 items-center bg-gray-900 px-4"
+                "flex h-16 flex-shrink-0 items-center border-r-2 bg-white px-3"
               )}
             >
-              <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                alt="Taskmate"
-              />
+              {sidebarExpanded ? (
+                <img className="h-12 w-auto" src="/main.png" alt="Taskmate" />
+              ) : (
+                <img
+                  className="h-14 w-auto"
+                  src="/logo_small.png"
+                  alt="Taskmate"
+                />
+              )}
             </div>
 
             {/* Sidebar main */}
@@ -324,11 +545,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
               {/* Sidebar navigation content */}
               <div className="space-y-1">
                 {navigation.map((item) => (
-                  <a
+                  <Link
                     key={item.name}
                     href={item.href}
                     className={classNames(
-                      item.current
+                      router.pathname === item.href
                         ? "bg-gray-900 text-white"
                         : "text-gray-300 hover:bg-gray-700 hover:text-white",
                       sidebarExpanded ? "" : "justify-center",
@@ -337,7 +558,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                   >
                     <item.icon
                       className={classNames(
-                        item.current
+                        router.pathname === item.href
                           ? "text-gray-300"
                           : "text-gray-400 group-hover:text-gray-300",
                         sidebarExpanded ? "mr-3" : "mr-0",
@@ -346,7 +567,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                       aria-hidden="true"
                     />
                     {sidebarExpanded && item.name}
-                  </a>
+                  </Link>
                 ))}
               </div>
 
@@ -392,44 +613,31 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                               "rounded border-2 border-gray-500 bg-gray-700 transition delay-150 duration-200"
                           )}
                         >
-                          {boardsWithoutFolderData &&
-                            boardsWithoutFolderData.map((board, index) => (
-                              <Draggable
-                                key={board.id}
-                                draggableId={board.id}
-                                index={index}
-                              >
-                                {(provided, snapshot) => {
-                                  return (
-                                    <Link
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      href={`/board/${board.id}`}
-                                      className={classNames(
-                                        !sidebarExpanded && "justify-center",
-                                        "group flex items-center rounded-md px-2 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
-                                      )}
-                                    >
-                                      <span
-                                        className={classNames(
-                                          sidebarExpanded ? "mr-3" : "mr-0",
-                                          "text-xl"
-                                        )}
-                                      >
-                                        {board.thumbnail_image}
-                                      </span>
-
-                                      {sidebarExpanded && (
-                                        <p className="truncate">
-                                          {board.board_title}
-                                        </p>
-                                      )}
-                                    </Link>
-                                  );
-                                }}
-                              </Draggable>
-                            ))}
+                          {boardsWithoutFolderData?.boardOrder?.map(
+                            (boardId, index) => {
+                              const boardItem =
+                                boardsWithoutFolderData.boards.get(boardId);
+                              return (
+                                !!boardItem && (
+                                  <Draggable
+                                    key={boardId}
+                                    draggableId={boardId}
+                                    index={index}
+                                  >
+                                    {(provided, snapshot) => (
+                                      <BoardDisclosure
+                                        folderItem={null}
+                                        boardItem={boardItem}
+                                        provided={provided}
+                                        snapshot={snapshot}
+                                        sidebarExpanded={sidebarExpanded}
+                                      />
+                                    )}
+                                  </Draggable>
+                                )
+                              );
+                            }
+                          )}
                           {provided.placeholder}
                         </div>
                       )}
@@ -447,27 +655,34 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                           {...provided.droppableProps}
                           className={classNames(
                             snapshot.isDraggingOver &&
-                              "rounded border-2 border-gray-500 bg-gray-700 transition delay-150 duration-200"
+                              "rounded border-2 border-gray-500 bg-gray-700 transition delay-150 duration-200",
+                            "flex flex-col gap-1"
                           )}
                         >
                           {folderData &&
-                            folderData.folderOrder?.map((folderId, index) => (
-                              <Draggable
-                                key={folderId}
-                                draggableId={folderId}
-                                index={index}
-                              >
-                                {(provided, snapshot) => (
-                                  <FolderDisclosure
-                                    provided={provided}
-                                    snapshot={snapshot}
-                                    sidebarExpanded={sidebarExpanded}
-                                    folderItem={folderData.folders[folderId]!}
-                                    folder_order={folderData.folderOrder}
-                                  />
-                                )}
-                              </Draggable>
-                            ))}
+                            folderData.folderOrder?.map((folderId, index) => {
+                              const folderItem =
+                                folderData.folders.get(folderId);
+                              return (
+                                !!folderItem && (
+                                  <Draggable
+                                    key={folderId}
+                                    draggableId={folderId}
+                                    index={index}
+                                  >
+                                    {(provided, snapshot) => (
+                                      <FolderDisclosure
+                                        provided={provided}
+                                        snapshot={snapshot}
+                                        sidebarExpanded={sidebarExpanded}
+                                        folderItem={folderItem}
+                                        folder_order={folderData.folderOrder}
+                                      />
+                                    )}
+                                  </Draggable>
+                                )
+                              );
+                            })}
                           {provided.placeholder}
                         </div>
                       )}
@@ -484,16 +699,21 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                 "isolate inline-flex justify-center rounded-md p-2 shadow-sm"
               )}
             >
+              {/* Create new folder button */}
               <button
                 type="button"
                 className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 onClick={() => {
-                  createFolder({
-                    folderId: nanoid(),
-                    name: "New Folder",
-                    userId: sessionData.user.id,
-                    currentFolderOrder: folderData?.folderOrder ?? [],
-                  });
+                  // Prevents multiple mutations from being sent
+                  mutationAvail &&
+                    createFolder({
+                      folderId: nanoid(),
+                      name: "New Folder",
+                      userId: sessionData.user.id,
+                      currentFolderOrder: folderData?.folderOrder ?? [],
+                    });
+                  // Once mutation is sent, set mutationAvail to false, it will only be set back to true after a delay
+                  setMutationAvail(false);
                 }}
               >
                 {sidebarExpanded ? (
@@ -508,9 +728,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
                   <FolderPlusIcon className="h-6 w-6" aria-hidden="true" />
                 )}
               </button>
+
+              {/* Create new board button */}
               <button
                 type="button"
                 className="inline-flex flex-1 items-center justify-center rounded-md border border-gray-300 bg-gray-900 px-3 py-2 text-sm font-medium leading-4 text-white shadow-sm hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                onClick={() => {
+                  // Open the create board slide over
+                  setBoardCreationOpen(true);
+                }}
               >
                 {sidebarExpanded ? (
                   <>
@@ -544,9 +770,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
 
             {/* Top Nav content */}
             <div className="flex flex-1 items-center justify-between gap-2 px-4">
-              <h1 className="hidden text-2xl font-semibold text-gray-900 md:block">
-                {title}
-              </h1>
+              <BreadCrumbs pages={breadCrumbs} />
 
               {/* Search bar */}
               <div className="flex flex-1 items-center justify-center px-2 lg:ml-6 lg:justify-end">
@@ -642,13 +866,22 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
           </div>
 
           {/* Main content goes here */}
-          <main className="flex flex-1 flex-col overflow-x-auto px-4 py-2 sm:px-6 sm:py-4 md:px-8 md:py-6">
+          <main
+            className="overlay flex flex-1 flex-col
+          "
+          >
             {/* Replace with your content */}
             {children}
             {/* /End replace */}
           </main>
         </div>
       </div>
+
+      {/* Board creation sliderover */}
+      <CreateBoardSlideOver
+        open={boardCreationOpen}
+        setOpen={setBoardCreationOpen}
+      />
     </>
   );
 };

@@ -1,3 +1,6 @@
+// Currently deprecated, but may be used in the future
+// Leave here for reference
+
 import {
   useState,
   useEffect,

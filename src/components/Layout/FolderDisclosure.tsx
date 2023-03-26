@@ -1,20 +1,31 @@
 import { Disclosure } from "@headlessui/react";
 import { useRef, useEffect, useState } from "react";
 import { classNames } from "../../utils/helper";
-import Link from "next/link";
-import { Board, Folder } from "@prisma/client";
-import DropDownMenu from "./DropDownMenu";
+import DropDownMenu from "./FolderDropDownMenu";
 import useRenameFolder from "@/utils/mutations/useRenameFolder";
-import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
+import {
+  Draggable,
+  DraggableProvided,
+  DraggableStateSnapshot,
+  Droppable,
+} from "react-beautiful-dnd";
 import useClickAway from "@/utils/hooks/useClickAway";
-import { Bars2Icon } from "@heroicons/react/24/outline";
+import autoAnimate from "@formkit/auto-animate";
+import BoardDisclosure from "./BoardDisclosure";
+import { FolderWithBoards } from "server/api/routers/folder";
+import ConfirmationModal from "@/components/Layout/ConfirmationModal";
+import { CheckCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
+import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
+import { api } from "@/utils/api";
+import useCreateBoard from "@/utils/mutations/useCreateBoard";
+import { nanoid } from "nanoid";
+import { useRouter } from "next/router";
+import { useToastContext } from "@/utils/context/ToastContext";
 
 interface FolderDisclosureProps {
   provided: DraggableProvided;
   snapshot: DraggableStateSnapshot;
-  folderItem: Folder & {
-    boards: Board[];
-  };
+  folderItem: FolderWithBoards;
   sidebarExpanded: boolean;
   folder_order: string[];
 }
@@ -26,8 +37,14 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
   sidebarExpanded,
   folder_order,
 }) => {
-  const [menuButtonVisible, setmenuButtonVisible] = useState(false);
+  const router = useRouter();
+
+  // Get add toast function from context
+  const addToast = useToastContext();
+
+  const [menuButtonVisible, setMenuButtonVisible] = useState(false);
   const [dropDownMenuOpen, setDropDownMenuOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [folderRenameInputVisible, setFolderRenameInputVisible] =
     useState(false);
   const [renameInputValue, setRenameInputValue] = useState(
@@ -43,8 +60,22 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   useClickAway(wrapperRef, () => setFolderRenameInputVisible(false));
 
-  // Rename folder mutation
+  // Set up autoAnimation of folder boards element
+  const parent = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    parent.current && autoAnimate(parent.current);
+  }, [parent]);
+
+  // Query to get board order of boards without folder
+  const { data: boardsWithoutFolderData } =
+    api.board.getUserBoardWithoutFolder.useQuery({
+      userId: folderItem.user_id,
+    });
+
+  // folder mutations
   const { mutate: renameFolder } = useRenameFolder();
+  const { mutate: deleteFolder } = useDeleteFolder();
+  const { mutateAsync: createBoard } = useCreateBoard();
 
   return (
     <Disclosure
@@ -53,32 +84,33 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
       className={classNames(
         snapshot.isDragging &&
           "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-small shadow-gray-900",
-        "space-y-1"
+        "rounded-md border border-dashed border-gray-200 bg-gray-600/10"
       )}
-      onMouseEnter={() => setmenuButtonVisible(true)}
-      onMouseLeave={() => !dropDownMenuOpen && setmenuButtonVisible(false)}
+      onMouseEnter={() => setMenuButtonVisible(true)}
+      onMouseLeave={() => !dropDownMenuOpen && setMenuButtonVisible(false)}
       ref={provided.innerRef}
       {...provided.draggableProps}
+      {...provided.dragHandleProps}
     >
       {({ open, close }) => (
         <div className="relative">
-          {/* Folder name input form*/}
+          {/* Folder name input form, is postioned fixed */}
           {folderRenameInputVisible && (
             <div
               ref={wrapperRef}
-              className="form-input absolute z-30 w-60 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus-within:border-indigo-600 focus-within:ring-1 focus-within:ring-indigo-600"
+              className="absolute z-30 w-60 rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus-within:border-indigo-600 focus-within:ring-1 focus-within:ring-indigo-600"
             >
               <label
                 htmlFor="name"
                 className="block text-xs font-medium text-gray-900"
               >
-                folder name
+                Rename folder
               </label>
               <input
                 type="text"
                 name="name"
                 id="name"
-                className="form-input block w-full border-0 p-0 text-gray-900 placeholder-gray-500 focus:ring-0 sm:text-sm"
+                className="block w-full border-0 p-0 text-gray-900 placeholder-gray-500 focus:ring-0 sm:text-sm"
                 placeholder="Jane Smith"
                 value={renameInputValue}
                 onChange={(e) => setRenameInputValue(e.target.value)}
@@ -106,54 +138,56 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
           {/* Folder main */}
           <Disclosure.Button
             as="div"
-            className="group flex w-full flex-col items-center rounded-md p-2 text-left text-sm font-medium  text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none"
+            className="group flex w-full flex-col items-center rounded-md p-2 text-left text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none"
           >
-            <div className="flex w-full items-center justify-center">
-              {/* Folder thumbnail image */}
-              <span
+            <div className="flex w-full justify-between">
+              <div
                 className={classNames(
-                  sidebarExpanded ? "mr-3" : "mr-0",
-                  "text-xl"
+                  sidebarExpanded ? "w-[78%] " : "w-full justify-center",
+                  "flex items-center"
                 )}
               >
-                {folderItem.thumbnail_image}
-              </span>
-
-              {/* Folder Name */}
-              {sidebarExpanded && (
-                <>
+                {/* Folder thumbnail image */}
+                <span
+                  className={classNames(
+                    sidebarExpanded ? "mr-3" : "mr-0",
+                    "relative cursor-pointer text-xl"
+                  )}
+                >
+                  {folderItem.thumbnail_image}
+                  <span className="absolute left-3.5 -top-0.5 items-center rounded-full bg-indigo-200 px-1.5 py-[1px] text-xs font-bold text-indigo-700">
+                    {folderItem.board_order.length}
+                  </span>
+                </span>
+                {sidebarExpanded && (
                   <p
                     className={classNames(
                       snapshot.isDragging && "text-white",
-                      "flex-1 truncate"
+                      "cursor-pointer truncate text-ellipsis"
                     )}
                   >
                     {folderItem.folder_name}
                   </p>
+                )}
+              </div>
+              {/* Folder Name */}
+              {sidebarExpanded && (
+                <div className="flex items-center">
                   {/* Fixed position dropdown menu button */}
                   {sidebarExpanded && (
                     <div
                       className={classNames(
-                        menuButtonVisible ? "visible" : "invisible",
-                        "flex"
+                        menuButtonVisible ? "visible" : "invisible"
                       )}
                     >
                       <DropDownMenu
-                        folder_id={folderItem.id}
-                        user_id={folderItem.user_id}
-                        folder_order={folder_order}
                         setDropDownMenuOpen={setDropDownMenuOpen}
                         setFolderRenameInputVisible={
                           setFolderRenameInputVisible
                         }
-                        setmenuButtonVisible={setmenuButtonVisible}
+                        setMenuButtonVisible={setMenuButtonVisible}
+                        setDeleteModalOpen={setDeleteModalOpen}
                       />
-                      <div {...provided.dragHandleProps}>
-                        <Bars2Icon
-                          className="h-5 w-5 text-gray-400"
-                          onMouseDown={() => close()}
-                        />
-                      </div>
                     </div>
                   )}
                   <svg
@@ -166,35 +200,107 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                   >
                     <path d="M6 6L14 10L6 14V6Z" fill="currentColor" />
                   </svg>
-                </>
+                </div>
               )}
             </div>
           </Disclosure.Button>
 
           {/* Children projects */}
           {sidebarExpanded && (
-            <Disclosure.Panel className="space-y-1">
-              {folderItem.boards?.map((board) => (
-                <Link href={`/board/${board.id}`} key={board.id}>
-                  <button className="group flex w-full items-center justify-start rounded-md py-2 pl-11 pr-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none">
-                    <span
-                      className={classNames(
-                        sidebarExpanded ? "mr-3" : "mr-0",
-                        "text-xl"
-                      )}
+            <Disclosure.Panel className="space-y-1" ref={parent}>
+              <Droppable droppableId={folderItem.id} type="nested-boards">
+                {(provided, snapshot) => {
+                  return (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className="pl-4 pb-1 pr-1"
                     >
-                      {board.thumbnail_image}
-                    </span>
-                    {sidebarExpanded && (
-                      <p className="flex-1 truncate text-start">
-                        {board.board_title}
-                      </p>
-                    )}
-                  </button>
-                </Link>
-              ))}
+                      {folderItem.board_order?.map((boardId, index) => (
+                        <Draggable
+                          key={`nested-board-${boardId}`}
+                          draggableId={`nested-board-${boardId}`}
+                          index={index}
+                        >
+                          {(provided, snapshot) => (
+                            <BoardDisclosure
+                              boardItem={folderItem.boards.get(boardId)!}
+                              folderItem={folderItem}
+                              provided={provided}
+                              snapshot={snapshot}
+                              sidebarExpanded={sidebarExpanded}
+                            />
+                          )}
+                        </Draggable>
+                      ))}
+
+                      {provided.placeholder}
+                    </div>
+                  );
+                }}
+              </Droppable>
+
+              {/* Add board to folder button*/}
+              <button
+                className={classNames(
+                  "flex h-10 w-full items-center justify-center border-t border-dashed border-gray-500 hover:bg-slate-600"
+                )}
+                onClick={() => {
+                  void (async () => {
+                    try {
+                      const board = await createBoard({
+                        boardId: nanoid(),
+                        userId: folderItem.user_id,
+                        title: "New Board",
+                        currentBoardOrder:
+                          boardsWithoutFolderData?.boardOrder ?? [],
+                        folderId: folderItem.id,
+                        folderBoardOrder: folderItem.board_order ?? [],
+                      });
+
+                      // Redirect to new board
+                      await router.push(
+                        `/board/${folderItem.folder_name}/${board.id}`
+                      );
+
+                      // Show success toast 300ms after redirect
+                      setTimeout(() => {
+                        addToast({
+                          title: "Board Created",
+                          description:
+                            "Start adding panels and tasks to your board!",
+                          icon: CheckCircleIcon,
+                        });
+                      }, 300);
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  })();
+                }}
+              >
+                <p className="text-sm text-white">Add a board here</p>
+              </button>
             </Disclosure.Panel>
           )}
+
+          {/* Delete folder modal */}
+          <ConfirmationModal
+            open={deleteModalOpen}
+            setOpen={setDeleteModalOpen}
+            title="Delete folder"
+            description="Are you sure you want to delete this folder? This action cannot be undone. All boards in this folder will be moved to the unorganized board area."
+            ModalIcon={TrashIcon}
+            confirmText="Delete Folder"
+            onConfirm={() => {
+              deleteFolder({
+                folderId: folderItem.id,
+                userId: folderItem.user_id,
+                folderOrder: folder_order,
+                boardOrder: boardsWithoutFolderData!.boardOrder,
+                boardIdsToBeUpdated: folderItem.board_order,
+              });
+            }}
+          />
         </div>
       )}
     </Disclosure>

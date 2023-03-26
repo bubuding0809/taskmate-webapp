@@ -1,18 +1,18 @@
 import * as React from "react";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import { IconButton, Tooltip, Typography, Fade, Button } from "@mui/material";
+import { Typography, Button, Tooltip } from "@mui/material";
 import { Clear, Delete } from "@mui/icons-material";
-import { BoardType, PanelType } from "../../utils/types";
+import { BoardType } from "../../utils/types";
 import { MoreHoriz } from "@mui/icons-material";
+import type { PanelWithTasks } from "server/api/routers/board";
+import useDeletePanel from "@/utils/mutations/panel/useDeletePanel";
 
 interface PanelMenuProps {
-  panelData: PanelType;
-  boardData: BoardType;
-  handleDelete: (panelId: string) => void;
+  panelItem: PanelWithTasks;
 }
 
-export const PanelMenu = ({ panelData, handleDelete }: PanelMenuProps) => {
+export const PanelMenu = ({ panelItem }: PanelMenuProps) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -21,6 +21,8 @@ export const PanelMenu = ({ panelData, handleDelete }: PanelMenuProps) => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const { mutate: deletePanel } = useDeletePanel();
 
   return (
     <div>
@@ -60,7 +62,10 @@ export const PanelMenu = ({ panelData, handleDelete }: PanelMenuProps) => {
       >
         <MenuItem
           onClick={() => {
-            handleDelete(panelData.id);
+            deletePanel({
+              panelId: panelItem.id,
+              boardId: panelItem.board_id,
+            });
             handleClose();
           }}
         >

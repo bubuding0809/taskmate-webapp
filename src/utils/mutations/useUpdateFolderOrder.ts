@@ -1,6 +1,8 @@
 import { Board, Folder } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
+import _ from "lodash";
+import { FolderWithBoards } from "server/api/routers/folder";
 import { api } from "../api";
 
 const useUpdateFolderOrder = () => {
@@ -8,7 +10,7 @@ const useUpdateFolderOrder = () => {
 
   return api.folder.updateFolderOrder.useMutation({
     onMutate: async (folder) => {
-      const { folderId, folderOrder, userId } = folder;
+      const { folderOrder, userId } = folder;
 
       // Create query key to access the query data
       const queryKey = getQueryKey(
@@ -25,18 +27,15 @@ const useUpdateFolderOrder = () => {
       // Snapshot the previous value
       const oldFolderData = queryClient.getQueryData(queryKey) as {
         folders: {
-          [key: string]: Folder & {
-            boards: Board[];
-          };
+          [key: string]: FolderWithBoards;
         };
         folderOrder: string[];
       };
 
+      const newFolderData = _.cloneDeep(oldFolderData);
+
       // Optimistically update to the new value
-      const newFolderData = {
-        ...oldFolderData,
-        folderOrder: folderOrder,
-      };
+      newFolderData.folderOrder = folderOrder;
       queryClient.setQueryData(queryKey, newFolderData);
 
       return { oldFolderData, queryKey };

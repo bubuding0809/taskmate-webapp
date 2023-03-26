@@ -49,8 +49,10 @@ model User {
     email              String?              @unique
     emailVerified      DateTime?
     image              String?
+    password           String?
     folder_order       String?              @db.VarChar(1000)
     board_order        String?              @db.VarChar(1000)
+    status_message     String?              @default("I'm using TaskMate!") @db.VarChar(1000)
     accounts           Account[]
     Attachment         Attachment[]
     Board              Board[]
@@ -61,7 +63,7 @@ model User {
     sessions           Session[]
     Tag                Tag[]
     Task_Activity      Task_Activity[]
-    Task_Assign        Task_Assign[]
+    Task_Assign        Task_Assign_Rel[]
     Team               Team[]
 }
 
@@ -139,7 +141,7 @@ model Board_Message {
 }
 
 model Attachment {
-    id              String                     @id
+    id              String                     @id @default(dbgenerated("(uuid())"))
     attachment_url  String
     attachment_type Attachment_attachment_type
     is_cover_image  Boolean                    @default(dbgenerated("(false)"))
@@ -175,9 +177,9 @@ model Label {
 }
 
 model Panel {
-    id                   String  @id
+    id                   String  @id @default(dbgenerated("(uuid())"))
     panel_title          String?
-    task_order           String? @db.VarChar(1000)
+    order                Int     @default(dbgenerated("(0)"))
     is_visible           Boolean @default(dbgenerated("(true)"))
     panel_color          String? @db.VarChar(6)
     show_completed_tasks Boolean @default(dbgenerated("(false)"))
@@ -186,16 +188,6 @@ model Panel {
     Task                 Task[]
 
     @@index([board_id], map: "Panel_ibfk_1")
-}
-
-model Sub_Task_Rel {
-    parent_task_id                         String
-    sub_task_id                            String
-    Task_Sub_Task_Rel_parent_task_idToTask Task   @relation("Sub_Task_Rel_parent_task_idToTask", fields: [parent_task_id], references: [id], onDelete: Cascade, map: "Sub_Task_Rel_ibfk_1")
-    Task_Sub_Task_Rel_sub_task_idToTask    Task   @relation("Sub_Task_Rel_sub_task_idToTask", fields: [sub_task_id], references: [id], onDelete: Cascade, map: "Sub_Task_Rel_ibfk_2")
-
-    @@id([parent_task_id, sub_task_id])
-    @@index([sub_task_id], map: "sub_task_id")
 }
 
 model Tag {
@@ -209,23 +201,30 @@ model Tag {
 }
 
 model Task {
-    id                                             String           @id
-    task_title                                     String?
-    task_details                                   String?          @db.VarChar(500)
-    subtask_order                                  String?          @db.VarChar(1000)
-    start_datetime                                 DateTime?        @db.DateTime(0)
-    end_datetime                                   DateTime?        @db.DateTime(0)
-    is_completed                                   Boolean          @default(dbgenerated("(false)"))
-    panel_id                                       String
-    Attachment                                     Attachment[]
-    Sub_Task_Rel_Sub_Task_Rel_parent_task_idToTask Sub_Task_Rel[]   @relation("Sub_Task_Rel_parent_task_idToTask")
-    Sub_Task_Rel_Sub_Task_Rel_sub_task_idToTask    Sub_Task_Rel[]   @relation("Sub_Task_Rel_sub_task_idToTask")
-    Panel                                          Panel            @relation(fields: [panel_id], references: [id], onDelete: Cascade, map: "Task_ibfk_1")
-    Task_Activity                                  Task_Activity[]
-    Task_Assign                                    Task_Assign[]
-    Task_Label_Rel                                 Task_Label_Rel[]
+    id                 String            @id @default(dbgenerated("(uuid())"))
+    task_title         String?
+    task_details       String?           @db.VarChar(500)
+    order              Int               @default(dbgenerated("(0)"))
+    start_datetime     DateTime?         @db.DateTime(0)
+    end_datetime       DateTime?         @db.DateTime(0)
+    due_datetime       DateTime?         @db.DateTime(0)
+    is_completed       Boolean           @default(dbgenerated("(false)"))
+    is_reveal_subtasks Boolean           @default(dbgenerated("(false)"))
+    panel_id           String
+    Attachment         Attachment[]
+    Panel              Panel             @relation(fields: [panel_id], references: [id], onDelete: Cascade, map: "Task_ibfk_1")
+    Task_Activity      Task_Activity[]
+    Task_Assign_Rel    Task_Assign_Rel[]
+    Task_Label_Rel     Task_Label_Rel[]
 
-    @@index([panel_id], map: "panel_id")
+    // This is a one-to-many self-relation
+    // Where a task can have zero or one parent task
+    // And a task can have zero or more subtasks
+    parentTaskId String?
+    parentTask   Task?   @relation("ParentTaskSubTask", fields: [parentTaskId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    subtasks     Task[]  @relation("ParentTaskSubTask")
+
+    @@unique([parentTaskId, id], map: "parent_task_id")
 }
 
 model Task_Activity {
@@ -243,7 +242,7 @@ model Task_Activity {
     @@index([user_id], map: "user_id")
 }
 
-model Task_Assign {
+model Task_Assign_Rel {
     task_id String
     user_id String
     Task    Task   @relation(fields: [task_id], references: [id], onDelete: Cascade, map: "Task_Assign_ibfk_1")

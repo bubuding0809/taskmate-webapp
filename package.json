@@ -12,7 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
-    "@formkit/auto-animate": "^1.0.0-beta.1",
+    "@formkit/auto-animate": "^1.0.0-beta.6",
     "@headlessui/react": "^1.7.11",
     "@heroicons/react": "^2.0.15",
     "@mui/icons-material": "^5.8.4",
@@ -35,7 +35,10 @@
     "@trpc/server": "^10.9.0",
     "animate.css": "^4.1.1",
     "animate.css-react": "^1.1.0",
+    "cookies": "^0.8.0",
+
     "install": "^0.13.0",
+    "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "nanoid": "^4.0.0",
     "next": "13.1.6",
@@ -54,6 +57,8 @@
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
+    "@types/cookies": "^0.7.7",
+    "@types/lodash": "^4.14.191",
     "@types/node": "^18.11.18",
     "@types/nodemailer": "^6.4.7",
     "@types/prettier": "^2.7.2",
