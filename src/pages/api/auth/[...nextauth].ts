@@ -202,7 +202,7 @@ export default async function handler(
       },
     },
   };
-  return NextAuth(req, res, authOptions);
+  return NextAuth(req, res, authOptions) as Promise<void>;
 }
 
 export const generate = {

@@ -118,7 +118,7 @@ const SignIn: NextPage = () => {
                     if (res?.error) {
                       throw new Error(res.error);
                     }
-                    res?.ok && router.push("/dashboard");
+                    res?.ok && void router.push("/dashboard");
                   })
                   .catch((err) => {
                     console.log(err);
