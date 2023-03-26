@@ -73,15 +73,13 @@ const Register: NextPage = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch terms and conditions");
       }
-      const data = await response.json();
+
+      const data = (await response.json()) as { message: string };
       const termsAndConditions = data.message;
 
       //open modal
       setOpen(true);
-      data.message = setTermsAndConditions(termsAndConditions);
-      //modal
-
-      console.log(termsAndConditions);
+      setTermsAndConditions(termsAndConditions);
     } catch (err) {
       console.log(err);
     }
