@@ -1,16 +1,23 @@
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
+  NextPage,
 } from "next";
-import { getCsrfToken } from "next-auth/react";
+import {
+  ClientSafeProvider,
+  getCsrfToken,
+  LiteralUnion,
+  useSession,
+} from "next-auth/react";
 import { getProviders, signIn } from "next-auth/react";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../server/auth";
 import Head from "next/head";
 import { BsFacebook, BsGoogle, BsDiscord } from "react-icons/bs";
 import { IconBaseProps, IconType } from "react-icons";
 import Link from "next/link";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import Loader from "@/components/custom/Loader";
+import { BuiltInProviderType } from "next-auth/providers";
 
 const providerLogos: { [key: string]: IconType } = {
   Discord: BsDiscord,
@@ -18,10 +25,31 @@ const providerLogos: { [key: string]: IconType } = {
   Google: BsGoogle,
 };
 
-export default function SignIn({
-  csrfToken,
-  providers,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+const Register: NextPage = () => {
+  const router = useRouter();
+  const { data: sessionData, status } = useSession();
+
+  const [providers, setProviders] = useState<Record<
+    LiteralUnion<BuiltInProviderType, string>,
+    ClientSafeProvider
+  > | null>();
+  const [csrfToken, setCsrfToken] = useState<string>("");
+
+  useEffect(() => {
+    if (sessionData) {
+      router.push("/dashboard");
+    }
+  }, [sessionData]);
+
+  useEffect(() => {
+    getProviders().then((providers) => setProviders(providers));
+    getCsrfToken().then((token) => setCsrfToken(token ?? ""));
+  }, []);
+
+  if (status === "loading" || status === "authenticated") {
+    return <Loader />;
+  }
+
   return (
     <>
       <Head>
@@ -52,7 +80,7 @@ export default function SignIn({
             <form
               className="mx-auto mt-10 max-w-xl sm:mt-5"
               method="post"
-              action="/api/auth/callback/credentials"
+              action="/api/signup"
             >
               <div>
                 <div className="grid grid-cols-2 gap-4">
@@ -65,10 +93,10 @@ export default function SignIn({
                     htmlFor="firstName"
                     className="text-m block font-semibold leading-6 text-gray-900"
                   >
-                    First Name:
+                    Name:
                     <input
                       className="relative block w-full rounded-t-md border-0 py-1.5 px-1.5 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                      name="firstName"
+                      name="name"
                       type="text"
                       placeholder="e.g Chen Yu"
                     />
@@ -130,29 +158,31 @@ export default function SignIn({
                   </span>
                   <div className="flex-grow border-t border-gray-600"></div>
                 </div>
-                {/* Social Registration */}
 
+                {/* Social Registration */}
                 <div className="flex items-center justify-center ">
-                  {Object.values(providers).map((provider) => {
-                    const Logo = providerLogos[provider.name]!;
-                    return (
-                      <div key={provider.name}>
-                        <button
-                          className=" justify-item-stretch m-3 flex  rounded-3xl border-3 p-4 hover:bg-gray-300/50"
-                          onClick={() =>
-                            void signIn(provider.id, {
-                              callbackUrl: "/dashboard",
-                            })
-                          }
-                        >
-                          <div className="m-1.5">
-                            <Logo />
-                          </div>
-                          {provider.name}
-                        </button>
-                      </div>
-                    );
-                  })}
+                  {Object.values(providers ?? {})
+                    .filter((provider) => provider.name !== "Credentials")
+                    .map((provider) => {
+                      const Logo = providerLogos[provider.name]!;
+                      return (
+                        <div key={provider.name}>
+                          <button
+                            className=" justify-item-stretch m-3 flex  rounded-3xl border-3 p-4 hover:bg-gray-300/50"
+                            onClick={() =>
+                              void signIn(provider.id, {
+                                callbackUrl: "/dashboard",
+                              })
+                            }
+                          >
+                            <div className="m-1.5">
+                              <Logo />
+                            </div>
+                            {provider.name}
+                          </button>
+                        </div>
+                      );
+                    })}
                 </div>
 
                 <div className="align-center flex justify-center font-semibold">
@@ -170,17 +200,6 @@ export default function SignIn({
       </div>
     </>
   );
-}
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getServerSession(context.req, context.res, authOptions);
-  if (session) {
-    return { redirect: { destination: "/dashboard" } };
-  }
-  const providers = await getProviders();
-  return {
-    props: {
-      providers: providers ?? [],
-      csrfToken: await getCsrfToken(context),
-    },
-  };
-}
+};
+
+export default Register;

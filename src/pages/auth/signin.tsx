@@ -3,13 +3,21 @@ import type {
   InferGetServerSidePropsType,
   NextPage,
 } from "next";
-import { getProviders, signIn } from "next-auth/react";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../server/auth";
+import {
+  ClientSafeProvider,
+  getProviders,
+  LiteralUnion,
+  signIn,
+  useSession,
+} from "next-auth/react";
 import Head from "next/head";
 import { BsFacebook, BsGoogle, BsDiscord } from "react-icons/bs";
 import Link from "next/link";
 import { IconType } from "react-icons/lib";
+import Loader from "@/components/custom/Loader";
+import { BuiltInProviderType } from "next-auth/providers";
+import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
 
 // TO BE DONE BY: Chen Yu
 // This is the sign in page for the app. It should be the page that the user sees when they press get started or sign in.
@@ -27,9 +35,34 @@ const providerLogos: { [key: string]: IconType } = {
   Google: BsGoogle,
 };
 
-const SignIn: NextPage<
-  InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ providers }) => {
+const SignIn: NextPage = () => {
+  const router = useRouter();
+  const { data: sessionData, status } = useSession();
+
+  const [providers, setProviders] = useState<Record<
+    LiteralUnion<BuiltInProviderType, string>,
+    ClientSafeProvider
+  > | null>();
+
+  useEffect(() => {
+    if (sessionData) {
+      router.push("/dashboard");
+    }
+  }, [sessionData]);
+
+  useEffect(() => {
+    getProviders().then((providers) => setProviders(providers));
+  }, []);
+
+  const [credientialForm, setCredientialForm] = useState({
+    email: "",
+    password: "",
+  });
+
+  if (status === "loading" || status === "authenticated") {
+    return <Loader />;
+  }
+
   return (
     <>
       {/* Meta data goes here */}
@@ -70,22 +103,37 @@ const SignIn: NextPage<
             </p>
 
             {/*Credential Login*/}
-            <form className="mt-8 space-y-6" action="#" method="POST">
+            <form
+              className="mt-8 space-y-6"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void signIn("credentials", {
+                  ...credientialForm,
+                  redirect: false,
+                  callbackUrl: "/dashboard",
+                });
+              }}
+            >
               <input type="hidden" name="remember" value="true" />
               <div className="-space-y-px rounded-md shadow-sm">
                 <div>
                   <label htmlFor="email-address" className="sr-only rounded">
                     {" "}
-                    Email address
+                    Email
                   </label>
                   <input
-                    id="email-address"
                     name="email"
                     type="email"
-                    autoComplete="email"
                     required
                     className="relative block w-full rounded-t-md border-0 py-1.5 px-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder="Email address"
+                    value={credientialForm.email}
+                    onChange={(e) => {
+                      setCredientialForm({
+                        ...credientialForm,
+                        email: e.target.value,
+                      });
+                    }}
                   />
                 </div>
                 <div>
@@ -94,13 +142,18 @@ const SignIn: NextPage<
                     Password
                   </label>
                   <input
-                    id="password"
                     name="password"
                     type="password"
-                    autoComplete="current-password"
                     required
                     className="relative block w-full rounded-b-md border-0 py-1.5 px-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder="Password"
+                    value={credientialForm.password}
+                    onChange={(e) => {
+                      setCredientialForm({
+                        ...credientialForm,
+                        password: e.target.value,
+                      });
+                    }}
                   />
                 </div>
               </div>
@@ -166,24 +219,28 @@ const SignIn: NextPage<
 
             {/* Social Login */}
             <div className="flex items-center justify-center ">
-              {Object.values(providers).map((provider) => {
-                const Logo = providerLogos[provider.name]!;
-                return (
-                  <div key={provider.name}>
-                    <button
-                      className=" justify-item-stretch m-3 flex  rounded-3xl border-3 p-4 hover:bg-gray-300/50"
-                      onClick={() =>
-                        void signIn(provider.id, { callbackUrl: "/dashboard" })
-                      }
-                    >
-                      <div className="m-1.5">
-                        <Logo />
-                      </div>
-                      {provider.name}
-                    </button>
-                  </div>
-                );
-              })}
+              {Object.values(providers ?? {})
+                .filter((provider) => provider.name !== "Credentials")
+                .map((provider) => {
+                  const Logo = providerLogos[provider.name]!;
+                  return (
+                    <div key={provider.name}>
+                      <button
+                        className=" justify-item-stretch m-3 flex  rounded-3xl border-3 p-4 hover:bg-gray-300/50"
+                        onClick={() =>
+                          void signIn(provider.id, {
+                            callbackUrl: "/dashboard",
+                          })
+                        }
+                      >
+                        <div className="m-1.5">
+                          <Logo />
+                        </div>
+                        {provider.name}
+                      </button>
+                    </div>
+                  );
+                })}
             </div>
           </div>
         </div>
@@ -194,20 +251,3 @@ const SignIn: NextPage<
   );
 };
 export default SignIn;
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getServerSession(context.req, context.res, authOptions);
-
-  // If the user is already logged in, redirect.
-  // Note: Make sure not to redirect to the same page
-  // To avoid an infinite loop!
-  if (session) {
-    return { redirect: { destination: "/dashboard" } };
-  }
-
-  const providers = await getProviders();
-
-  return {
-    props: { providers: providers ?? [] },
-  };
-}
