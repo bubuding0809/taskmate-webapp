@@ -249,7 +249,9 @@ const Register: NextPage = () => {
                     <Link
                       className=" text-blue-500 underline hover:text-indigo-600"
                       href="#"
-                      onClick={handleTermsAndConditionsClick}
+                      onClick={(e) => {
+                        void handleTermsAndConditionsClick(e);
+                      }}
                     >
                       Terms and Condition
                     </Link>
