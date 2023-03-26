@@ -16,6 +16,7 @@ import {
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import Link from "next/link";
+import { classNames } from "@/utils/helper";
 
 // TO BE DONE BY: Jansonn
 // This is the landing page for the app. It should be the first page that the user sees when they visit the site.
@@ -93,37 +94,6 @@ const navigation = [
       igurl: "https://instagram.com/naitnijauhc?igshid=ZDdkNTZiNTM=",
       linkedurl: "https://www.linkedin.com/in/jake-chua-37ba4026a/",
       icon2: <BsLinkedin />,
-    },
-  ],
-  features = [
-    {
-      header: "Track Your Task Easily",
-      description:
-        "Manage any type of project with our powerful task management system.",
-      description2: "Create, assign, and track tasks with ease.",
-      image: "./images/calendar.jpg",
-    },
-    {
-      id: 2,
-      header: "Collaborate With Your Team",
-      description: "Work together with your team to complete projects faster.",
-      description2: "Share files, chat, and more.",
-      image: "./images/kanban.jpg",
-    },
-    {
-      id: 3,
-      header: "Stay Organized",
-      description: "Stay organized with our powerful task management system.",
-      description2: "Create, assign, and track tasks with ease.",
-      image: "./images/planning.jpg",
-    },
-    {
-      id: 4,
-      header: "Ideal Workspace",
-      description:
-        "Build your very own workspace with our powerful task management system. ",
-      description2: "Create, assign, and track tasks with ease.",
-      image: "./images/teamplan.jpg",
     },
   ];
 
@@ -203,11 +173,12 @@ const LandingPage: NextPage = () => {
 
       <div className="">
         <nav
-          className={
+          className={classNames(
             navbar
-              ? "sticky top-0 z-20 flex bg-indigo-700  "
-              : "navbar flex bg-transparent"
-          }
+              ? "sticky top-0 z-20 flex bg-indigo-700"
+              : "navbar flex bg-transparent",
+            "flex items-center justify-between p-2"
+          )}
         >
           <div>
             <img
@@ -223,7 +194,7 @@ const LandingPage: NextPage = () => {
               alt="logo"
             />
           </div>
-          <div className="mr-5 mt-2 ml-auto flex space-x-8">
+          <div className="ml-auto mr-2 flex space-x-8">
             {navigation.map((item) => (
               <Link
                 key={item.name}
