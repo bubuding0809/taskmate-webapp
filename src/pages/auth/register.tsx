@@ -62,7 +62,7 @@ const Register: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="flex min-h-screen flex-col items-center justify-center bg-blue-500">
-        <div className="absolute flex w-auto space-y-8 overflow-hidden rounded-2xl  bg-white/75 px-6 py-12 shadow-sm">
+        <div className="absolute flex w-auto space-y-8 overflow-hidden rounded-2xl  bg-white/75 px-6 py-8 shadow-sm ">
           <div>
             <h2 className="mt-5 text-center text-3xl font-bold tracking-tight text-gray-900">
               {" "}
@@ -178,39 +178,34 @@ const Register: NextPage = () => {
                 </div>
 
                 {/* Social Registration */}
-                <div className="flex items-center justify-center ">
+                <div className="flex items-center justify-between">
                   {Object.values(providers ?? {})
                     .filter((provider) => provider.name !== "Credentials")
                     .map((provider) => {
                       const Logo = providerLogos[provider.name]!;
                       return (
-                        <div key={provider.name}>
-                          <button
-                            className=" justify-item-stretch m-3 flex  rounded-3xl border-3 p-4 hover:bg-gray-300/50"
-                            onClick={() =>
-                              void signIn(provider.id, {
-                                callbackUrl: "/dashboard",
-                              })
-                            }
-                          >
-                            <div className="m-1.5">
-                              <Logo />
-                            </div>
-                            {provider.name}
-                          </button>
-                        </div>
+                        <button
+                          key={provider.name}
+                          className="flex rounded-md border px-4 py-2 hover:bg-gray-300/50 bg-white justify-center items-center gap-2 shadow w-32"
+                          onClick={() =>
+                            void signIn(provider.id, {
+                              callbackUrl: "/dashboard",
+                            })
+                          }
+                        >
+                          <Logo className="text-indigo-800"/>
+                          {provider.name}
+                        </button>
                       );
                     })}
                 </div>
 
-                <div className="align-center flex justify-center font-semibold">
-                  <button
-                    className=" w-50 hover:ring- mt-4 rounded-md  border-gray-500 bg-gray-200 py-1.5 px-1.5 text-black ring-2 ring-indigo-600 hover:bg-indigo-600 hover:text-gray-100 hover:ring-0 sm:leading-6"
-                    type="submit"
-                  >
-                    Create an account
-                  </button>
-                </div>
+                <button
+                  className="w-full mt-6 rounded-md py-1.5 px-1.5 hover:bg-indigo-800 hover:text-gray-100 sm:leading-6 bg-indigo-600 text-white h-12"
+                  type="submit"
+                >
+                  Create an account
+                </button>
               </div>
             </form>
           </div>
