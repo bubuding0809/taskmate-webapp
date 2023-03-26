@@ -79,8 +79,34 @@ const Register: NextPage = () => {
 
             <form
               className="mx-auto mt-10 max-w-xl sm:mt-5"
-              method="post"
-              action="/api/signup"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.target as HTMLFormElement;
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                fetch("/api/signup", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                  },
+                  body: JSON.stringify(data),
+                })
+                  .then((res) => {
+                    if (!res.ok) {
+                      throw new Error("Error creating account");
+                    }
+                    if (res.ok) {
+                      void router.push("/auth/signin").then(() => {
+                        alert("Account created successfully");
+                      });
+                    }
+                  })
+                  .catch((err) => {
+                    alert(err);
+                  });
+              }}
             >
               <div>
                 <div className="grid grid-cols-2 gap-4">
@@ -117,18 +143,6 @@ const Register: NextPage = () => {
                     htmlFor="password"
                     className="text-m block font-semibold leading-6 text-gray-900"
                   >
-                    {/* <label
-                      htmlFor="username"
-                      className="text-m block font-semibold leading-6 text-gray-900"
-                    >
-                      Username:
-                      <input
-                        className="relative block w-full rounded-t-md border-0 py-1.5 px-1.5 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                        name="username"
-                        type="text"
-                        placeholder="chenyu99"
-                      />
-                    </label> */}
                     Password:
                     <input
                       className="relative block w-full rounded-t-md border-0 py-1.5 px-1.5 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"

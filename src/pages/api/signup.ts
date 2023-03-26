@@ -18,11 +18,6 @@ export default async function handler(
             csrfToken: string;
           };
 
-        console.log("name", name);
-        console.log("email", email);
-        console.log("password", password);
-        console.log("confirm", confirmPassword);
-
         if (
           !(
             name &&
@@ -66,6 +61,7 @@ export default async function handler(
           data: {
             name: name,
             email: email,
+            password: generate.hashPassword(password),
           },
         });
 

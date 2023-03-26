@@ -109,9 +109,19 @@ const SignIn: NextPage = () => {
                 e.preventDefault();
                 void signIn("credentials", {
                   ...credientialForm,
-                  redirect: false,
                   callbackUrl: "/dashboard",
-                });
+                  redirect: false,
+                })
+                  .then((res) => {
+                    if (res?.error) {
+                      throw new Error(res.error);
+                    }
+                    res?.ok && router.push("/dashboard");
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                    alert("Invalid Credentials");
+                  });
               }}
             >
               <input type="hidden" name="remember" value="true" />

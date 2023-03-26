@@ -8,6 +8,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "../../../env.mjs";
 import { prisma } from "server/db";
+import Cookies from "cookies";
+import { encode, decode } from "next-auth/jwt";
 
 export default async function handler(
   req: NextApiRequest,
@@ -43,16 +45,29 @@ export default async function handler(
         return session;
       },
       async signIn({ user, account, profile, email, credentials }) {
-        await new Promise((resolve) => resolve("user"));
-        const isAllowedToSignIn = true;
-        if (isAllowedToSignIn) {
-          return true;
-        } else {
-          // Return false to display a default error message
-          return false;
-          // Or you can return a URL to redirect to:
-          // return '/unauthorized'
+        if (
+          req.query.nextauth?.includes("callback") &&
+          req.query.nextauth?.includes("credentials") &&
+          req.method === "POST"
+        ) {
+          if (user) {
+            const sessionToken = generate.sessionToken();
+            const sessionExpiry = generate.sessionExpiry();
+
+            await adapter.createSession({
+              userId: user.id,
+              sessionToken: sessionToken,
+              expires: sessionExpiry,
+            });
+
+            const cookies = new Cookies(req, res);
+
+            cookies.set("next-auth.session-token", sessionToken, {
+              expires: sessionExpiry,
+            });
+          }
         }
+        return true;
       },
       async redirect({ url, baseUrl }) {
         await new Promise((resolve) => resolve("url"));
@@ -61,6 +76,48 @@ export default async function handler(
         // Allows callback URLs on the same origin
         else if (new URL(url).origin === baseUrl) return url;
         return baseUrl;
+      },
+    },
+
+    /*
+    Define the encryption secret used to encrypt and decrypt the JWT token
+    */
+    jwt: {
+      encode: async ({ secret, token, maxAge }) => {
+        // If we are in the credentials provider callback flow, we don't want to encode the token
+        if (
+          req.query.nextauth?.includes("callback") &&
+          req.query.nextauth?.includes("credentials") &&
+          req.method === "POST"
+        ) {
+          const cookies = new Cookies(req, res);
+          const cookie = cookies.get("next-auth.session-token");
+
+          return cookie ? cookie : "";
+        }
+
+        // Revert to default behaviour when not in the credentials provider callback flow
+        return await encode({
+          token,
+          secret,
+          maxAge,
+        });
+      },
+      decode: async ({ secret, token }) => {
+        // If we are in the credentials provider callback flow, we don't want to decode the token
+        if (
+          req.query.nextauth?.includes("callback") &&
+          req.query.nextauth?.includes("credentials") &&
+          req.method === "POST"
+        ) {
+          return null;
+        }
+
+        // Revert to default behaviour when not in the credentials provider callback flow
+        return await decode({
+          secret,
+          token,
+        });
       },
     },
 
@@ -94,23 +151,17 @@ export default async function handler(
           password: { label: "Password", type: "password" },
         },
         async authorize(credentials, req) {
-          // Add logic here to look up the user from the credentials supplied
-          const user = {
-            id: "1",
-            name: "John Smith",
-            email: credentials?.email ?? "cannot find email",
-          } as {
-            id: string;
-            name: string;
-            email: string;
-          };
+          // search data base for user
+          const userExist = await prisma.user.findFirst({
+            where: {
+              email: credentials?.email ?? "",
+              password: generate.hashPassword(credentials?.password ?? ""),
+            },
+          });
 
-          console.log("Authorizing user ", credentials);
-          return null;
-
-          if (user) {
+          if (userExist) {
             // Any object returned will be saved in `user` property of the JWT
-            return user;
+            return userExist;
           } else {
             // If you return null then an error will be displayed advising the user to check their details.
             return null;
@@ -157,7 +208,8 @@ export default async function handler(
 export const generate = {
   uuidv4: () => randomUUID(),
   sessionToken: () => randomUUID(),
-  sessionExpiry: (time: number) => new Date(Date.now() + time * 1000),
+  sessionExpiry: (time: number = 60 * 60 * 24 * 7) =>
+    new Date(Date.now() + time * 1000),
   hashPassword: (password: string) =>
     createHash("sha256").update(password).digest("hex"),
 };
