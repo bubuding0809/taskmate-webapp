@@ -37,13 +37,17 @@ const Register: NextPage = () => {
 
   useEffect(() => {
     if (sessionData) {
-      router.push("/dashboard");
+      void router.push("/dashboard");
     }
   }, [sessionData]);
 
   useEffect(() => {
-    getProviders().then((providers) => setProviders(providers));
-    getCsrfToken().then((token) => setCsrfToken(token ?? ""));
+    void getProviders()
+      .then((providers) => setProviders(providers))
+      .catch((err) => console.log(err));
+    void getCsrfToken()
+      .then((token) => setCsrfToken(token ?? ""))
+      .catch((err) => console.log(err));
   }, []);
 
   if (status === "loading" || status === "authenticated") {

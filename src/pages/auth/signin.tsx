@@ -46,12 +46,14 @@ const SignIn: NextPage = () => {
 
   useEffect(() => {
     if (sessionData) {
-      router.push("/dashboard");
+      void router.push("/dashboard");
     }
   }, [sessionData]);
 
   useEffect(() => {
-    getProviders().then((providers) => setProviders(providers));
+    void getProviders()
+      .then((providers) => setProviders(providers))
+      .catch((err) => console.log(err));
   }, []);
 
   const [credientialForm, setCredientialForm] = useState({
