@@ -1,3 +1,4 @@
+//Done by Jansonn Lim 2102990
 import { NextApiRequest, NextApiResponse } from "next";
 import { tnc } from "../../server/info/tnc.json";
 

@@ -54,6 +54,7 @@ const Register: NextPage = () => {
   }
 
   const handleTermsAndConditionsClick = async (
+    //Done by Jansonn 2102990
     event:
       | React.ChangeEvent<HTMLInputElement>
       | React.MouseEvent<HTMLAnchorElement, MouseEvent>
@@ -264,7 +265,7 @@ const Register: NextPage = () => {
                   </div>
                 </div>
               </form>
-              {/* modal */}
+              {/* modal Done by Jansonn 2102990 */}
               <Transition.Root show={open} as={Fragment}>
                 <Dialog as="div" className="relative z-10" onClose={setOpen}>
                   <Transition.Child
