@@ -1,5 +1,7 @@
+/* DONE BY: Ding RuoQian 2100971 */
+
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 const PANEL_ORDER_STEP = 100;
 

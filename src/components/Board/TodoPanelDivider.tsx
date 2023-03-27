@@ -1,8 +1,6 @@
-import { Tooltip, Typography } from "@mui/material";
-import { AntSwitch } from "../custom/AntSwitch";
-import TaskIcon from "@mui/icons-material/Task";
-import BorderLinearProgress from "../custom/BorderedLinearProgress";
-import { CheckCircleIcon, PlusIcon } from "@heroicons/react/20/solid";
+/* DONE BY: Ding RuoQian 2100971 */
+
+import {  PlusIcon } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils/helper";
 import TaskCreationModal from "./modals/TaskCreationModal";
 import { useState } from "react";

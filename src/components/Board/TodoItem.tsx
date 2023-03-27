@@ -1,3 +1,5 @@
+/* DONE BY: Ding RuoQian 2100971 */
+
 import React, { useRef, useState, useEffect, CSSProperties } from "react";
 import { Collapse, IconButton, Typography } from "@mui/material";
 import { TransitionGroup } from "react-transition-group";

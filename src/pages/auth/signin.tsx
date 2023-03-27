@@ -1,10 +1,6 @@
 // Done By Chua Chen Yu 2101125
 
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-  NextPage,
-} from "next";
+import type { NextPage } from "next";
 import {
   ClientSafeProvider,
   getProviders,
@@ -20,16 +16,6 @@ import Loader from "@/components/custom/Loader";
 import { BuiltInProviderType } from "next-auth/providers";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-
-// TO BE DONE BY: Chen Yu
-// This is the sign in page for the app. It should be the page that the user sees when they press get started or sign in.
-// You can access the page at http://localhost:3000/auth/signin
-// You can also access the page by clicking the sign in button on the landing page.
-// The page should display a list of sign in options. For now, we only have discord.
-// To add more sign in options, you can refer to the documentation here: https://next-auth.js.org/getting-started/client
-// You can also refer to the documentation here: https://next-auth.js.org/getting-started/example
-// You can also refer to the documentation here: https://next-auth.js.org/getting-started/client
-// You can customize the authentication providers in the server/auth.ts file.
 
 const providerLogos: { [key: string]: IconType } = {
   Discord: BsDiscord,
@@ -76,7 +62,6 @@ const SignIn: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/*NEW*/}
       <div>
         {/* Background Video */}
         <video
@@ -139,7 +124,7 @@ const SignIn: NextPage = () => {
                     name="email"
                     type="email"
                     required
-                    className="relative block w-full rounded-t-md border-0 py-1.5 px-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 indent-1"
+                    className="relative block w-full rounded-t-md border-0 py-1.5 px-1.5 indent-1 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder="Email address"
                     value={credientialForm.email}
                     onChange={(e) => {
@@ -159,7 +144,7 @@ const SignIn: NextPage = () => {
                     name="password"
                     type="password"
                     required
-                    className="relative block w-full rounded-b-md border-0 py-1.5 px-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 indent-1"
+                    className="relative block w-full rounded-b-md border-0 py-1.5 px-1.5 indent-1 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     placeholder="Password"
                     value={credientialForm.password}
                     onChange={(e) => {
@@ -238,26 +223,24 @@ const SignIn: NextPage = () => {
                 .map((provider) => {
                   const Logo = providerLogos[provider.name]!;
                   return (
-                      <button
-                        key={provider.name}
-                        className="flex rounded-md border px-4 py-2 hover:bg-gray-300/50 bg-white justify-center items-center gap-2 shadow w-32"
-                        onClick={() =>
-                          void signIn(provider.id, {
-                            callbackUrl: "/dashboard",
-                          })
-                        }
-                      >
-                        <Logo className="text-indigo-800"/>
-                        {provider.name}
-                      </button>
+                    <button
+                      key={provider.name}
+                      className="flex w-32 items-center justify-center gap-2 rounded-md border bg-white px-4 py-2 shadow hover:bg-gray-300/50"
+                      onClick={() =>
+                        void signIn(provider.id, {
+                          callbackUrl: "/dashboard",
+                        })
+                      }
+                    >
+                      <Logo className="text-indigo-800" />
+                      {provider.name}
+                    </button>
                   );
                 })}
             </div>
           </div>
         </div>
       </div>
-
-      {/* You content goes here */}
     </>
   );
 };

@@ -1,4 +1,5 @@
-import { StayPrimaryLandscape } from "@mui/icons-material";
+/* DONE BY: Ding RuoQian 2100971 */
+
 import { styled } from "@mui/material/styles";
 import Switch from "@mui/material/Switch";
 

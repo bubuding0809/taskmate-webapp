@@ -1,4 +1,6 @@
-import React, { useRef, useState, useEffect, useMemo } from "react";
+/* DONE BY: Ding RuoQian 2100971 */
+
+import React, { useRef, useState, useEffect } from "react";
 import { Chip, Tooltip, Typography } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import DescriptionIcon from "@mui/icons-material/Description";

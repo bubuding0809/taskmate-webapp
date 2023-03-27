@@ -1,17 +1,13 @@
+/* DONE BY: Ding RuoQian 2100971 */
+
 import React, { useEffect } from "react";
 import { Fragment, useRef, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import {
-  LinkIcon,
-  PlusIcon,
-  QuestionMarkCircleIcon,
-} from "@heroicons/react/20/solid";
 import { nanoid } from "nanoid";
 
 import type { PanelWithTasks } from "server/api/routers/board";
 import useCreateTask from "@/utils/mutations/task/useCreateTask";
-import { handlePusherUpdate } from "@/utils/pusher";
 import { useSession } from "next-auth/react";
 import { User } from "@prisma/client";
 import { Tooltip } from "@mui/material";

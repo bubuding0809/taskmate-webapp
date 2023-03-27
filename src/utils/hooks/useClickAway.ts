@@ -1,3 +1,5 @@
+/* DONE BY: Ding RuoQian 2100971 */
+
 import { RefObject, useEffect } from "react";
 
 const useClickAway = (

@@ -1,3 +1,5 @@
+/* DONE BY: Ding RuoQian 2100971 */
+
 import { Moment } from "moment";
 
 // Type definition for a new entry to be added to the todo list
