@@ -17,7 +17,7 @@ To run TaskMate locally, you need to have the following installed on your machin
 1. Clone repository to your local machine
 
    ```bash
-   git clone https://github.com/bubuding0809/taskmate-webapp.git
+   > git clone https://github.com/bubuding0809/taskmate-webapp.git
    ```
 
 2. Install dependencies
@@ -52,7 +52,7 @@ To run TaskMate locally, you need to have the following installed on your machin
    ```
 
 5. Run in dev mode.
-   ```
+   ```bash
    > npm run dev
    ```
 6. Visit http://localhost:3000 to view application
