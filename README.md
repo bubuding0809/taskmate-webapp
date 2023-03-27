@@ -1,28 +1,75 @@
-# Create T3 App
+# TaskMate - A simple task manager
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+## Introduction
 
-## What's next? How do I make an app with this?
+TaskMate is a next-generation lightweight task management app accessible through any web browser. Through a kanban board interface, the app is designed to help individuals and teams stay organised and productive. Users can create personalised boards for each project and use them to manage accountability of work individually or collaboratively.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+TaskMate is developed with a combination of web technologies and relational database management systems (RDBMS). Web technologies include Javascript, HTML, and CSS. For the RDBMS we have chosen to use MySQL as the choice of relational database for enforcing data integrity during online transaction processing (OLTP) of the application data. In addition to the basic programming languages used, we have also leveraged advanced frameworks and libraries that build upon these lower layers to optimise developer experience and create a more robust user experience.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Prerequisites
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+To run TaskMate locally, you need to have the following installed on your machine:
 
-## Learn More
+- Node.js (v14 or higher)
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+## How to run application?
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+1. Clone repository to your local machine
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+   ```bash
+   git clone https://github.com/bubuding0809/taskmate-webapp.git
+   ```
+
+2. Install dependencies
+   ```bash
+   > cd taskmate-webapp
+   > npm install
+   ```
+3. Create a copy of **.env.example** and rename it to **.env**
+4. Populate **.env** with your respective API keys
+
+   ```
+    # Database
+    DATABASE_URL=""
+
+    # NextAuth
+    NEXTAUTH_SECRET=""
+    NEXTAUTH_URL=""
+    DISCORD_CLIENT_ID=""
+    DISCORD_CLIENT_SECRET=""
+    FACEBOOK_CLIENT_ID=""
+    FACEBOOK_CLIENT_SECRET=""
+    GOOGLE_CLIENT_ID=""
+    GOOGLE_CLIENT_SECRET=""
+
+    # Pusher
+    PUSHER_APP_ID=""
+    PUSHER_KEY=""
+    PUSHER_SECRET=""
+    PUSHER_CLUSTER=""
+    NEXT_PUBLIC_PUSHER_KEY=""
+    NEXT_PUBLIC_PUSHER_CLUSTER=""
+   ```
+
+5. Run in dev mode.
+   ```
+   > npm run dev
+   ```
+6. Visit http://localhost:3000 to view application
 
 ## How do I deploy this?
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+### Vercel
+
+Recommend deploying to [Vercel](https://vercel.com/?utm_source=t3-oss&utm_campaign=oss). It makes it super easy to deploy NextJs apps.
+
+- Push your code to a GitHub repository.
+- Go to [Vercel](https://vercel.com/?utm_source=t3-oss&utm_campaign=oss) and sign up with GitHub.
+- Create a Project and import the repository you pushed your code to.
+- Add your environment variables.
+- Click **Deploy**
+- Now whenever you push a change to your repository, Vercel will automatically redeploy your website!
+
+## Conclusion
+
+TaskMate is a simple and easy-to-use task management application that can help individuals and teams stay organized and productive. By following the instructions in this README.md file, you can easily set up and deploy TaskMate to suit your needs.
