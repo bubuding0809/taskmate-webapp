@@ -93,7 +93,7 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
       cluster: env.NEXT_PUBLIC_PUSHER_CLUSTER,
       channelAuthorization: {
         params: {
-          userId: sessionData!.user.id,
+          userId: sessionData?.user.id,
         },
         endpoint: "/api/pusher/auth",
         transport: "ajax",
@@ -139,8 +139,8 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
         // If the update event is not from the current user, refetch board and tasks
         if (data.sender !== sessionData!.user.id) {
           console.log("refetching board and tasks");
-          refetchBoard();
-          refetchTasks();
+          void refetchBoard();
+          void refetchTasks();
         }
       }
     );
