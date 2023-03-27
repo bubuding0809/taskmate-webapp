@@ -15,7 +15,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
-  const { channel, event, data } = JSON.parse(req.body) as {
+  const { channel, event, data } = JSON.parse(req.body as string) as {
     channel: string;
     event: string;
     data: {
