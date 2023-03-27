@@ -12,6 +12,7 @@ interface BoardHeaderProps {
   bgImage: string;
   setBgImage: React.Dispatch<React.SetStateAction<string>>;
   backgroundImages: { name: string; url: string }[];
+  onlineUsers: Set<string>;
 }
 
 const BoardHeader: React.FC<BoardHeaderProps> = ({
@@ -19,6 +20,7 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
   bgImage,
   setBgImage,
   backgroundImages,
+  onlineUsers,
 }) => {
   // Query to get board data
   const { data: boardQueryData } = api.board.getBoardById.useQuery({
@@ -77,17 +79,30 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
               <Tooltip
                 key={user.id}
                 title={user.name ?? ""}
+                className="relative"
                 onClick={() => {
                   setCurrUser(user);
                   setOpenUserModal(true);
                 }}
               >
-                <img
-                  // prevent images from being compressed
-                  className="h=[26px] inline-block w-[26px] cursor-pointer rounded-full hover:opacity-75 sm:h-8 sm:w-8"
-                  src={user.image ?? ""}
-                  alt={user.name ?? ""}
-                />
+                <div className="h=[26px] relative inline-block w-[26px] sm:h-8 sm:w-8">
+                  {
+                    // Show a green dot if the user is online
+                    onlineUsers.has(user.id) && (
+                      <div className="absolute -right-1 top-0 h-2.5 w-2.5 rounded-full border bg-emerald-400" />
+                    )
+                  }
+
+                  <img
+                    // prevent images from being compressed
+                    className="cursor-pointer rounded-full hover:opacity-75"
+                    src={
+                      user.image ??
+                      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60"
+                    }
+                    alt={user.name ?? ""}
+                  />
+                </div>
               </Tooltip>
             ))}
           </div>

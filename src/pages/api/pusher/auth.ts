@@ -2,7 +2,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { env } from "../../../env.mjs";
 import Pusher from "pusher";
-import { getSession } from "next-auth/react/index.js";
+import { getServerSession } from "next-auth";
+import { authOptions } from "server/auth";
 
 export const pusher = new Pusher({
   appId: env.PUSHER_APP_ID,
@@ -16,7 +17,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const socketId = req.body.socket_id;
   const userId = req.body.userId;
   const channelId = req.body.channel_name;
-  const session = await getSession();
+  const session = await getServerSession(req, res, authOptions);
 
   if (!session) {
     return res.status(403).json({ error: "Unauthorized" });

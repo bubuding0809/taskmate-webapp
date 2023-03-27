@@ -40,6 +40,24 @@ const backgroundImages: {
   },
 ];
 
+type PusherMemberType = {
+  id: string;
+  info: {
+    email: string;
+    image: string | null;
+    name: string;
+  };
+};
+
+type PusherMembersType = {
+  count: number;
+  me: PusherMemberType;
+  members: {
+    [key: string]: PusherMemberType;
+  };
+  myID: string;
+};
+
 const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
   const { data: sessionData } = useSession();
   const [isItemCombineEnabled, setIsItemCombineEnabled] = useState(false);
@@ -66,6 +84,9 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
   const { mutate: combineTaskWithParent } = useCombineTask();
   const { mutate: reorderSubTask } = useUpdateSubtaskOrder();
 
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+
+  // Effect to setup pusher client and connections
   useEffect(() => {
     // Instantiate pusher client
     const pusher = new Pusher(env.NEXT_PUBLIC_PUSHER_KEY, {
@@ -81,12 +102,37 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
 
     // Subscribe to pusher channel
     const channel = pusher.subscribe("public-board-" + bid);
+    const presenceChannel = pusher.subscribe("presence-board-" + bid);
 
-    // bind chat channel events
+    // Bind callbacks to presence channel
+    presenceChannel.bind(
+      "pusher:subscription_succeeded",
+      (members: PusherMembersType) => {
+        setOnlineUsers(new Set(Object.keys(members.members)));
+      }
+    );
+    presenceChannel.bind("pusher:member_added", (member: PusherMemberType) => {
+      setOnlineUsers((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(member.id);
+        return newSet;
+      });
+    });
+    presenceChannel.bind(
+      "pusher:member_removed",
+      (member: PusherMemberType) => {
+        setOnlineUsers((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(member.id);
+          return newSet;
+        });
+      }
+    );
+
+    // Bind callbacks to event update channel
     channel.bind("pusher:subscription_error", () => {
       console.log("subscription error");
     });
-
     channel.bind(
       "update-event",
       (data: { timeStamp: number; sender: string }) => {
@@ -355,6 +401,7 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
         bgImage={bgImage}
         setBgImage={setBgImage}
         backgroundImages={backgroundImages}
+        onlineUsers={onlineUsers}
       />
 
       {/* Board Main*/}
