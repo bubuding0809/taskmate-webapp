@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Panel from "@/components/Board/Panel";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, UserMinusIcon } from "@heroicons/react/24/outline";
 import { nanoid } from "nanoid";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { api } from "@/utils/api";
@@ -18,6 +18,8 @@ import { env } from "env.mjs";
 import { useSession } from "next-auth/react";
 
 import type { DragStart, DropResult } from "react-beautiful-dnd";
+import { useToastContext } from "@/utils/context/ToastContext";
+import { UserPlusIcon } from "@heroicons/react/20/solid";
 
 interface BoardViewProps {
   bid: string;
@@ -61,6 +63,7 @@ type PusherMembersType = {
 };
 
 const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
+  const addToast = useToastContext();
   const { data: sessionData } = useSession();
   const [isItemCombineEnabled, setIsItemCombineEnabled] = useState(false);
   const [bgImage, setBgImage] = useState<string>(
@@ -113,13 +116,22 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
         setOnlineUsers(new Set(Object.keys(members.members)));
       }
     );
+
     presenceChannel.bind("pusher:member_added", (member: PusherMemberType) => {
       setOnlineUsers((prev) => {
         const newSet = new Set(prev);
         newSet.add(member.id);
         return newSet;
       });
+
+      // Add toast notification for user joining
+      addToast({
+        icon: UserPlusIcon,
+        title: "User joined",
+        description: `${member.info.name} joined the board`,
+      });
     });
+
     presenceChannel.bind(
       "pusher:member_removed",
       (member: PusherMemberType) => {
@@ -127,6 +139,13 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
           const newSet = new Set(prev);
           newSet.delete(member.id);
           return newSet;
+        });
+
+        // Add toast notification for user leaving
+        addToast({
+          icon: UserMinusIcon,
+          title: "User left",
+          description: `${member.info.name} left the board`,
         });
       }
     );
