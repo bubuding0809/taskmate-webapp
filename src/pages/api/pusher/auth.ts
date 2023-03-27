@@ -14,25 +14,31 @@ export const pusher = new Pusher({
 });
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const socketId = req.body.socket_id;
-  const userId = req.body.userId;
-  const channelId = req.body.channel_name;
+  const {
+    socketId,
+    userId,
+    channel_name: channelId,
+  } = req.body as {
+    socketId: string;
+    userId: string;
+    channel_name: string;
+  };
   const session = await getServerSession(req, res, authOptions);
 
   if (!session) {
     return res.status(403).json({ error: "Unauthorized" });
   }
 
-  if (session.user?.id !== userId) {
+  if (session.user.id !== userId) {
     return res.status(403).json({ error: "Unauthorized" });
   }
 
   const presenceData = {
-    user_id: session.user!.id!,
+    user_id: session.user.id,
     user_info: {
-      name: session.user!.name,
-      email: session.user!.email,
-      image: session.user!.image,
+      name: session.user.name,
+      email: session.user.email,
+      image: session.user.image,
     },
   };
 
