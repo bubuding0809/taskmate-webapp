@@ -1,3 +1,6 @@
+-- DONE BY: Ding Ruoqian 
+-- DONE By: Amri Sazali
+
 show databases;
 use `taskmate-db`;
 

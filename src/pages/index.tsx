@@ -1,10 +1,8 @@
-//Done by Jansonn 2102990
+// Done by Jansonn 2102990
+// Done by Chua Jin Tian 2103163
 import React, { useRef, useEffect, useState, Fragment } from "react";
 import { type NextPage } from "next";
 import Head from "next/head";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { ClassNames } from "@emotion/react";
-import { positions } from "@mui/system";
 import { Dialog, Transition } from "@headlessui/react";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import {

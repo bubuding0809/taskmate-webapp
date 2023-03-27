@@ -1,6 +1,7 @@
+// Done by: Ding Ruoqian
+
 // Write a script to populate the folder_order field in the folder table
-//
-// Path: prisma/seed.ts
+
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
