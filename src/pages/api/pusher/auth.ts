@@ -15,11 +15,11 @@ export const pusher = new Pusher({
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const {
-    socketId,
+    socket_id: socketId,
     userId,
     channel_name: channelId,
   } = req.body as {
-    socketId: string;
+    socket_id: string;
     userId: string;
     channel_name: string;
   };

@@ -138,7 +138,6 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
       (data: { timeStamp: number; sender: string }) => {
         // If the update event is not from the current user, refetch board and tasks
         if (data.sender !== sessionData!.user.id) {
-          console.log("refetching board and tasks");
           void refetchBoard();
           void refetchTasks();
         }
