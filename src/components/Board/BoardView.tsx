@@ -165,7 +165,11 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
       }
     );
 
-    return () => pusher.unsubscribe("public-board-" + bid);
+    return () => {
+      pusher.unsubscribe("public-board-" + bid);
+      pusher.unsubscribe("presence-board-" + bid);
+      pusher.disconnect();
+    };
   }, []);
 
   const handleCreateNewPanel = () => {
