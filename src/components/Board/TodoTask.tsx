@@ -6,22 +6,21 @@ import autoAnimate from "@formkit/auto-animate";
 import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
 import { TodoTaskMenu } from "./TodoTaskMenu";
 import { BpCheckBox } from "../custom/BpCheckBox";
-
-import type {
-  PanelWithTasks,
-  TaskWithSubtasks,
-} from "server/api/routers/board";
 import { formatDate } from "@/utils/helper";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
-
 import UserModal from "../Dashboard/UserModal";
 import { User } from "@prisma/client";
 import { UserMinusIcon } from "@heroicons/react/20/solid";
-import { api } from "@/utils/api";
 import useRemoveAssignee from "@/utils/mutations/task/useRemoveAssignee";
 
+import type {
+  PanelWithTasks,
+  TaskWithAssignees,
+  TaskWithSubtasks,
+} from "server/api/routers/board";
+
 interface TodoTaskProps {
-  task: TaskWithSubtasks;
+  task: TaskWithSubtasks | TaskWithAssignees;
   panelItem: PanelWithTasks;
   provided?: DraggableProvided;
   snapshot?: DraggableStateSnapshot;

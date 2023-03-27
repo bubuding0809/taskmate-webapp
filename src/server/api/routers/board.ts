@@ -4,6 +4,7 @@ import type {
   Panel,
   Task,
   Task_Activity,
+  Task_Assign_Rel,
   User,
 } from "@prisma/client";
 import { z } from "zod";
@@ -16,9 +17,14 @@ export type TaskDetailed = Task & {
   subtasks: Task[];
 };
 
-export type TaskWithSubtasks = Task & {
-  subtasks: TaskWithSubtasks[];
-  Task_Assign_Rel: { User: User }[];
+export type TaskWithAssignees = Task & {
+  Task_Assign_Rel: (Task_Assign_Rel & {
+    User: User;
+  })[];
+};
+
+export type TaskWithSubtasks = TaskWithAssignees & {
+  subtasks: TaskWithAssignees[];
 };
 
 export type PanelWithTasks = Panel & {
@@ -51,6 +57,13 @@ export const boardRouter = createTRPCRouter({
               Task: {
                 include: {
                   subtasks: {
+                    include: {
+                      Task_Assign_Rel: {
+                        include: {
+                          User: true,
+                        },
+                      },
+                    },
                     orderBy: {
                       order: "asc",
                     },
