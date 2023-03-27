@@ -1,11 +1,14 @@
+import { handlePusherUpdate } from "@/utils/pusher";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import _ from "lodash";
+import { useSession } from "next-auth/react";
 import { BoardWithPanelsAndTasksAndCollaborators } from "server/api/routers/board";
 import { api } from "utils/api";
 
 const useRemoveCollaborators = () => {
   const queryClient = useQueryClient();
+  const { data: sessionData } = useSession();
 
   return api.collaborator.removeCollaborators.useMutation({
     onMutate: async (variables) => {
@@ -35,6 +38,12 @@ const useRemoveCollaborators = () => {
       queryClient.setQueryData(ctx!.queryKey, ctx!.oldBoardData);
     },
     onSettled: async (_data, _error, variables, ctx) => {
+      // Sender update to pusher
+      handlePusherUpdate({
+        bid: variables.boardId,
+        sender: sessionData!.user.id,
+      });
+
       // Always refetch query after error or success to make sure the server state is correct
       await queryClient.invalidateQueries({
         queryKey: ctx?.queryKey,

@@ -1,19 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Panel from "@/components/Board/Panel";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { nanoid } from "nanoid";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { api } from "@/utils/api";
 import { classNames } from "@/utils/helper";
-
+import BoardHeader from "./BoardHeader";
+import Pusher from "pusher-js";
 import useCreatePanel from "@/utils/mutations/panel/useCreatePanel";
 import useUpdatePanelOrder from "@/utils/mutations/panel/useUpdatePanelOrder";
 import useUpdateTaskOrder from "@/utils/mutations/task/useUpdateTaskOrder";
 import useUpdateSubtaskOrder from "@/utils/mutations/task/useUpdateSubtaskOrder";
 import useCombineTask from "@/utils/mutations/task/useCombineTask";
+import { env } from "env.mjs";
+import { useSession } from "next-auth/react";
 
 import type { DragStart, DropResult } from "react-beautiful-dnd";
-import BoardHeader from "./BoardHeader";
 
 interface BoardViewProps {
   bid: string;
@@ -39,20 +41,23 @@ const backgroundImages: {
 ];
 
 const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
+  const { data: sessionData } = useSession();
   const [isItemCombineEnabled, setIsItemCombineEnabled] = useState(false);
   const [bgImage, setBgImage] = useState<string>(
     "/images/paul-weaver-unsplash.jpeg"
   );
 
   // Query to get board data
-  const { data: boardQueryData } = api.board.getBoardById.useQuery({
-    boardId: bid,
-  });
+  const { data: boardQueryData, refetch: refetchBoard } =
+    api.board.getBoardById.useQuery({
+      boardId: bid,
+    });
 
   // Query to get a map of all tasks in a board
-  const { data: taskMapData } = api.board.getTasksMapByBoardId.useQuery({
-    boardId: bid,
-  });
+  const { data: taskMapData, refetch: refetchTasks } =
+    api.board.getTasksMapByBoardId.useQuery({
+      boardId: bid,
+    });
 
   // Mutations to update panels in database
   const { mutate: createPanel } = useCreatePanel();
@@ -60,6 +65,42 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
   const { mutate: reorderTask } = useUpdateTaskOrder();
   const { mutate: combineTaskWithParent } = useCombineTask();
   const { mutate: reorderSubTask } = useUpdateSubtaskOrder();
+
+  useEffect(() => {
+    // Instantiate pusher client
+    const pusher = new Pusher(env.NEXT_PUBLIC_PUSHER_KEY, {
+      cluster: env.NEXT_PUBLIC_PUSHER_CLUSTER,
+      channelAuthorization: {
+        params: {
+          userId: sessionData!.user.id,
+        },
+        endpoint: "/api/pusher/auth",
+        transport: "ajax",
+      },
+    });
+
+    // Subscribe to pusher channel
+    const channel = pusher.subscribe("public-board-" + bid);
+
+    // bind chat channel events
+    channel.bind("pusher:subscription_error", () => {
+      console.log("subscription error");
+    });
+
+    channel.bind(
+      "update-event",
+      (data: { timeStamp: number; sender: string }) => {
+        // If the update event is not from the current user, refetch board and tasks
+        if (data.sender !== sessionData!.user.id) {
+          console.log("refetching board and tasks");
+          refetchBoard();
+          refetchTasks();
+        }
+      }
+    );
+
+    return () => pusher.unsubscribe("public-board-" + bid);
+  }, []);
 
   const handleCreateNewPanel = () => {
     // Create new panel and update state

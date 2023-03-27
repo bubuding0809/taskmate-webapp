@@ -1,12 +1,15 @@
+import { handlePusherUpdate } from "@/utils/pusher";
 import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import _ from "lodash";
+import { useSession } from "next-auth/react";
 import type { BoardWithPanelsAndTasks } from "server/api/routers/board";
 import { TaskDetailed } from "server/api/routers/board";
 import { api } from "utils/api";
 
 const useToggleTaskStatus = () => {
   const queryClient = useQueryClient();
+  const { data: sessionData } = useSession();
 
   return api.task.toggleTaskStatus.useMutation({
     onMutate: async (task) => {
@@ -87,6 +90,12 @@ const useToggleTaskStatus = () => {
       queryClient.setQueriesData(ctx!.taskMapQueryKey, ctx!.oldTaskMapData);
     },
     onSettled: async (_data, _error, variables, ctx) => {
+      // Sender update to pusher
+      handlePusherUpdate({
+        bid: variables.boardId,
+        sender: sessionData!.user.id,
+      });
+
       // Always refetch query after error or success to make sure the server state is correct
       await queryClient.invalidateQueries({
         queryKey: ctx?.boardQueryKey,

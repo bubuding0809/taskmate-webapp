@@ -11,6 +11,8 @@ import { nanoid } from "nanoid";
 
 import type { PanelWithTasks } from "server/api/routers/board";
 import useCreateTask from "@/utils/mutations/task/useCreateTask";
+import { handlePusherUpdate } from "@/utils/pusher";
+import { useSession } from "next-auth/react";
 
 interface TaskCreationModalProps {
   open: boolean;
@@ -38,6 +40,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   setOpen,
   panelItem,
 }) => {
+  const { data: sessionData } = useSession();
   const cancelButtonRef = useRef(null);
 
   const [newTaskForm, setNewTaskForm] = useState<{
@@ -85,17 +88,26 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     const postTaskOrder = rootTasks.length ? rootTasks[0]!.order : 0;
 
     // Mutation to add new task to panel
-    createTask({
-      boardId: panelItem.board_id,
-      panelId: panelItem.id,
-      taskId: newTaskId,
-      postTaskOrder: postTaskOrder,
-      title: task_title,
-      details: task_description,
-      startDate: task_start_dt.length > 0 ? new Date(task_start_dt) : null,
-      endDate: task_end_dt.length > 0 ? new Date(task_end_dt) : null,
-      dueDate: task_due_dt.length > 0 ? new Date(task_due_dt) : null,
-    });
+    createTask(
+      {
+        boardId: panelItem.board_id,
+        panelId: panelItem.id,
+        taskId: newTaskId,
+        postTaskOrder: postTaskOrder,
+        title: task_title,
+        details: task_description,
+        startDate: task_start_dt.length > 0 ? new Date(task_start_dt) : null,
+        endDate: task_end_dt.length > 0 ? new Date(task_end_dt) : null,
+        dueDate: task_due_dt.length > 0 ? new Date(task_due_dt) : null,
+      },
+      {
+        onSuccess: () =>
+          handlePusherUpdate({
+            bid: panelItem.board_id,
+            sender: sessionData!.user.id,
+          }),
+      }
+    );
 
     setOpen(false);
 

@@ -12,6 +12,8 @@ import useUnappendSubtask from "@/utils/mutations/task/useUnappendSubtask";
 import type { PanelWithTasks } from "server/api/routers/board";
 import type { Task } from "@prisma/client";
 import type { TaskDetailed } from "server/api/routers/board";
+import { handlePusherUpdate } from "@/utils/pusher";
+import { useSession } from "next-auth/react";
 
 interface TodoTaskMenuProps {
   task: TaskDetailed | Task;
@@ -78,7 +80,6 @@ export const TodoTaskMenu: React.FC<TodoTaskMenuProps> = ({
                 panelId: panelItem.id,
                 taskId: task.id,
               });
-              handleClose();
             }}
           >
             <DeleteForeverIcon sx={{ fontSize: "20px", marginRight: 1 }} />
@@ -116,8 +117,6 @@ export const TodoTaskMenu: React.FC<TodoTaskMenuProps> = ({
                   parentTaskId: task.parentTaskId!,
                   order: newTaskOrder,
                 });
-
-                handleClose();
               }}
             >
               <SubdirectoryArrowLeftIcon

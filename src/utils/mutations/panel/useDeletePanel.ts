@@ -4,9 +4,12 @@ import { api } from "utils/api";
 import _ from "lodash";
 
 import type { BoardWithPanelsAndTasks } from "server/api/routers/board";
+import { useSession } from "next-auth/react";
+import { handlePusherUpdate } from "@/utils/pusher";
 
 const useDeletePanel = () => {
   const queryClient = useQueryClient();
+  const { data: sessionData } = useSession();
 
   return api.panel.deletePanel.useMutation({
     onMutate: async (panel) => {
@@ -45,6 +48,12 @@ const useDeletePanel = () => {
       queryClient.setQueryData(ctx!.queryKey, ctx!.oldBoardData);
     },
     onSettled: async (_data, _error, variables, ctx) => {
+      // Sender update to pusher
+      handlePusherUpdate({
+        bid: variables.boardId,
+        sender: sessionData!.user.id,
+      });
+
       // Always refetch query after error or success to make sure the server state is correct
       await queryClient.invalidateQueries({
         queryKey: ctx?.queryKey,
