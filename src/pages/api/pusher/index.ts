@@ -15,7 +15,14 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
-  const { channel, event, data } = JSON.parse(req.body);
+  const { channel, event, data } = JSON.parse(req.body) as {
+    channel: string;
+    event: string;
+    data: {
+      timeStamp: number;
+      sender: string;
+    };
+  };
 
   try {
     const response = await pusher.trigger(channel, event, data);

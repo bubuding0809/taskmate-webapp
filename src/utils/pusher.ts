@@ -11,7 +11,7 @@ export const handlePusherUpdate = ({
   sender: string;
 }) => {
   // Make real-time updates to other users when a task is moved
-  fetch("/api/pusher", {
+  void fetch("/api/pusher", {
     method: "POST",
     body: JSON.stringify({
       channel: "public-board-" + bid,
