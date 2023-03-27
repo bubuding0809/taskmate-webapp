@@ -22,7 +22,7 @@ import useToggleRevealSubtasks from "@/utils/mutations/task/useToggleRevealSubta
 
 interface TodoItemProps {
   taskListType: "active" | "completed";
-  task: TaskDetailed | TaskWithSubtasks;
+  task: TaskWithSubtasks;
   panelItem: PanelWithTasks;
   provided?: DraggableProvided;
   snapshot?: DraggableStateSnapshot;

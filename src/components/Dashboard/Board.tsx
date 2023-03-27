@@ -23,34 +23,6 @@ import type {
 } from "server/api/routers/folder";
 import { useSession } from "next-auth/react";
 
-const pills = [
-  { element: <div className="h-3 w-5 rounded-full bg-red-500" />, name: "red" },
-  {
-    element: <div className="h-3 w-5 rounded-full bg-yellow-500" />,
-    name: "yellow",
-  },
-  {
-    element: <div className="h-3 w-5 rounded-full bg-green-500" />,
-    name: "green",
-  },
-  {
-    element: <div className="h-3 w-5 rounded-full bg-blue-500" />,
-    name: "blue",
-  },
-  {
-    element: <div className="h-3 w-5 rounded-full bg-indigo-500" />,
-    name: "indigo",
-  },
-  {
-    element: <div className="h-3 w-5 rounded-full bg-purple-500" />,
-    name: "purple",
-  },
-  {
-    element: <div className="h-3 w-5 rounded-full bg-pink-500" />,
-    name: "pink",
-  },
-];
-
 interface BoardProps {
   boardItem: BoardDetailed;
   folderItem?: FolderWithBoards;

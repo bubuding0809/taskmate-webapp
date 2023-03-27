@@ -27,24 +27,12 @@ export const TodoList: React.FC<TodoListProps> = ({
         {tasks.length ? (
           // Only diplays tasks parent tasks in the list, subtasks will be nested under their parent
           tasks.map((task, index) => (
-            // TODO - Remove commented code when finalizing the feature
-            // <Draggable
-            //   key={`${task.id}-drag`}
-            //   draggableId={`${task.id}-drag`}
-            //   index={index}
-            //   isDragDisabled={task.is_completed}
-            // >
-            // {(provided, snapshot) => {
-            //   return (
             <TodoItem
               key={task.id}
               taskListType={taskListType}
               task={task}
               panelItem={panelItem}
             />
-            // );
-            // }}
-            // </Draggable>
           ))
         ) : (
           <div className="py-2 text-center">

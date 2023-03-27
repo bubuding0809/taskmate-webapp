@@ -13,51 +13,51 @@ import type { PanelWithTasks } from "server/api/routers/board";
 import useCreateTask from "@/utils/mutations/task/useCreateTask";
 import { handlePusherUpdate } from "@/utils/pusher";
 import { useSession } from "next-auth/react";
+import { User } from "@prisma/client";
+import { Tooltip } from "@mui/material";
+import UserModal from "@/components/Dashboard/UserModal";
+import AssigneeSelectPopover from "../AssigneeSelectPopover";
 
 interface TaskCreationModalProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   panelItem: PanelWithTasks;
+  bid: string;
 }
-
-const team: {
-  name: string;
-  email: string;
-  href: string;
-  imageUrl: string;
-}[] = [
-  // {
-  //   name: "Tom Cook",
-  //   email: "tom.cook@example.com",
-  //   href: "#",
-  //   imageUrl:
-  //     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  // },
-];
-
 const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   open,
   setOpen,
   panelItem,
+  bid,
 }) => {
   const { data: sessionData } = useSession();
   const cancelButtonRef = useRef(null);
 
+  // State for the current user in the user modal
+  const [currUser, setCurrUser] = useState<User | null>(null);
+
+  // State for the new task form
   const [newTaskForm, setNewTaskForm] = useState<{
     task_title: string;
     task_description: string;
     task_start_dt: string;
     task_end_dt: string;
     task_due_dt: string;
+    task_assignedUsers: User[];
   }>({
     task_title: "",
     task_description: "",
     task_start_dt: "",
     task_end_dt: "",
     task_due_dt: "",
+    task_assignedUsers: [],
   });
 
+  // Mutation to create a new task
   const { mutate: createTask } = useCreateTask();
+
+  // State for whether the user modal is open
+  const [openUserModal, setOpenUserModal] = useState(false);
 
   const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -88,26 +88,18 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     const postTaskOrder = rootTasks.length ? rootTasks[0]!.order : 0;
 
     // Mutation to add new task to panel
-    createTask(
-      {
-        boardId: panelItem.board_id,
-        panelId: panelItem.id,
-        taskId: newTaskId,
-        postTaskOrder: postTaskOrder,
-        title: task_title,
-        details: task_description,
-        startDate: task_start_dt.length > 0 ? new Date(task_start_dt) : null,
-        endDate: task_end_dt.length > 0 ? new Date(task_end_dt) : null,
-        dueDate: task_due_dt.length > 0 ? new Date(task_due_dt) : null,
-      },
-      {
-        onSuccess: () =>
-          handlePusherUpdate({
-            bid: panelItem.board_id,
-            sender: sessionData!.user.id,
-          }),
-      }
-    );
+    createTask({
+      boardId: panelItem.board_id,
+      panelId: panelItem.id,
+      taskId: newTaskId,
+      postTaskOrder: postTaskOrder,
+      title: task_title,
+      details: task_description,
+      startDate: task_start_dt.length > 0 ? new Date(task_start_dt) : null,
+      endDate: task_end_dt.length > 0 ? new Date(task_end_dt) : null,
+      dueDate: task_due_dt.length > 0 ? new Date(task_due_dt) : null,
+      taskAssignees: newTaskForm.task_assignedUsers.map((user) => user.id),
+    });
 
     setOpen(false);
 
@@ -118,6 +110,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       task_start_dt: "",
       task_end_dt: "",
       task_due_dt: "",
+      task_assignedUsers: [],
     });
   };
 
@@ -266,30 +259,72 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                         </div>
                         <div className="sm:col-span-2">
                           <div className="flex space-x-2">
-                            {team?.map((person) => (
-                              <a
-                                key={person.email}
-                                href={person.href}
-                                className="flex-shrink-0 rounded-full hover:opacity-75"
+                            {newTaskForm.task_assignedUsers.map((user) => (
+                              <div
+                                key={user.id}
+                                className="relative flex items-center justify-center"
                               >
-                                <img
-                                  className="inline-block h-8 w-8 rounded-full"
-                                  src={person.imageUrl}
-                                  alt={person.name}
-                                />
-                              </a>
+                                {/* User avatar */}
+                                <Tooltip
+                                  key={user.name}
+                                  title={user.name ?? ""}
+                                  className="relative"
+                                  onClick={() => {
+                                    setCurrUser(user);
+                                    setOpenUserModal(true);
+                                  }}
+                                >
+                                  <div className="h=[26px] relative inline-block w-[26px] sm:h-8 sm:w-8">
+                                    <img
+                                      // prevent images from being compressed
+                                      className="cursor-pointer rounded-full hover:opacity-75"
+                                      src={
+                                        user.image ??
+                                        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60"
+                                      }
+                                      alt={user.name ?? ""}
+                                    />
+                                  </div>
+                                </Tooltip>
+
+                                {/* Remove user button */}
+                                {/* Remove button */}
+                                <button
+                                  type="button"
+                                  className="absolute -bottom-4 left-1/2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full border bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:h-6 sm:w-6"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setNewTaskForm((prev) => ({
+                                      ...prev,
+                                      task_assignedUsers:
+                                        prev.task_assignedUsers.filter(
+                                          (u) => u.id !== user.id
+                                        ),
+                                    }));
+                                  }}
+                                >
+                                  <span className="sr-only">
+                                    Remove {user.name}
+                                  </span>
+                                  <XMarkIcon
+                                    className="h-3 w-3 sm:h-4 sm:w-4"
+                                    aria-hidden="true"
+                                  />
+                                </button>
+                              </div>
                             ))}
 
-                            <button
-                              type="button"
-                              className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 border-dashed border-gray-200 bg-white text-gray-400 hover:border-gray-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                            >
-                              <span className="sr-only">Add team member</span>
-                              <PlusIcon
-                                className="h-5 w-5"
-                                aria-hidden="true"
-                              />
-                            </button>
+                            {/* Only shown when collaborator avatar is clicked */}
+                            <UserModal
+                              open={openUserModal}
+                              setOpen={setOpenUserModal}
+                              user={currUser}
+                            />
+                            <AssigneeSelectPopover
+                              bid={bid}
+                              newTaskForm={newTaskForm}
+                              setNewTaskForm={setNewTaskForm}
+                            />
                           </div>
                         </div>
                       </div>
@@ -311,6 +346,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                             task_start_dt: "",
                             task_end_dt: "",
                             task_due_dt: "",
+                            task_assignedUsers: [],
                           });
                         }}
                       >

@@ -18,6 +18,7 @@ export const taskRouter = createTRPCRouter({
         endDate: z.date().nullable(),
         dueDate: z.date().nullable(),
         parentTaskId: z.string().optional(),
+        taskAssignees: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -45,6 +46,14 @@ export const taskRouter = createTRPCRouter({
                 id: input.parentTaskId,
               },
             },
+            Task_Assign_Rel: {
+              createMany: {
+                data:
+                  input.taskAssignees?.map((assigneeId) => ({
+                    user_id: assigneeId,
+                  })) ?? [],
+              },
+            },
           },
         });
       }
@@ -66,6 +75,14 @@ export const taskRouter = createTRPCRouter({
           start_datetime: input.startDate,
           end_datetime: input.endDate,
           due_datetime: input.dueDate,
+          Task_Assign_Rel: {
+            createMany: {
+              data:
+                input.taskAssignees?.map((assigneeId) => ({
+                  user_id: assigneeId,
+                })) ?? [],
+            },
+          },
         },
       });
     }),
@@ -373,6 +390,28 @@ export const taskRouter = createTRPCRouter({
         },
         data: {
           is_reveal_subtasks: input.reveal,
+        },
+      });
+    }),
+
+  // Mutation to remove a assignee from a task
+  removeAssignee: protectedProcedure
+    .input(
+      z.object({
+        boardId: z.string(),
+        panelId: z.string(),
+        taskId: z.string(),
+        assigneeId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Disconnect the assignee from the task and delete the task relationship
+      return await ctx.prisma.task_Assign_Rel.delete({
+        where: {
+          task_id_user_id: {
+            task_id: input.taskId,
+            user_id: input.assigneeId,
+          },
         },
       });
     }),

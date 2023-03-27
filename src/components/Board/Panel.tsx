@@ -1,6 +1,4 @@
 import React, { FormEventHandler, useEffect, useState } from "react";
-import { nanoid } from "nanoid";
-import { TodoEntryForm } from "./TodoEntryForm";
 import { TodoMain } from "./TodoMain";
 import {
   DraggableProvided,

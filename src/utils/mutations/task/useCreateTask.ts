@@ -24,6 +24,7 @@ const useCreateTask = () => {
         endDate,
         dueDate,
         parentTaskId,
+        taskAssignees,
       } = task;
 
       // Create query key for the board query
@@ -73,6 +74,7 @@ const useCreateTask = () => {
         parentTaskId: parentTaskId ?? null,
         subtasks: [],
         is_reveal_subtasks: false,
+        Task_Assign_Rel: [],
       };
 
       // Add the new task to the task map

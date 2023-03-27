@@ -24,7 +24,6 @@ import { User } from "@prisma/client";
 import { Tooltip } from "@mui/material";
 import UserModal from "../Dashboard/UserModal";
 import UserSearchPopover from "../Dashboard/UserSearchPopover";
-import Spacer from "../custom/Spacer";
 import { classNames } from "@/utils/helper";
 
 interface CreateBoardSliderOverProps {
@@ -283,6 +282,7 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
                                           alt={user.name ?? ""}
                                         />
                                       </Tooltip>
+
                                       {/* Remove button */}
                                       <button
                                         type="button"

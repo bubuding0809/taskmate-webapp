@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Chip, Typography } from "@mui/material";
+import React, { useRef, useState, useEffect, useMemo } from "react";
+import { Chip, Tooltip, Typography } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import DescriptionIcon from "@mui/icons-material/Description";
 import autoAnimate from "@formkit/auto-animate";
@@ -7,14 +7,21 @@ import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
 import { TodoTaskMenu } from "./TodoTaskMenu";
 import { BpCheckBox } from "../custom/BpCheckBox";
 
-import type { PanelWithTasks } from "server/api/routers/board";
-import type { Task } from "@prisma/client";
-import type { TaskDetailed } from "server/api/routers/board";
+import type {
+  PanelWithTasks,
+  TaskWithSubtasks,
+} from "server/api/routers/board";
 import { formatDate } from "@/utils/helper";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
 
+import UserModal from "../Dashboard/UserModal";
+import { User } from "@prisma/client";
+import { UserMinusIcon } from "@heroicons/react/20/solid";
+import { api } from "@/utils/api";
+import useRemoveAssignee from "@/utils/mutations/task/useRemoveAssignee";
+
 interface TodoTaskProps {
-  task: TaskDetailed | Task;
+  task: TaskWithSubtasks;
   panelItem: PanelWithTasks;
   provided?: DraggableProvided;
   snapshot?: DraggableStateSnapshot;
@@ -46,6 +53,16 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
 
   // Mutation to toggle task completion
   const { mutate: toggleTask } = useToggleTaskStatus();
+
+  // Mutation to remove user from task
+  const { mutateAsync: unassignUser, isLoading: isRemovingUser } =
+    useRemoveAssignee();
+
+  // State for whether the user modal is open
+  const [openUserModal, setOpenUserModal] = useState(false);
+
+  // State for the current user in the user modal
+  const [currUser, setCurrUser] = useState<User | null>(null);
 
   const handleToggleTask = (toggledTask: typeof task) => {
     const { id, panel_id, is_completed, parentTaskId } = toggledTask;
@@ -97,6 +114,56 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
             </div>
           )}
         </div>
+        {/* Task assignees */}
+        {task.Task_Assign_Rel && task.Task_Assign_Rel.length > 0 && (
+          <div className="ml-5 flex items-center">
+            <div className="flex space-x-1 overflow-hidden p-1">
+              {task.Task_Assign_Rel?.map(({ User: user }) => (
+                <Tooltip
+                  key={user.id}
+                  title={user.name}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    setCurrUser(user);
+                    setOpenUserModal(true);
+                  }}
+                >
+                  <img
+                    className="inline-block h-6 w-6 rounded-full ring-2 ring-white hover:ring-indigo-600"
+                    src={
+                      user.image ??
+                      "https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                    }
+                    alt={user.name ?? "user image"}
+                  />
+                </Tooltip>
+              ))}
+            </div>
+            {/* Only shown when collaborator avatar is clicked */}
+            <UserModal
+              open={openUserModal}
+              setOpen={setOpenUserModal}
+              user={currUser}
+              actions={[
+                {
+                  callback: async () => {
+                    // Remove assignee from task
+                    await unassignUser({
+                      boardId: panelItem.board_id,
+                      panelId: panelItem.id,
+                      taskId: task.id,
+                      assigneeId: currUser?.id ?? "",
+                    });
+                    return true;
+                  },
+                  icon: UserMinusIcon,
+                  loading: isRemovingUser,
+                  name: "Unassign",
+                },
+              ]}
+            />
+          </div>
+        )}
 
         {/* Task details: description, time, etc... */}
         <div ref={parent} className="ml-6 flex flex-col items-start gap-1">

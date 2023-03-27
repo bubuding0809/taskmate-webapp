@@ -57,6 +57,7 @@ export const TodoPanelDivider: React.FC<TodoPanelDividerProps> = ({
         open={openModal}
         setOpen={setOpenModal}
         panelItem={panelItem}
+        bid={panelItem.board_id}
       />
     </>
   );

@@ -16,7 +16,10 @@ export type TaskDetailed = Task & {
   subtasks: Task[];
 };
 
-export type TaskWithSubtasks = Task & { subtasks: Task[] };
+export type TaskWithSubtasks = Task & {
+  subtasks: TaskWithSubtasks[];
+  Task_Assign_Rel: { User: User }[];
+};
 
 export type PanelWithTasks = Panel & {
   Task: TaskWithSubtasks[];
@@ -50,6 +53,11 @@ export const boardRouter = createTRPCRouter({
                   subtasks: {
                     orderBy: {
                       order: "asc",
+                    },
+                  },
+                  Task_Assign_Rel: {
+                    include: {
+                      User: true,
                     },
                   },
                 },
