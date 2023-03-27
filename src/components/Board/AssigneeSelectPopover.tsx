@@ -58,13 +58,19 @@ const AssigneeSelectPopover: React.FC<UserSearchPopoverProps> = ({
   const filteredUsersData = useMemo(() => {
     if (!boardQueryData) return [];
 
-    return boardQueryData.Board_Collaborator.map(
+    // Get the list of users that are already in the collaborator list
+    const availableUsers = boardQueryData.Board_Collaborator.map(
       (collaborator) => collaborator.User
-    ).filter((user) => {
+    );
+
+    // Include the current user
+    availableUsers.push(boardQueryData.user);
+
+    // Filter out users that are already being assigned to the task
+    return availableUsers.filter((user) => {
       const isAlreadyAssigned = newTaskForm.task_assignedUsers.some(
         (collaborator) => collaborator.id === user.id
       );
-
       return !isAlreadyAssigned;
     });
   }, [newTaskForm, boardQueryData]);
