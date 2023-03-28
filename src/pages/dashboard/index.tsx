@@ -51,6 +51,16 @@ const DashboardPage: NextPageWithLayout = () => {
       }
     );
 
+  //Query to get user stats
+  const { data: userStats } = api.user.getUserStats.useQuery(
+    {
+      userId: sessionData?.user.id ?? "",
+    },
+    {
+      enabled: !!sessionData?.user.id,
+    }
+  );
+
   const { mutate: createBoard } = useCreateBoard();
   const { mutate: createFolder } = useCreateFolder();
 
@@ -209,16 +219,18 @@ const DashboardPage: NextPageWithLayout = () => {
 
             {/* TODO - To be replaced with a queries to get real data */}
             {/* Footer stats */}
-            <div className="grid grid-cols-1 divide-y divide-gray-200 border-t border-gray-200 bg-gray-50 sm:grid-cols-3 sm:divide-y-0 sm:divide-x">
-              {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="px-6 py-5 text-center text-sm font-medium"
-                >
-                  <span className="text-gray-900">{stat.value}</span>{" "}
-                  <span className="text-gray-600">{stat.label}</span>
-                </div>
-              ))}
+            <div className="grid grid-cols-1 divide-y divide-x divide-gray-200 border-t border-gray-200 bg-gray-50 sm:grid-cols-4 sm:divide-y-0 sm:divide-x">
+              {Object.entries(userStats ?? {}).map(
+                ([key, value]: [string, number]) => (
+                  <div
+                    key={key}
+                    className="px-6 py-5 text-center text-sm font-medium"
+                  >
+                    <span className="text-gray-900">{value}</span>{" "}
+                    <span className="text-gray-600">{key}</span>
+                  </div>
+                )
+              )}
             </div>
           </div>
         </section>

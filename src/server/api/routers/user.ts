@@ -6,14 +6,6 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 
 export const userRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-
   getAllUsers: publicProcedure.query(({ ctx }) => {
     return ctx.prisma.user.findMany();
   }),
@@ -44,6 +36,54 @@ export const userRouter = createTRPCRouter({
             },
           ],
         },
+      });
+    }),
+
+  getUserStats: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { userId } = input;
+      return await ctx.prisma.$transaction(async (tx) => {
+        const folders = await tx.folder.findMany({
+          where: {
+            user_id: userId,
+          },
+        });
+
+        const boards = await tx.board.findMany({
+          where: {
+            user_id: userId,
+          },
+        });
+
+        const panels = await tx.panel.findMany({
+          where: {
+            Board: {
+              user_id: userId,
+            },
+          },
+        });
+
+        const tasks = await tx.task.findMany({
+          where: {
+            Panel: {
+              Board: {
+                user_id: userId,
+              },
+            },
+          },
+        });
+
+        return {
+          folders: folders.length,
+          boards: boards.length,
+          panels: panels.length,
+          tasks: tasks.length,
+        };
       });
     }),
 });
