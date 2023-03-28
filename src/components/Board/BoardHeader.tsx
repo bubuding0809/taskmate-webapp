@@ -3,7 +3,7 @@
 import { api } from "@/utils/api";
 import useRemoveCollaborators from "@/utils/mutations/collaborator/useRemoveCollaborators";
 import { UserMinusIcon } from "@heroicons/react/24/solid";
-import { Tooltip } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
 import { User } from "@prisma/client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import UserModal from "../Dashboard/UserModal";
@@ -15,6 +15,9 @@ import type { EmojiType } from "@/utils/types";
 import useClickAway from "@/utils/hooks/useClickAway";
 import { useSession } from "next-auth/react";
 import useUpdateBoardThumbnail from "@/utils/mutations/board/useUpdateBoardThumbnail";
+import { Save } from "@mui/icons-material";
+import { classNames } from "@/utils/helper";
+import useUpdateBoardTitle from "@/utils/mutations/board/useUpdateBoardTitle";
 
 interface BoardHeaderProps {
   bid: string;
@@ -44,6 +47,9 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
   // Mutation to update board thumbnail image
   const { mutate: updateBoardThumbnail } = useUpdateBoardThumbnail();
 
+  // Mutation to update board title
+  const { mutate: updateBoardTitle } = useUpdateBoardTitle();
+
   // State for whether the user modal is open
   const [openUserModal, setOpenUserModal] = useState(false);
 
@@ -52,6 +58,11 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
 
   // State to control popover for emoji picker
   const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
+
+  // State to control edit board name
+  const [boardName, setBoardName] = useState(boardQueryData?.board_title ?? "");
+  const [editBoardName, setEditBoardName] = useState(false);
+  const [isAnimateError, setIsAnimateError] = useState(false);
 
   // Click away effect for folder rename input form
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -98,9 +109,33 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
     return actions;
   }, [boardQueryData, currUser]);
 
+  const handleSaveBoardName = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // If the board name is empty, animate the input field
+    if (!boardName.trim()) {
+      setIsAnimateError(true);
+      setTimeout(() => {
+        setIsAnimateError(false);
+      }, 1000);
+      return;
+    }
+
+    // Mutation update board title
+    updateBoardTitle({
+      boardId: bid,
+      title: boardName,
+      userId: boardQueryData?.user_id ?? "",
+    });
+
+    // Close edit board name
+    setEditBoardName(false);
+  };
+
   return (
     <div className="sticky left-0 top-0 z-10 flex min-w-max items-center gap-2 space-x-2 rounded-md border bg-white px-4 py-2 text-2xl font-bold shadow-md">
-      <div>
+      <div className="flex">
+        {/* Board thumb nail */}
         <span
           className="mr-2 cursor-pointer"
           onClick={() => setOpenEmojiPicker((prev) => !prev)}
@@ -130,7 +165,61 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
             />
           </div>
         )}
-        {boardQueryData?.board_title}
+
+        {/* Edit board name */}
+        {editBoardName ? (
+          // Panel title edit form
+          <form
+            className={classNames(
+              isAnimateError && "animate__headShake",
+              "animate__animated"
+            )}
+            onSubmit={handleSaveBoardName}
+          >
+            <div className="relative" ref={wrapperRef}>
+              <input
+                autoFocus
+                type="text"
+                name="name"
+                id="name"
+                className="block w-full rounded-md border-0 py-1.5 pr-9 font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-2xl sm:leading-6"
+                placeholder="Folder name"
+                value={boardName}
+                onChange={(e) => setBoardName(e.target.value)}
+                onFocus={(e) => e.target.select()}
+                onKeyUp={(e) => {
+                  if (e.key === "Escape") {
+                    setEditBoardName(false);
+                  }
+                }}
+              />
+              <IconButton
+                sx={{
+                  position: "absolute",
+                  top: 6,
+                  right: 5,
+                }}
+                size="small"
+                onClick={handleSaveBoardName}
+              >
+                <Save
+                  sx={{
+                    fontSize: "20px",
+                  }}
+                />
+              </IconButton>
+            </div>
+          </form>
+        ) : (
+          <Tooltip title="Double click to edit board name">
+            <h3
+              className="cursor-pointer truncate text-2xl font-semibold text-gray-900"
+              onDoubleClick={() => setEditBoardName(true)}
+            >
+              {boardQueryData?.board_title}
+            </h3>
+          </Tooltip>
+        )}
       </div>
 
       {/* Show collaborators of the board */}

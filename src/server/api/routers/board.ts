@@ -661,4 +661,24 @@ export const boardRouter = createTRPCRouter({
         },
       });
     }),
+
+  // Mutation to update a board title
+  updateBoardTitle: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        boardId: z.string(),
+        title: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await ctx.prisma.board.update({
+        where: {
+          id: input.boardId,
+        },
+        data: {
+          board_title: input.title,
+        },
+      });
+    }),
 });
