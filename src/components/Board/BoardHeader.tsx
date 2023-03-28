@@ -109,7 +109,7 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
     return actions;
   }, [boardQueryData, currUser]);
 
-  const handleSaveBoardName = async (e: React.FormEvent) => {
+  const handleSaveBoardName = (e: React.FormEvent) => {
     e.preventDefault();
 
     // If the board name is empty, animate the input field
