@@ -52,9 +52,25 @@ const useUpdateBoardThumbnail = () => {
         sender: sessionData!.user.id,
       });
       // Always refetch query after error or success to make sure the server state is correct
-      await queryClient.invalidateQueries({
-        queryKey: ctx?.queryKey,
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ctx?.queryKey,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: getQueryKey(
+            api.board.getUserBoardWithoutFolder,
+            { userId: variables.userId },
+            "query"
+          ),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: getQueryKey(
+            api.folder.getAllUserFolders,
+            { userId: variables.userId },
+            "query"
+          ),
+        }),
+      ]);
     },
   });
 };

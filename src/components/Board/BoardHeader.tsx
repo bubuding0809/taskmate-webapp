@@ -122,7 +122,7 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
               onEmojiSelect={(emoji: EmojiType) => {
                 updateBoardThumbnail({
                   boardId: bid,
-                  userId: sessionData?.user.id ?? "",
+                  userId: boardQueryData?.user_id ?? "",
                   thumbnail: emoji.native,
                 });
                 setOpenEmojiPicker(false);

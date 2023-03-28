@@ -6,7 +6,6 @@ import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
   Bars3BottomLeftIcon,
   BellIcon,
-  CalendarIcon,
   HomeIcon,
   UsersIcon,
   XMarkIcon,
