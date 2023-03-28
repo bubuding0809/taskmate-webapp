@@ -51,3 +51,13 @@ export type BoardType = {
   panels: PanelsType;
   panelOrder: string[];
 };
+
+export type EmojiType = {
+  aliases: string[];
+  emoticons: string[];
+  keywords: string[];
+  name: string;
+  native: string;
+  shortcodes: string;
+  unified: string;
+};

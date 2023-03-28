@@ -641,4 +641,24 @@ export const boardRouter = createTRPCRouter({
         };
       });
     }),
+
+  // Mutation to edit board thumbnail
+  updateBoardThumbnail: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        boardId: z.string(),
+        thumbnail: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await ctx.prisma.board.update({
+        where: {
+          id: input.boardId,
+        },
+        data: {
+          thumbnail_image: input.thumbnail,
+        },
+      });
+    }),
 });

@@ -5,9 +5,16 @@ import useRemoveCollaborators from "@/utils/mutations/collaborator/useRemoveColl
 import { UserMinusIcon } from "@heroicons/react/24/solid";
 import { Tooltip } from "@mui/material";
 import { User } from "@prisma/client";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import UserModal from "../Dashboard/UserModal";
 import UserSearchPopover from "../Dashboard/UserSearchPopover";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
+
+import type { EmojiType } from "@/utils/types";
+import useClickAway from "@/utils/hooks/useClickAway";
+import { useSession } from "next-auth/react";
+import useUpdateBoardThumbnail from "@/utils/mutations/board/useUpdateBoardThumbnail";
 
 interface BoardHeaderProps {
   bid: string;
@@ -24,6 +31,7 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
   backgroundImages,
   onlineUsers,
 }) => {
+  const { data: sessionData } = useSession();
   // Query to get board data
   const { data: boardQueryData } = api.board.getBoardById.useQuery({
     boardId: bid,
@@ -33,11 +41,35 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
   const { mutateAsync: removeCollaborators, isLoading: isRemovingUsers } =
     useRemoveCollaborators();
 
+  // Mutation to update board thumbnail image
+  const { mutate: updateBoardThumbnail } = useUpdateBoardThumbnail();
+
   // State for whether the user modal is open
   const [openUserModal, setOpenUserModal] = useState(false);
 
   // State for the current user in the user modal
   const [currUser, setCurrUser] = useState<User | null>(null);
+
+  // State to control popover for emoji picker
+  const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
+
+  // Click away effect for folder rename input form
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  useClickAway(wrapperRef, () => setOpenEmojiPicker(false));
+
+  useEffect(() => {
+    const escapeListner = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpenEmojiPicker(false);
+      }
+    };
+
+    if (openEmojiPicker) {
+      document.addEventListener("keydown", escapeListner);
+    }
+
+    return () => document.removeEventListener("keydown", escapeListner);
+  }, [openEmojiPicker]);
 
   const boardCollaborators = useMemo(() => {
     return boardQueryData
@@ -69,7 +101,35 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
   return (
     <div className="sticky left-0 top-0 z-10 flex min-w-max items-center gap-2 space-x-2 rounded-md border bg-white px-4 py-2 text-2xl font-bold shadow-md">
       <div>
-        <span className="mr-2">{boardQueryData?.thumbnail_image}</span>
+        <span
+          className="mr-2 cursor-pointer"
+          onClick={() => setOpenEmojiPicker((prev) => !prev)}
+        >
+          {boardQueryData?.thumbnail_image}
+        </span>
+
+        {/* Emoji picker to edit board thumb nail */}
+        {openEmojiPicker && (
+          <div
+            ref={wrapperRef}
+            className="absolute top-12 left-4"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <Picker
+              data={data}
+              onEmojiSelect={(emoji: EmojiType) => {
+                updateBoardThumbnail({
+                  boardId: bid,
+                  userId: sessionData?.user.id ?? "",
+                  thumbnail: emoji.native,
+                });
+                setOpenEmojiPicker(false);
+              }}
+            />
+          </div>
+        )}
         {boardQueryData?.board_title}
       </div>
 
