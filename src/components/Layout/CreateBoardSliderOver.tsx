@@ -6,6 +6,7 @@ import {
   FormEventHandler,
   Fragment,
   SetStateAction,
+  useEffect,
   useState,
 } from "react";
 import { Dialog, Transition } from "@headlessui/react";
@@ -89,6 +90,19 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
 
   const [popOverOpen, setPopOverOpen] = useState(false);
 
+  // State to control if slide over can be closed
+  const [canClose, setCanClose] = useState(false);
+
+  // When the slide over opens, set a 300ms timeout to allow the slide over to open before allowing it to be closed.
+  useEffect(() => {
+    if (open) {
+      setCanClose(false);
+      setTimeout(() => {
+        setCanClose(true);
+      }, 300);
+    }
+  }, [open]);
+
   // Handle form change callback for controlled inputs
   const handleFormChange: ChangeEventHandler<
     HTMLInputElement | HTMLTextAreaElement
@@ -163,7 +177,11 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
 
   return (
     <Transition.Root show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={setOpen}>
+      <Dialog
+        as="div"
+        className="relative z-10"
+        onClose={() => canClose && setOpen(false)}
+      >
         <div className="fixed inset-0" />
 
         <div className="fixed inset-0 overflow-hidden">

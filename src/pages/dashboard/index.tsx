@@ -16,13 +16,6 @@ import { DocumentPlusIcon, FolderPlusIcon } from "@heroicons/react/20/solid";
 import useCreateFolder from "@/utils/mutations/useCreateFolder";
 import CreateBoardSlideOver from "@/components/Layout/CreateBoardSliderOver";
 
-// TODO - TBD - This is just a placeholder for now
-const stats = [
-  { label: "Boards", value: 12 },
-  { label: "Panels", value: 4 },
-  { label: "Tasks", value: 2 },
-];
-
 const DashboardPage: NextPageWithLayout = () => {
   const router = useRouter();
   const { data: sessionData, status } = useSession();
