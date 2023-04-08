@@ -20,6 +20,8 @@ import type {
   TaskWithAssignees,
   TaskWithSubtasks,
 } from "server/api/routers/board";
+import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
+import { useToastContext } from "@/utils/context/ToastContext";
 
 interface TodoTaskProps {
   task: TaskWithSubtasks | TaskWithAssignees;
@@ -43,6 +45,8 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
   snapshot,
   handleRemoveDateTime,
 }) => {
+  const addToast = useToastContext();
+
   // Set up autoAnimation of ul element
   const parent = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -167,15 +171,29 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
         )}
 
         {/* Task details: description, time, etc... */}
-        <div ref={parent} className="ml-8 flex flex-col items-start gap-1">
+        <div ref={parent} className="ml-6 flex flex-col items-start gap-1">
           {/* details */}
           {task.task_details && (
             <Tooltip
               title="Details"
               placement="right-start"
-              className="transition-all duration-200 hover:rounded-md hover:bg-slate-300/50 hover:p-1"
+              className="cursor-copy p-1 transition-all duration-200 hover:rounded-md hover:bg-slate-300/50"
             >
-              <p className="text-start text-xs font-medium text-gray-500">
+              <p
+                className="text-start text-xs font-normal text-gray-500"
+                onClick={() => {
+                  // Copy task details to clipboard
+                  void navigator.clipboard.writeText(task.task_details ?? "");
+
+                  // Show toast
+                  addToast({
+                    icon: ClipboardDocumentCheckIcon,
+                    title: "Copied to clipboard",
+                    description:
+                      "Task details copied successfully to clipboard",
+                  });
+                }}
+              >
                 {task.task_details}
               </p>
             </Tooltip>
