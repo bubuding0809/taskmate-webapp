@@ -1,23 +1,23 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
-import { api } from "@/utils/api";
-import useRemoveCollaborators from "@/utils/mutations/collaborator/useRemoveCollaborators";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
 import { UserMinusIcon } from "@heroicons/react/24/solid";
 import { IconButton, Tooltip } from "@mui/material";
 import { User } from "@prisma/client";
-import React, { useEffect, useMemo, useRef, useState } from "react";
 import UserModal from "../Dashboard/UserModal";
 import UserSearchPopover from "../Dashboard/UserSearchPopover";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
-
-import type { EmojiType } from "@/utils/types";
-import useClickAway from "@/utils/hooks/useClickAway";
-import { useSession } from "next-auth/react";
-import useUpdateBoardThumbnail from "@/utils/mutations/board/useUpdateBoardThumbnail";
+import { api } from "@/utils/api";
 import { Save } from "@mui/icons-material";
 import { classNames } from "@/utils/helper";
+import useClickAway from "@/utils/hooks/useClickAway";
+import useRemoveCollaborators from "@/utils/mutations/collaborator/useRemoveCollaborators";
+import useUpdateBoardThumbnail from "@/utils/mutations/board/useUpdateBoardThumbnail";
 import useUpdateBoardTitle from "@/utils/mutations/board/useUpdateBoardTitle";
+
+import type { EmojiType } from "@/utils/types";
 
 interface BoardHeaderProps {
   bid: string;
@@ -35,6 +35,7 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
   onlineUsers,
 }) => {
   const { data: sessionData } = useSession();
+
   // Query to get board data
   const { data: boardQueryData } = api.board.getBoardById.useQuery({
     boardId: bid,
@@ -60,7 +61,9 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
   const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
 
   // State to control edit board name
-  const [boardName, setBoardName] = useState(boardQueryData?.board_title ?? "");
+  const [boardTitle, setBoardTitle] = useState(
+    boardQueryData?.board_title ?? ""
+  );
   const [editBoardName, setEditBoardName] = useState(false);
   const [isAnimateError, setIsAnimateError] = useState(false);
 
@@ -68,6 +71,7 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   useClickAway(wrapperRef, () => setOpenEmojiPicker(false));
 
+  // Effect to add event listener for escape key when emoji picker is open
   useEffect(() => {
     const escapeListner = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -82,12 +86,14 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
     return () => document.removeEventListener("keydown", escapeListner);
   }, [openEmojiPicker]);
 
+  // Memoized array of board collaborators
   const boardCollaborators = useMemo(() => {
     return boardQueryData
       ? [{ User: boardQueryData.user }, ...boardQueryData.Board_Collaborator]
       : [];
   }, [boardQueryData]);
 
+  // Memoized array of user modal actions
   const userModalActions = useMemo(() => {
     const actions = [];
 
@@ -109,11 +115,12 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
     return actions;
   }, [boardQueryData, currUser]);
 
+  // Handle save board name
   const handleSaveBoardName = (e: React.FormEvent) => {
     e.preventDefault();
 
     // If the board name is empty, animate the input field
-    if (!boardName.trim()) {
+    if (!boardTitle.trim()) {
       setIsAnimateError(true);
       setTimeout(() => {
         setIsAnimateError(false);
@@ -124,7 +131,7 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
     // Mutation update board title
     updateBoardTitle({
       boardId: bid,
-      title: boardName,
+      title: boardTitle,
       userId: boardQueryData?.user_id ?? "",
     });
 
@@ -184,8 +191,8 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
                 id="name"
                 className="block w-full rounded-md border-0 py-1.5 pr-9 font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-2xl sm:leading-6"
                 placeholder="Folder name"
-                value={boardName}
-                onChange={(e) => setBoardName(e.target.value)}
+                value={boardTitle}
+                onChange={(e) => setBoardTitle(e.target.value)}
                 onFocus={(e) => e.target.select()}
                 onKeyUp={(e) => {
                   if (e.key === "Escape") {
@@ -214,7 +221,12 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
           <Tooltip title="Double click to edit board name">
             <h3
               className="cursor-pointer truncate text-2xl font-semibold text-gray-900"
-              onDoubleClick={() => setEditBoardName(true)}
+              onDoubleClick={() => {
+                if (boardQueryData?.board_title) {
+                  setBoardTitle(boardQueryData.board_title);
+                }
+                setEditBoardName(true);
+              }}
             >
               {boardQueryData?.board_title}
             </h3>
