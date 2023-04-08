@@ -42,6 +42,7 @@ import Loader from "../custom/Loader";
 
 import type { DragStart, DropResult } from "react-beautiful-dnd";
 import type { BreadCrumbType } from "./BreadCrumbs";
+import Image from "next/image";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
@@ -531,12 +532,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
               )}
             >
               {sidebarExpanded ? (
-                <img className="h-12 w-auto" src="/main.png" alt="Taskmate" />
+                <Image
+                  src="/main.png"
+                  alt="Taskmate"
+                  width={256}
+                  height={256}
+                />
               ) : (
-                <img
-                  className="h-14 w-auto"
+                <Image
                   src="/logo_small.png"
                   alt="Taskmate"
+                  width={56}
+                  height={56}
                 />
               )}
             </div>
