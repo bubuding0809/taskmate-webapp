@@ -1,6 +1,6 @@
 # TaskMate - A simple task manager
 
-## Introduction 1
+## Introduction
 
 TaskMate is a next-generation lightweight task management app accessible through any web browser. Through a kanban board interface, the app is designed to help individuals and teams stay organised and productive. Users can create personalised boards for each project and use them to manage accountability of work individually or collaboratively.
 
