@@ -127,7 +127,7 @@ const AssigneeSelectPopover: React.FC<UserSearchPopoverProps> = ({
         leaveFrom="opacity-100 translate-y-0"
         leaveTo="opacity-0 translate-y-1"
       >
-        <Popover.Panel className="fixed top-32 left-14 z-10 flex w-screen max-w-max px-4">
+        <Popover.Panel className="absolute -left-[129px] bottom-10 z-10 flex w-screen max-w-max px-4">
           {({ close, open }) => {
             setPopOverOpen && setPopOverOpen(open);
             return (

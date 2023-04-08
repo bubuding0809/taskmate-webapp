@@ -8,7 +8,7 @@ import autoAnimate from "@formkit/auto-animate";
 import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
 import { TodoTaskMenu } from "./TodoTaskMenu";
 import { BpCheckBox } from "../custom/BpCheckBox";
-import { formatDate } from "@/utils/helper";
+import { classNames, formatDate } from "@/utils/helper";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
 import UserModal from "../Dashboard/UserModal";
 import { User } from "@prisma/client";
@@ -20,6 +20,8 @@ import type {
   TaskWithAssignees,
   TaskWithSubtasks,
 } from "server/api/routers/board";
+import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
+import { useToastContext } from "@/utils/context/ToastContext";
 
 interface TodoTaskProps {
   task: TaskWithSubtasks | TaskWithAssignees;
@@ -43,6 +45,8 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
   snapshot,
   handleRemoveDateTime,
 }) => {
+  const addToast = useToastContext();
+
   // Set up autoAnimation of ul element
   const parent = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -101,14 +105,14 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
             checked={task.is_completed}
             onChange={() => handleToggleTask(task)}
           />
-          <Typography
-            sx={{
-              textDecoration: task.is_completed ? "line-through" : "",
-              width: "100%",
-            }}
+          <p
+            className={classNames(
+              task.is_completed && "line-through",
+              "w-full font-medium"
+            )}
           >
             {task.task_title}
-          </Typography>
+          </p>
           {isHover && (
             <div className="absolute -right-0.5 top-0">
               <TodoTaskMenu task={task} panelItem={panelItem} />
@@ -168,25 +172,33 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
 
         {/* Task details: description, time, etc... */}
         <div ref={parent} className="ml-6 flex flex-col items-start gap-1">
+          {/* details */}
           {task.task_details && (
-            <div className="flex gap-1">
-              <DescriptionIcon
-                sx={{
-                  color: "#9cb380",
-                  opacity: 0.8,
-                  fontSize: "18px",
+            <Tooltip
+              title="Details"
+              placement="right-start"
+              className="cursor-copy p-1 transition-all duration-200 hover:rounded-md hover:bg-slate-300/50"
+            >
+              <p
+                className="text-start text-xs font-normal text-gray-500"
+                onClick={() => {
+                  // Copy task details to clipboard
+                  void navigator.clipboard.writeText(task.task_details ?? "");
+
+                  // Show toast
+                  addToast({
+                    icon: ClipboardDocumentCheckIcon,
+                    title: "Copied to clipboard",
+                    description:
+                      "Task details copied successfully to clipboard",
+                  });
                 }}
-              />
-              <Typography
-                textAlign="left"
-                variant="body2"
-                color="textSecondary"
               >
                 {task.task_details}
-              </Typography>
-              {/* Show delete button on hover */}
-            </div>
+              </p>
+            </Tooltip>
           )}
+          {/* due date */}
           {task.due_datetime && (
             <Chip
               sx={{
