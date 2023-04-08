@@ -65,10 +65,17 @@ type PusherMembersType = {
 const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
   const addToast = useToastContext();
   const { data: sessionData } = useSession();
+
+  // State to store whether item combine is enabled
   const [isItemCombineEnabled, setIsItemCombineEnabled] = useState(false);
+
+  // State to store background image url
   const [bgImage, setBgImage] = useState<string>(
     "/images/paul-weaver-unsplash.jpeg"
   );
+
+  // State to store online users
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   // Query to get board data
   const { data: boardQueryData, refetch: refetchBoard } =
@@ -88,8 +95,6 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
   const { mutate: reorderTask } = useUpdateTaskOrder();
   const { mutate: combineTaskWithParent } = useCombineTask();
   const { mutate: reorderSubTask } = useUpdateSubtaskOrder();
-
-  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   // Effect to setup pusher client and connections
   useEffect(() => {
