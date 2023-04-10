@@ -60,5 +60,6 @@ module.exports = {
       // strategy: "class", // Only generate classes for form elements, will not apply globally styles to input, textarea, etc.
       strategy: "base", // default, will cause issues with custom components in exisiting input fields
     }),
+    require("@tailwindcss/typography"),
   ],
 };
