@@ -4,7 +4,6 @@ import * as React from "react";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { IconButton, Tooltip, Typography, Fade } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import ClearIcon from "@mui/icons-material/Clear";
 import SubdirectoryArrowLeftIcon from "@mui/icons-material/SubdirectoryArrowLeft";
@@ -14,8 +13,7 @@ import useUnappendSubtask from "@/utils/mutations/task/useUnappendSubtask";
 import type { PanelWithTasks } from "server/api/routers/board";
 import type { Task } from "@prisma/client";
 import type { TaskDetailed } from "server/api/routers/board";
-import { handlePusherUpdate } from "@/utils/pusher";
-import { useSession } from "next-auth/react";
+import { EllipsisHorizontalIcon } from "@heroicons/react/20/solid";
 
 interface TodoTaskMenuProps {
   task: TaskDetailed | Task;
@@ -41,18 +39,16 @@ export const TodoTaskMenu: React.FC<TodoTaskMenuProps> = ({
   const { mutate: unappendSubTask } = useUnappendSubtask();
 
   return (
-    <div>
+    <>
       <Tooltip title="options">
-        <IconButton
-          size="small"
-          id="demo-positioned-button"
-          aria-controls={open ? "demo-positioned-menu" : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? "true" : undefined}
+        <button
+          type="button"
+          className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-2 py-1 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
           onClick={handleClick}
         >
-          <MoreVertIcon fontSize="medium" />
-        </IconButton>
+          <span className="sr-only">Delete Task</span>
+          <EllipsisHorizontalIcon className="h-4 w-4" aria-hidden="true" />
+        </button>
       </Tooltip>
       <Menu
         id="task-menu"
@@ -133,6 +129,6 @@ export const TodoTaskMenu: React.FC<TodoTaskMenuProps> = ({
           <Typography variant="body2">Close</Typography>
         </MenuItem>
       </Menu>
-    </div>
+    </>
   );
 };
