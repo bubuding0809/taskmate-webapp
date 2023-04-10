@@ -182,8 +182,10 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
         className="relative z-10"
         onClose={() => canClose && setOpen(false)}
       >
+        {/* Backdrop */}
         <div className="fixed inset-0" />
 
+        {/* Main */}
         <div className="fixed inset-0 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
             <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
@@ -196,7 +198,7 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
-                <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
+                <Dialog.Panel className="pointer-events-auto w-screen max-w-md shadow-md">
                   <form
                     className="flex h-full flex-col divide-y divide-gray-200 bg-white shadow-xl"
                     onSubmit={handleFormSubmit}
