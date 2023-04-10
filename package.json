@@ -61,6 +61,7 @@
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
+    "@tailwindcss/typography": "^0.5.9",
     "@types/cookies": "^0.7.7",
     "@types/emoji-mart": "^3.0.9",
     "@types/lodash": "^4.14.191",
