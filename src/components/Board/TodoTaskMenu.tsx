@@ -40,7 +40,7 @@ export const TodoTaskMenu: React.FC<TodoTaskMenuProps> = ({
 
   return (
     <>
-      <Tooltip title="options">
+      <Tooltip title="options" placement="top">
         <button
           type="button"
           className="relative -ml-px inline-flex items-center rounded-r-md bg-white px-2 py-1 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
