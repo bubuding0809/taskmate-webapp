@@ -1,32 +1,38 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
-import React, { useRef, useState, useEffect, Fragment } from "react";
-import { Chip, Tooltip, Typography } from "@mui/material";
+import { useToastContext } from "@/utils/context/ToastContext";
+import React, { useRef, useState, useEffect } from "react";
+import { Chip, Tooltip } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import DescriptionIcon from "@mui/icons-material/Description";
+import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
+import { User } from "@prisma/client";
+import { PencilIcon, UserMinusIcon } from "@heroicons/react/20/solid";
 import autoAnimate from "@formkit/auto-animate";
-import { DraggableProvided, DraggableStateSnapshot } from "react-beautiful-dnd";
+import TaskEditSlideover from "./TaskEditSlideover";
+import UserModal from "../Dashboard/UserModal";
 import { TodoTaskMenu } from "./TodoTaskMenu";
 import { BpCheckBox } from "../custom/BpCheckBox";
 import { classNames, formatDate } from "@/utils/helper";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
-import UserModal from "../Dashboard/UserModal";
-import { User } from "@prisma/client";
-import { PencilIcon, UserMinusIcon } from "@heroicons/react/20/solid";
 import useRemoveAssignee from "@/utils/mutations/task/useRemoveAssignee";
-import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
-import { useToastContext } from "@/utils/context/ToastContext";
-import TaskEditSlideover from "./TaskEditSlideover";
 
 import type {
-  PanelWithTasks,
-  TaskWithAssignees,
-  TaskWithSubtasks,
-} from "server/api/routers/board";
+  DraggableProvided,
+  DraggableStateSnapshot,
+} from "react-beautiful-dnd";
+import type { RouterOutputs } from "@/utils/api";
+import type { Optional } from "@/utils/types";
+
+type BoardByIdOutput = RouterOutputs["board"]["getBoardById"] & {};
+type Task = Optional<
+  BoardByIdOutput["Panel"][number]["Task"][number],
+  "subtasks"
+>;
+type Panel = BoardByIdOutput["Panel"][number];
 
 interface TodoTaskProps {
-  task: TaskWithSubtasks | TaskWithAssignees;
-  panelItem: PanelWithTasks;
+  task: Task;
+  panelItem: Panel;
   provided?: DraggableProvided;
   snapshot?: DraggableStateSnapshot;
   handleRemoveDateTime: (taskId: string, panelId: string) => void;
