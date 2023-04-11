@@ -512,7 +512,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
               sidebarExpanded
                 ? "left-[15.25rem] -rotate-180 transform "
                 : "left-[4.25rem]",
-              "absolute top-12 z-[15] flex h-6 w-6 items-center justify-center rounded-md border border-gray-300 bg-gray-900 text-gray-300 transition duration-200 ease-in-out hover:bg-gray-700 hover:text-white"
+              "absolute top-12 z-20 flex h-6 w-6 items-center justify-center rounded-md border border-gray-300 bg-gray-900 text-gray-300 transition duration-200 ease-in-out hover:bg-gray-700 hover:text-white"
             )}
             onClick={() => setSidebarExpanded((prev) => !prev)}
           >
