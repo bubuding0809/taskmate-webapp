@@ -19,7 +19,6 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { PanelWithTasks, TaskWithSubtasks } from "server/api/routers/board";
 import { classNames } from "@/utils/helper";
-import { TaskDetailed } from "server/api/routers/board";
 import useToggleRevealSubtasks from "@/utils/mutations/task/useToggleRevealSubtasks";
 
 interface TodoItemProps {
