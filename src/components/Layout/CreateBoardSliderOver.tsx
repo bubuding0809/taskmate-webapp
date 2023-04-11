@@ -191,10 +191,10 @@ const CreateBoardSlideOver: React.FC<CreateBoardSliderOverProps> = ({
             <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
               <Transition.Child
                 as={Fragment}
-                enter="transform transition ease-in-out duration-500 sm:duration-700"
+                enter="transform transition ease-in-out duration-300 sm:duration-500"
                 enterFrom="translate-x-full"
                 enterTo="translate-x-0"
-                leave="transform transition ease-in-out duration-500 sm:duration-700"
+                leave="transform transition ease-in-out duration-300 sm:duration-500"
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
