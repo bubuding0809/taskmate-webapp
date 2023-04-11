@@ -45,14 +45,6 @@ export const TodoItem: React.FC<TodoItemProps> = ({
 
   const { mutate: toggelRevealSubtasks } = useToggleRevealSubtasks();
 
-  // Style that will be applied to the subtask list
-  // const nestListPreviewStyle = () => {
-  //   if (panelData.active.includes(task.id)) {
-  //     return "bg-gradient-to-br from-emerald-100/50 to-gray-100";
-  //   }
-  //   return "bg-gradient-to-br from-gray-100/50 to-slate-200/50";
-  // };
-
   const nestedListStyle = (snapshot: DroppableStateSnapshot) => {
     const { isDraggingOver, draggingFromThisWith, draggingOverWith } = snapshot;
 
