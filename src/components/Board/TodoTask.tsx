@@ -23,12 +23,9 @@ import type {
 import type { RouterOutputs } from "@/utils/api";
 import type { Optional } from "@/utils/types";
 
-type BoardByIdOutput = RouterOutputs["board"]["getBoardById"] & {};
-type Task = Optional<
-  BoardByIdOutput["Panel"][number]["Task"][number],
-  "subtasks"
->;
-type Panel = BoardByIdOutput["Panel"][number];
+type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
+type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
+type Task = Optional<Panel["Task"][number], "subtasks">;
 
 interface TodoTaskProps {
   task: Task;
