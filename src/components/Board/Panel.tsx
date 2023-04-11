@@ -8,9 +8,9 @@ import {
   DraggingStyle,
   NotDraggingStyle,
 } from "react-beautiful-dnd";
+import { classNames } from "@/utils/helper";
 
 import type { PanelWithTasks } from "server/api/routers/board";
-import { classNames } from "@/utils/helper";
 
 interface PanelProps {
   style: DraggingStyle | NotDraggingStyle | undefined;
