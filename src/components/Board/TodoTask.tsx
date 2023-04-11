@@ -14,15 +14,15 @@ import UserModal from "../Dashboard/UserModal";
 import { User } from "@prisma/client";
 import { PencilIcon, UserMinusIcon } from "@heroicons/react/20/solid";
 import useRemoveAssignee from "@/utils/mutations/task/useRemoveAssignee";
+import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
+import { useToastContext } from "@/utils/context/ToastContext";
+import TaskEditSlideover from "./TaskEditSlideover";
 
 import type {
   PanelWithTasks,
   TaskWithAssignees,
   TaskWithSubtasks,
 } from "server/api/routers/board";
-import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
-import { useToastContext } from "@/utils/context/ToastContext";
-import TaskEditSlideover from "./TaskEditSlideover";
 
 interface TodoTaskProps {
   task: TaskWithSubtasks | TaskWithAssignees;
@@ -73,19 +73,6 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
   // State to handle edit task slideover
   const [openEditTaskSlideover, setOpenEditTaskSlideover] = useState(false);
 
-  const handleToggleTask = (toggledTask: typeof task) => {
-    const { id, panel_id, is_completed, parentTaskId } = toggledTask;
-
-    // Mutation to toggle task completion
-    toggleTask({
-      boardId: panelItem.board_id,
-      panelId: panel_id,
-      taskId: id,
-      parentTaskId: parentTaskId,
-      completed: !is_completed,
-    });
-  };
-
   return (
     <>
       <div
@@ -108,7 +95,16 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
               className="self-start"
               name={task.id}
               checked={task.is_completed}
-              onChange={() => handleToggleTask(task)}
+              onChange={() => {
+                // Mutation to toggle task completion
+                toggleTask({
+                  boardId: panelItem.board_id,
+                  panelId: task.panel_id,
+                  taskId: task.id,
+                  parentTaskId: task.parentTaskId,
+                  completed: !task.is_completed,
+                });
+              }}
             />
             <p
               className={classNames(
@@ -136,6 +132,7 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
               </span>
             )}
           </div>
+
           {/* Task assignees */}
           {task.Task_Assign_Rel && task.Task_Assign_Rel.length > 0 && (
             <div className="ml-5 flex items-center">
@@ -161,6 +158,7 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
                   </Tooltip>
                 ))}
               </div>
+
               {/* Only shown when collaborator avatar is clicked */}
               <UserModal
                 open={openUserModal}
@@ -194,10 +192,10 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
               <Tooltip
                 title="Details"
                 placement="right-start"
-                className="cursor-copy p-1 transition-all duration-200 hover:rounded-md hover:bg-slate-300/50"
+                className="cursor-copy p-1 transition-all duration-200 hover:rounded-md hover:bg-gray-300/50"
               >
                 <p
-                  className="text-start text-xs font-normal text-gray-500"
+                  className="text-start text-sm leading-snug text-gray-500 line-clamp-5"
                   onClick={() => {
                     // Copy task details to clipboard
                     void navigator.clipboard.writeText(task.task_details ?? "");
@@ -240,6 +238,8 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
       <TaskEditSlideover
         open={openEditTaskSlideover}
         setOpen={setOpenEditTaskSlideover}
+        task={task}
+        panel={panelItem}
       />
     </>
   );
