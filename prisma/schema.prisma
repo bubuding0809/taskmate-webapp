@@ -65,6 +65,7 @@ model User {
     Task_Activity      Task_Activity[]
     Task_Assign        Task_Assign_Rel[]
     Team               Team[]
+    Task               Task[]
 }
 
 model VerificationToken {
@@ -204,6 +205,7 @@ model Task {
     id                 String            @id @default(dbgenerated("(uuid())"))
     task_title         String?
     task_details       String?           @db.VarChar(500)
+    task_description   Json?             @db.Json
     order              Int               @default(dbgenerated("(0)"))
     start_datetime     DateTime?         @db.DateTime(0)
     end_datetime       DateTime?         @db.DateTime(0)
@@ -211,8 +213,12 @@ model Task {
     is_completed       Boolean           @default(dbgenerated("(false)"))
     is_reveal_subtasks Boolean           @default(dbgenerated("(false)"))
     panel_id           String
+    creator_id         String
+    created_at         DateTime          @default(now()) @db.DateTime(0)
+    updated_at         DateTime          @default(now()) @db.DateTime(0)
     Attachment         Attachment[]
-    Panel              Panel             @relation(fields: [panel_id], references: [id], onDelete: Cascade, map: "Task_ibfk_1")
+    Panel              Panel             @relation(fields: [panel_id], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "Task_ibfk_1")
+    Creator            User              @relation(fields: [creator_id], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "Task_ibfk_2")
     Task_Activity      Task_Activity[]
     Task_Assign_Rel    Task_Assign_Rel[]
     Task_Label_Rel     Task_Label_Rel[]
