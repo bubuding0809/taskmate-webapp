@@ -6,11 +6,12 @@ import {
   CalendarIcon,
   ChatBubbleLeftEllipsisIcon,
   CheckCircleIcon,
+  ClockIcon,
   TagIcon,
   UserCircleIcon as UserCircleIconMini,
 } from "@heroicons/react/20/solid";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
-import { classNames } from "@/utils/helper";
+import { classNames, formatDate } from "@/utils/helper";
 
 import type { RouterOutputs } from "@/utils/api";
 import type { Optional } from "@/utils/types";
@@ -21,6 +22,48 @@ type Task = Optional<
   "subtasks"
 >;
 type Panel = BoardByIdOutput["Panel"][number];
+
+// TODO - To be optimized
+const formatDistanceToNow = (
+  date: Date,
+  options?: {
+    addSuffix?: boolean;
+  }
+) => {
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const diffInMinutes = Math.round(diff / 60000);
+  const diffInHours = Math.round(diff / 3600000);
+  const diffInDays = Math.round(diff / 86400000);
+  const diffInMonths = Math.round(diff / 2592000000);
+  const diffInYears = Math.round(diff / 31536000000);
+
+  // Calculate the buffer difference
+  if (diffInYears < -12) {
+    return `${-diffInYears} year${options?.addSuffix ? "s" : ""}`;
+  } else if (diffInMonths < -12) {
+    return `${-diffInMonths} month${options?.addSuffix ? "s" : ""}`;
+  } else if (diffInDays < -30) {
+    return `${-diffInDays} day${options?.addSuffix ? "s" : ""}`;
+  } else if (diffInHours < -12) {
+    return `${-diffInHours} hour${options?.addSuffix ? "s" : ""}`;
+  } else if (diffInMinutes < -60) {
+    return `${-diffInMinutes} minute${options?.addSuffix ? "s" : ""}`;
+  }
+
+  // Calculate the overdue difference
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} min${options?.addSuffix ? "s" : ""}`;
+  } else if (diffInHours < 24) {
+    return `${diffInHours} hour${options?.addSuffix ? "s" : ""}`;
+  } else if (diffInDays < 30) {
+    return `${diffInDays} day${options?.addSuffix ? "s" : ""}`;
+  } else if (diffInMonths < 12) {
+    return `${diffInMonths} month${options?.addSuffix ? "s" : ""}`;
+  } else {
+    return `${diffInYears} year${options?.addSuffix ? "s" : ""}`;
+  }
+};
 
 const activity = [
   {
@@ -131,7 +174,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-4xl">
                   <div className="overlay flex h-full flex-col border-l bg-white shadow-md">
                     {/* Header */}
-                    <div className="sticky top-0 border-y bg-white px-4 py-2 shadow-sm sm:px-6">
+                    <div className="sticky top-0 z-10 border-y bg-white px-4 py-2 shadow-sm sm:px-6">
                       <div className="flex items-center justify-between">
                         <button
                           type="button"
@@ -196,7 +239,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                       href="#"
                                       className="font-medium text-gray-900"
                                     >
-                                      Creator to be added
+                                      {task.Creator?.name}
                                     </a>{" "}
                                     in{" "}
                                     <a
@@ -205,6 +248,18 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                     >
                                       {panel.panel_title}
                                     </a>
+                                    {task.parentTaskId && (
+                                      <>
+                                        {" "}
+                                        under{" "}
+                                        <a
+                                          href="#"
+                                          className="font-medium text-gray-900"
+                                        >
+                                          {task.parentTask?.task_title}
+                                        </a>
+                                      </>
+                                    )}
                                   </p>
                                 </div>
                                 <div className="mt-4 flex space-x-3 md:mt-0">
@@ -225,15 +280,6 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                               <aside className="mt-8 xl:hidden">
                                 <h2 className="sr-only">Details</h2>
                                 <div className="space-y-5">
-                                  {/* <div className="flex items-center space-x-2">
-                                    <LockOpenIcon
-                                      className="h-5 w-5 text-green-500"
-                                      aria-hidden="true"
-                                    />
-                                    <span className="text-sm font-medium text-green-700">
-                                      Open Issue
-                                    </span>
-                                  </div> */}
                                   <div className="flex items-center space-x-2">
                                     <ChatBubbleLeftEllipsisIcon
                                       className="h-5 w-5 text-gray-400"
@@ -601,6 +647,43 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                           <aside className="top-14 hidden h-max xl:sticky xl:block xl:pl-8">
                             <h2 className="sr-only">Details</h2>
                             <div className="space-y-5">
+                              {task.due_datetime && (
+                                <div className="flex items-center space-x-2">
+                                  <ClockIcon
+                                    className={classNames(
+                                      Date.now() > task.due_datetime.getTime()
+                                        ? "text-red-500"
+                                        : "text-emerald-500",
+                                      "h-5 w-5"
+                                    )}
+                                    aria-hidden="true"
+                                  />
+                                  <span className="text-sm font-medium text-gray-900">
+                                    {Date.now() >
+                                    task.due_datetime.getTime() ? (
+                                      <span className="text-red-500">
+                                        Overdue by{" "}
+                                        {formatDistanceToNow(
+                                          task.due_datetime,
+                                          {
+                                            addSuffix: true,
+                                          }
+                                        )}
+                                      </span>
+                                    ) : (
+                                      <span className="text-green-500">
+                                        Due in{" "}
+                                        {formatDistanceToNow(
+                                          task.due_datetime,
+                                          {
+                                            addSuffix: true,
+                                          }
+                                        )}
+                                      </span>
+                                    )}
+                                  </span>
+                                </div>
+                              )}
                               <div className="flex items-center space-x-2">
                                 <ChatBubbleLeftEllipsisIcon
                                   className="h-5 w-5 text-gray-400"
@@ -622,7 +705,20 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                 />
                                 <span className="text-sm font-medium text-gray-900">
                                   Created on{" "}
-                                  <time dateTime="2020-12-02">Dec 2, 2020</time>
+                                  <time
+                                    dateTime={task.created_at.toISOString()}
+                                  >
+                                    {task.created_at.toLocaleDateString(
+                                      "en-SG",
+                                      {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                        hour: "numeric",
+                                        minute: "numeric",
+                                      }
+                                    )}
+                                  </time>
                                 </span>
                               </div>
                             </div>

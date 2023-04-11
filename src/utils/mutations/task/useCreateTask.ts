@@ -27,6 +27,7 @@ const useCreateTask = () => {
         dueDate,
         parentTaskId,
         taskAssignees,
+        creatorId,
       } = task;
 
       // Create query key for the board query
@@ -77,6 +78,10 @@ const useCreateTask = () => {
         subtasks: [],
         is_reveal_subtasks: false,
         Task_Assign_Rel: [],
+        task_description: {},
+        created_at: new Date(),
+        updated_at: new Date(),
+        creator_id: creatorId,
       };
 
       // Add the new task to the task map
@@ -87,9 +92,21 @@ const useCreateTask = () => {
       });
 
       // Locate the panel that the task is being added to, and add the task to the beginning of the array
-      newBoardData.Panel.find((panel) => panel.id === panelId)!.Task.unshift(
-        newTask
-      );
+      newBoardData.Panel.find((panel) => panel.id === panelId)!.Task.unshift({
+        ...newTask,
+        Creator: {
+          id: creatorId,
+          name: "",
+          email: "",
+          board_order: "",
+          emailVerified: null,
+          image: "",
+          folder_order: "",
+          password: "",
+          status_message: "",
+        },
+        parentTask: parentTaskId ? newTaskMapData.get(parentTaskId)! : null,
+      });
 
       // Optimistically update to the new value
       queryClient.setQueryData(taskMapQueryKey, newTaskMapData);

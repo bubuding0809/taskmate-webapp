@@ -20,7 +20,7 @@ export function classNames(...classes: (string | boolean)[]): string {
 export function formatDate(date: Date): string {
   // Extract and format time of the date object
   const time = date
-    .toLocaleTimeString("en-US", {
+    .toLocaleTimeString("en-SG", {
       hour: "numeric",
       minute: "numeric",
     })
@@ -32,10 +32,10 @@ export function formatDate(date: Date): string {
   }
 
   // Else return the date in the format "DayOfWeek, Day Month, Time"
-  const dayOfWeekName = date.toLocaleDateString("en-US", {
+  const dayOfWeekName = date.toLocaleDateString("en-SG", {
     weekday: "short",
   });
-  const monthName = date.toLocaleDateString("en-US", {
+  const monthName = date.toLocaleDateString("en-SG", {
     month: "short",
   });
   const day = date.getDate();

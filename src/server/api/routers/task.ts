@@ -22,6 +22,7 @@ export const taskRouter = createTRPCRouter({
         dueDate: z.date().nullable(),
         parentTaskId: z.string().optional(),
         taskAssignees: z.array(z.string()).optional(),
+        creatorId: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -32,6 +33,11 @@ export const taskRouter = createTRPCRouter({
             Panel: {
               connect: {
                 id: input.panelId,
+              },
+            },
+            Creator: {
+              connect: {
+                id: input.creatorId,
               },
             },
             id: input.taskId,
@@ -67,6 +73,11 @@ export const taskRouter = createTRPCRouter({
           Panel: {
             connect: {
               id: input.panelId,
+            },
+          },
+          Creator: {
+            connect: {
+              id: input.creatorId,
             },
           },
           id: input.taskId,

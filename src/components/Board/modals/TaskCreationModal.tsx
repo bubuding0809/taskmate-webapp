@@ -95,6 +95,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       endDate: task_end_dt.length > 0 ? new Date(task_end_dt) : null,
       dueDate: task_due_dt.length > 0 ? new Date(task_due_dt) : null,
       taskAssignees: newTaskForm.task_assignedUsers.map((user) => user.id),
+      creatorId: sessionData?.user.id ?? "",
     });
 
     setOpen(false);
