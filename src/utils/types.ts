@@ -61,3 +61,6 @@ export type EmojiType = {
   shortcodes: string;
   unified: string;
 };
+
+// Optional utility type
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
