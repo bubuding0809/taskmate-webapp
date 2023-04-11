@@ -61,5 +61,6 @@ module.exports = {
       strategy: "base", // default, will cause issues with custom components in exisiting input fields
     }),
     require("@tailwindcss/typography"),
+    require("@tailwindcss/line-clamp"),
   ],
 };
