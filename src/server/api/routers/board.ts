@@ -1,5 +1,4 @@
 /* DONE BY: Ding RuoQian 2100971 */
-/* DONE BY: Amri Sazali 2102350 */
 
 import type {
   Attachment,
@@ -24,10 +23,14 @@ export type TaskWithAssignees = Task & {
   Task_Assign_Rel: (Task_Assign_Rel & {
     User: User;
   })[];
+  Creator: User;
+  parentTask: Task | null;
 };
 
 export type TaskWithSubtasks = TaskWithAssignees & {
-  subtasks: TaskWithAssignees[];
+  subtasks: (TaskWithAssignees & {
+    parentTask: Task | null;
+  })[];
 };
 
 export type PanelWithTasks = Panel & {
@@ -66,6 +69,8 @@ export const boardRouter = createTRPCRouter({
                           User: true,
                         },
                       },
+                      Creator: true,
+                      parentTask: true,
                     },
                     orderBy: {
                       order: "asc",
@@ -76,6 +81,8 @@ export const boardRouter = createTRPCRouter({
                       User: true,
                     },
                   },
+                  Creator: true,
+                  parentTask: true,
                 },
                 orderBy: {
                   order: "asc",
