@@ -1,19 +1,26 @@
-import { Fragment } from "react";
+import { Fragment, SetStateAction } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import {
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { ChevronDoubleRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import {
   BellIcon,
   CalendarIcon,
   ChatBubbleLeftEllipsisIcon,
   CheckCircleIcon,
-  LockOpenIcon,
-  PencilIcon,
   TagIcon,
   UserCircleIcon as UserCircleIconMini,
 } from "@heroicons/react/20/solid";
+import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
 import { classNames } from "@/utils/helper";
+
+import type { RouterOutputs } from "@/utils/api";
+import type { Optional } from "@/utils/types";
+
+type BoardByIdOutput = RouterOutputs["board"]["getBoardById"] & {};
+type Task = Optional<
+  BoardByIdOutput["Panel"][number]["Task"][number],
+  "subtasks"
+>;
+type Panel = BoardByIdOutput["Panel"][number];
 
 const activity = [
   {
@@ -88,16 +95,23 @@ const activity = [
 
 interface TaskEditSlideoverProps {
   open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpen: React.Dispatch<SetStateAction<boolean>>;
+  task: Task;
+  panel: Panel;
 }
 
 const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
   open,
   setOpen,
+  task,
+  panel,
 }) => {
+  // Mutation to toggle task completion
+  const { mutate: toggleTask } = useToggleTaskStatus();
+
   return (
     <Transition.Root show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={setOpen}>
+      <Dialog as="div" className="relative z-50" onClose={setOpen}>
         {/* Overlay */}
         <div className="fixed inset-0" />
 
@@ -107,21 +121,47 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
             <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
               <Transition.Child
                 as={Fragment}
-                enter="transform transition ease-in-out duration-500 sm:duration-700"
+                enter="transform transition ease-in-out duration-300 sm:duration-500"
                 enterFrom="translate-x-full"
                 enterTo="translate-x-0"
-                leave="transform transition ease-in-out duration-500 sm:duration-700"
+                leave="transform transition ease-in-out duration-300 sm:duration-500"
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-4xl">
-                  <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-md">
+                  <div className="overlay flex h-full flex-col border-l bg-white shadow-md">
                     {/* Header */}
-                    <div className="px-4 sm:px-6">
-                      <div className="flex items-start justify-between">
-                        <Dialog.Title className="text-base font-semibold leading-6 text-gray-900">
+                    <div className="sticky top-0 border-y bg-white px-4 py-2 shadow-sm sm:px-6">
+                      <div className="flex items-center justify-between">
+                        <button
+                          type="button"
+                          className={classNames(
+                            "inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 ease-in-out hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 active:scale-110 active:shadow-md"
+                          )}
+                          onClick={() =>
+                            toggleTask({
+                              boardId: panel.board_id,
+                              panelId: panel.id,
+                              taskId: task.id,
+                              parentTaskId: task.parentTaskId,
+                              completed: !task.is_completed,
+                            })
+                          }
+                        >
+                          <CheckCircleIcon
+                            className={classNames(
+                              task.is_completed && "bg-white text-teal-600",
+                              "-ml-0.5 h-5 w-5 rounded-full transition-all duration-500 ease-in-out"
+                            )}
+                            aria-hidden="true"
+                          />
+                          {task.is_completed
+                            ? "Completed"
+                            : "Mark as completed"}
+                        </button>
+                        {/* <Dialog.Title className="text-base font-semibold leading-6 text-gray-900">
                           Edit task
-                        </Dialog.Title>
+                        </Dialog.Title> */}
                         <div className="ml-3 flex h-7 items-center">
                           <button
                             type="button"
@@ -129,7 +169,10 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                             onClick={() => setOpen(false)}
                           >
                             <span className="sr-only">Close panel</span>
-                            <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                            <ChevronDoubleRightIcon
+                              className="h-6 w-6"
+                              aria-hidden="true"
+                            />
                           </button>
                         </div>
                       </div>
@@ -137,7 +180,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
 
                     {/* Main */}
                     <main className="flex-1">
-                      <div className="py-8 xl:py-10">
+                      <div className="py-8">
                         <div className="max-w-3xl px-4 sm:px-6 lg:px-8 xl:grid xl:max-w-5xl xl:grid-cols-3">
                           <div className="xl:col-span-2 xl:border-r xl:border-gray-200 xl:pr-8">
                             <div>
@@ -145,36 +188,26 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                               <div className="md:flex md:items-center md:justify-between md:space-x-4 xl:border-b xl:pb-6">
                                 <div>
                                   <h1 className="text-2xl font-bold text-gray-900">
-                                    ARIA attribute misspelled
+                                    {task.task_title}
                                   </h1>
                                   <p className="mt-2 text-sm text-gray-500">
-                                    #400 opened by{" "}
+                                    Created by{" "}
                                     <a
                                       href="#"
                                       className="font-medium text-gray-900"
                                     >
-                                      Hilary Mahy
+                                      Creator to be added
                                     </a>{" "}
                                     in{" "}
                                     <a
                                       href="#"
                                       className="font-medium text-gray-900"
                                     >
-                                      Customer Portal
+                                      {panel.panel_title}
                                     </a>
                                   </p>
                                 </div>
                                 <div className="mt-4 flex space-x-3 md:mt-0">
-                                  <button
-                                    type="button"
-                                    className="inline-flex justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                                  >
-                                    <PencilIcon
-                                      className="-ml-0.5 h-5 w-5 text-gray-400"
-                                      aria-hidden="true"
-                                    />
-                                    Edit
-                                  </button>
                                   <button
                                     type="button"
                                     className="inline-flex justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
@@ -192,7 +225,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                               <aside className="mt-8 xl:hidden">
                                 <h2 className="sr-only">Details</h2>
                                 <div className="space-y-5">
-                                  <div className="flex items-center space-x-2">
+                                  {/* <div className="flex items-center space-x-2">
                                     <LockOpenIcon
                                       className="h-5 w-5 text-green-500"
                                       aria-hidden="true"
@@ -200,14 +233,19 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                     <span className="text-sm font-medium text-green-700">
                                       Open Issue
                                     </span>
-                                  </div>
+                                  </div> */}
                                   <div className="flex items-center space-x-2">
                                     <ChatBubbleLeftEllipsisIcon
                                       className="h-5 w-5 text-gray-400"
                                       aria-hidden="true"
                                     />
                                     <span className="text-sm font-medium text-gray-900">
-                                      4 comments
+                                      {
+                                        activity.filter(
+                                          (item) => item.type === "comment"
+                                        ).length
+                                      }{" "}
+                                      comments
                                     </span>
                                   </div>
                                   <div className="flex items-center space-x-2">
@@ -560,25 +598,21 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                           </div>
 
                           {/* Sidebar */}
-                          <aside className="top-0 hidden h-max xl:sticky xl:block xl:pl-8">
+                          <aside className="top-14 hidden h-max xl:sticky xl:block xl:pl-8">
                             <h2 className="sr-only">Details</h2>
                             <div className="space-y-5">
-                              <div className="flex items-center space-x-2">
-                                <LockOpenIcon
-                                  className="h-5 w-5 text-green-500"
-                                  aria-hidden="true"
-                                />
-                                <span className="text-sm font-medium text-green-700">
-                                  Open Issue
-                                </span>
-                              </div>
                               <div className="flex items-center space-x-2">
                                 <ChatBubbleLeftEllipsisIcon
                                   className="h-5 w-5 text-gray-400"
                                   aria-hidden="true"
                                 />
                                 <span className="text-sm font-medium text-gray-900">
-                                  4 comments
+                                  {
+                                    activity.filter(
+                                      (item) => item.type === "comment"
+                                    ).length
+                                  }{" "}
+                                  comments
                                 </span>
                               </div>
                               <div className="flex items-center space-x-2">
