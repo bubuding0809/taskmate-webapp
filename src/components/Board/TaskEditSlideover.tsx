@@ -158,19 +158,13 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
     extensions: [
       Color.configure({ types: [TextStyle.name, ListItem.name] }),
       StarterKit.configure({
-        bulletList: {
-          keepMarks: true,
-          keepAttributes: false, // TODO : Making this as `false` becase marks are not preserved when I try to preserve attrs, awaiting a bit of help
-        },
-        orderedList: {
-          keepMarks: true,
-          keepAttributes: false, // TODO : Making this as `false` becase marks are not preserved when I try to preserve attrs, awaiting a bit of help
-        },
+        // ... Configure the StarterKit as you wish
       }),
     ],
     editorProps: {
       attributes: {
-        class: "prose max-w-none p-2 border border-gray-200 rounded-md mt-5",
+        class:
+          "prose max-w-none p-2 hover:outline outline-2 hover:outline-indigo-400 rounded mt-5 focus:outline-indigo-600",
       },
     },
     content: `
