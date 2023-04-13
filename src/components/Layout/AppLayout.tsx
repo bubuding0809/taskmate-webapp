@@ -37,10 +37,10 @@ import { useDebounceBool } from "@/utils/hooks/useDebounceBool";
 import { classNames, trimChar } from "@/utils/helper";
 import Link from "next/link";
 import Loader from "../custom/Loader";
+import Image from "next/image";
 
 import type { DragStart, DropResult } from "react-beautiful-dnd";
 import type { BreadCrumbType } from "./BreadCrumbs";
-import Image from "next/image";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
@@ -49,7 +49,6 @@ const navigation = [
     href: "/collaboration",
     icon: UsersIcon,
   },
-  // { name: "Calendar", href: "#", icon: CalendarIcon },
 ];
 
 const userNavigation = [
