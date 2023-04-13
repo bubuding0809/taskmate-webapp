@@ -62,8 +62,6 @@ type AppLayoutProps = {
   title?: string;
 };
 
-const something = {} as any;
-
 const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Use resetServerContext to prevent react-beautiful-dnd from crashing
   resetServerContext();
