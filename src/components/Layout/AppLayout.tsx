@@ -1,6 +1,4 @@
 /* DONE BY: Ding RuoQian 2100971 */
-import small_logo from "../../../public/logo_small.png";
-import large_logo from "../../../public/main.png";
 import { useRouter } from "next/router";
 import { Fragment, ReactNode, useEffect, useMemo, useState } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
@@ -533,9 +531,19 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
               )}
             >
               {sidebarExpanded ? (
-                <Image src={large_logo} alt="Taskmate large logo" />
+                <Image
+                  src="/main.png"
+                  alt="Taskmate large logo"
+                  width={500}
+                  height={500}
+                />
               ) : (
-                <Image src={small_logo} alt="Taskmate small logo" />
+                <Image
+                  src="/logo_small.png"
+                  alt="Taskmate small logo"
+                  width={500}
+                  height={500}
+                />
               )}
             </div>
 
