@@ -9,9 +9,7 @@ const server = z.object({
   DATABASE_URL: z.string().url(),
   NODE_ENV: z.enum(["development", "test", "production"]),
   NEXTAUTH_SECRET:
-    process.env.NODE_ENV === "production"
-      ? z.string().min(1)
-      : z.string().min(1).optional(),
+    process.env.NODE_ENV === "production" ? z.string() : z.string().optional(),
   NEXTAUTH_URL: z.preprocess(
     // This makes Vercel deployments not fail if you don't set NEXTAUTH_URL
     // Since NextAuth.js automatically uses the VERCEL_URL if present.
@@ -38,8 +36,8 @@ const server = z.object({
  * To expose them to the client, prefix them with `NEXT_PUBLIC_`.
  */
 const client = z.object({
-  NEXT_PUBLIC_PUSHER_KEY: z.string().min(1),
-  NEXT_PUBLIC_PUSHER_CLUSTER: z.string().min(1),
+  NEXT_PUBLIC_PUSHER_KEY: z.string(),
+  NEXT_PUBLIC_PUSHER_CLUSTER: z.string(),
   // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
 });
 
