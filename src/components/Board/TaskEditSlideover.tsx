@@ -1,4 +1,4 @@
-import { Fragment, SetStateAction } from "react";
+import { Fragment, SetStateAction, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { ChevronDoubleRightIcon } from "@heroicons/react/24/outline";
 import {
@@ -11,12 +11,15 @@ import {
   UserCircleIcon as UserCircleIconMini,
 } from "@heroicons/react/20/solid";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
-import { classNames } from "@/utils/helper";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { classNames, formatDate } from "@/utils/helper";
+import { useEditor, EditorContent, Content } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Color } from "@tiptap/extension-color";
 import ListItem from "@tiptap/extension-list-item";
 import TextStyle from "@tiptap/extension-text-style";
+import { useSession } from "next-auth/react";
+import useDebouceQuery from "@/utils/hooks/useDebounceQuery";
+import { api } from "@/utils/api";
 
 import type { RouterOutputs } from "@/utils/api";
 import type { Optional } from "@/utils/types";
@@ -151,9 +154,28 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
   task,
   panel,
 }) => {
+  const { data: sessionData } = useSession();
+
+  // TODO - temporary refetch of board data, to be moved to custom hook
+  const { refetch } = api.board.getBoardById.useQuery({
+    boardId: panel.board_id,
+  });
+
   // Mutation to toggle task completion
   const { mutate: toggleTask } = useToggleTaskStatus();
 
+  // Mutation to update task description
+  const { mutate: updateTaskDescription } =
+    api.task.updateTaskDescription.useMutation();
+
+  // State to hold the live and debounced task description state
+  const [liveDescription, setLiveDescription, debouncedDescription] =
+    useDebouceQuery(task.task_description, 500);
+
+  // Loading state for saving the task description
+  const [savingDescription, setSavingDescription] = useState(false);
+
+  // Rich text editor for the task description
   const editor = useEditor({
     extensions: [
       Color.configure({ types: [TextStyle.name, ListItem.name] }),
@@ -167,38 +189,35 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
           "prose max-w-none p-2 hover:outline outline-2 hover:outline-indigo-400 rounded mt-5 focus:outline-indigo-600",
       },
     },
-    content: `
-      <p>
-        Lorem ipsum dolor sit amet consectetur
-        adipisicing elit. Expedita, hic? Commodi
-        cumque similique id tempora molestiae
-        deserunt at suscipit, dolor voluptatem,
-        numquam, harum consequatur laboriosam
-        voluptas tempore aut voluptatum alias?
-      </p>
-      <ul>
-        <li>
-          Tempor ultrices proin nunc fames nunc ut
-          auctor vitae sed. Eget massa parturient
-          vulputate fermentum id facilisis nam
-          pharetra. Aliquet leo tellus.
-        </li>
-        <li>
-          Turpis ac nunc adipiscing adipiscing metus
-          tincidunt senectus tellus.
-        </li>
-        <li>
-          Semper interdum porta sit tincidunt. Dui
-          suspendisse scelerisque amet metus eget
-          sed. Ut tellus in sed dignissim.
-        </li>
-      </ul>
-    `,
-    onUpdate: ({ editor }) => {
-      // TODO - Update the description of the task
-      const json = editor.getJSON();
-    },
+    content:
+      typeof liveDescription === "boolean" ||
+      typeof liveDescription === "number"
+        ? JSON.stringify(liveDescription)
+        : liveDescription,
+    onUpdate: ({ editor }) => setLiveDescription(editor.getJSON()),
   });
+
+  // Effect to update the task description when the debounced description changes
+  useEffect(() => {
+    // If the edit slideover is closed, don't update the task description
+    if (!open) return;
+
+    // Mutation to update the task description
+    setSavingDescription(true);
+    updateTaskDescription(
+      {
+        editorId: sessionData?.user.id ?? "",
+        boardId: panel.board_id,
+        panelId: panel.id,
+        taskId: task.id,
+        description: JSON.stringify(debouncedDescription),
+      },
+      {
+        onSuccess: () => setSavingDescription(false),
+        onSettled: () => refetch(),
+      }
+    );
+  }, [debouncedDescription]);
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -479,9 +498,18 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
 
                               {/* Description */}
                               <div className="divide-y py-3 xl:pb-0 xl:pt-6">
-                                <h2 className="pb-4 text-lg font-medium text-gray-900">
-                                  Description
-                                </h2>
+                                <hgroup className="flex items-center space-x-2 pb-4">
+                                  <h2 className="text-lg font-medium text-gray-900">
+                                    Description
+                                  </h2>
+                                  <span className="text-sm text-gray-500">
+                                    {savingDescription
+                                      ? "Saving..."
+                                      : `Last edited ${formatDate(
+                                          task.updated_at
+                                        )}`}
+                                  </span>
+                                </hgroup>
                                 <EditorContent
                                   editor={editor}
                                   spellCheck={false}

@@ -3,6 +3,7 @@
 
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { Prisma } from "@prisma/client";
 
 const TASK_ORDER_STEP = 100;
 
@@ -426,6 +427,29 @@ export const taskRouter = createTRPCRouter({
             task_id: input.taskId,
             user_id: input.assigneeId,
           },
+        },
+      });
+    }),
+
+  // Mutation to update task description
+  updateTaskDescription: protectedProcedure
+    .input(
+      z.object({
+        boardId: z.string(),
+        panelId: z.string(),
+        taskId: z.string(),
+        description: z.string(),
+        editorId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.prisma.task.update({
+        where: {
+          id: input.taskId,
+        },
+        data: {
+          task_description: JSON.parse(input.description) ?? Prisma.DbNull,
+          updated_at: new Date(),
         },
       });
     }),
