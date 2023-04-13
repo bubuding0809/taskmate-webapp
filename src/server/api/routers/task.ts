@@ -448,7 +448,9 @@ export const taskRouter = createTRPCRouter({
           id: input.taskId,
         },
         data: {
-          task_description: JSON.parse(input.description) ?? Prisma.DbNull,
+          task_description:
+            (JSON.parse(input.description) as Prisma.JsonObject) ??
+            Prisma.DbNull,
           updated_at: new Date(),
         },
       });
