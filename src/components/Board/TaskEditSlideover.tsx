@@ -12,14 +12,17 @@ import {
 } from "@heroicons/react/20/solid";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
 import { classNames, formatDate } from "@/utils/helper";
-import { useEditor, EditorContent, Content } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { Color } from "@tiptap/extension-color";
-import ListItem from "@tiptap/extension-list-item";
-import TextStyle from "@tiptap/extension-text-style";
 import { useSession } from "next-auth/react";
 import useDebouceQuery from "@/utils/hooks/useDebounceQuery";
 import { api } from "@/utils/api";
+import { Color } from "@tiptap/extension-color";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import ListItem from "@tiptap/extension-list-item";
+import TextStyle from "@tiptap/extension-text-style";
+import { HocuspocusProvider } from "@hocuspocus/provider";
+import Collaboration from "@tiptap/extension-collaboration";
+import * as Y from "yjs";
 
 import type { RouterOutputs } from "@/utils/api";
 import type { Optional } from "@/utils/types";
@@ -141,6 +144,12 @@ const activity = [
   },
 ];
 
+// // Set up the Hocuspocus WebSocket provider
+// const provider = new HocuspocusProvider({
+//   url: "ws://127.0.0.1:1234",
+//   name: "example-document",
+// });
+
 interface TaskEditSlideoverProps {
   open: boolean;
   setOpen: React.Dispatch<SetStateAction<boolean>>;
@@ -181,7 +190,11 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
       Color.configure({ types: [TextStyle.name, ListItem.name] }),
       StarterKit.configure({
         // ... Configure the StarterKit as you wish
+        // history: false,
       }),
+      // Collaboration.configure({
+      //   document: provider.document,
+      // }),
     ],
     editorProps: {
       attributes: {
