@@ -214,7 +214,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
       },
       {
         onSuccess: () => setSavingDescription(false),
-        onSettled: () => refetch(),
+        onSettled: () => void refetch(),
       }
     );
   }, [debouncedDescription]);
