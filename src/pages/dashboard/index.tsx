@@ -260,7 +260,7 @@ const DashboardPage: NextPageWithLayout = () => {
                 ref={boardParent}
                 className="col-span-full flex flex-grow gap-2 overflow-x-auto p-1"
               >
-                {!!unorgainzedBoardData?.boardOrder.length ? (
+                {!!unorgainzedBoardData?.boardOrder?.length ? (
                   unorgainzedBoardData?.boardOrder.map((boardId) => {
                     const boardItem = unorgainzedBoardData?.boards.get(boardId);
                     return (
@@ -277,15 +277,7 @@ const DashboardPage: NextPageWithLayout = () => {
                   <button
                     type="button"
                     className="relative block h-80 w-96 min-w-md rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    onClick={() => {
-                      createBoard({
-                        boardId: nanoid(),
-                        userId: sessionData!.user.id,
-                        title: "New Board",
-                        currentBoardOrder:
-                          unorgainzedBoardData?.boardOrder ?? [],
-                      });
-                    }}
+                    onClick={() => setBoardCreationOpen(true)}
                   >
                     <svg
                       className="mx-auto h-12 w-12 text-gray-400"
