@@ -18,6 +18,7 @@
     "@formkit/auto-animate": "^1.0.0-beta.6",
     "@headlessui/react": "^1.7.11",
     "@heroicons/react": "^2.0.15",
+    "@hocuspocus/provider": "^2.0.3",
     "@mui/icons-material": "^5.8.4",
     "@mui/material": "^5.9.3",
     "@mui/x-date-pickers": "^5.0.0-beta.3",
@@ -33,6 +34,7 @@
     "@react-spring/web": "^9.7.0",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@tanstack/react-query": "^4.20.0",
+    "@tiptap/extension-collaboration": "^2.0.3",
     "@tiptap/extension-color": "^2.0.2",
     "@tiptap/extension-text-style": "^2.0.2",
     "@tiptap/pm": "^2.0.2",
@@ -64,6 +66,7 @@
     "react-scroll": "^1.8.9",
     "react-spring": "^9.7.0",
     "superjson": "1.9.1",
+    "y-prosemirror": "^1.2.1",
     "zod": "^3.20.2"
   },
   "devDependencies": {
