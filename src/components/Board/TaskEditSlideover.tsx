@@ -20,9 +20,9 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import ListItem from "@tiptap/extension-list-item";
 import TextStyle from "@tiptap/extension-text-style";
-import { HocuspocusProvider } from "@hocuspocus/provider";
-import Collaboration from "@tiptap/extension-collaboration";
-import * as Y from "yjs";
+// import { HocuspocusProvider } from "@hocuspocus/provider";
+// import Collaboration from "@tiptap/extension-collaboration";
+// import * as Y from "yjs";
 
 import type { RouterOutputs } from "@/utils/api";
 import type { Optional } from "@/utils/types";
