@@ -40,6 +40,7 @@ const server = z.object({
 const client = z.object({
   NEXT_PUBLIC_PUSHER_KEY: z.string().min(1),
   NEXT_PUBLIC_PUSHER_CLUSTER: z.string().min(1),
+  NEXT_PUBLIC_HOCUSPOCUS_URL: z.string().min(1),
   // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
 });
 
@@ -65,6 +66,7 @@ const processEnv = {
   PUSHER_CLUSTER: process.env.PUSHER_CLUSTER,
   NEXT_PUBLIC_PUSHER_KEY: process.env.NEXT_PUBLIC_PUSHER_KEY,
   NEXT_PUBLIC_PUSHER_CLUSTER: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
+  NEXT_PUBLIC_HOCUSPOCUS_URL: process.env.NEXT_PUBLIC_HOCUSPOCUS_URL,
   // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
 };
 
