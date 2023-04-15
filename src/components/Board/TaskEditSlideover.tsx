@@ -209,7 +209,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
     // If the edit slideover is closed, don't update the task description
     if (!open) return;
 
-    let timeout = setTimeout(() => {
+    const timeout = setTimeout(() => {
       void refetchBoardData();
     }, 1000);
 
