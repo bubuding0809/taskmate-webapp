@@ -20,9 +20,8 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import ListItem from "@tiptap/extension-list-item";
 import TextStyle from "@tiptap/extension-text-style";
-// import { HocuspocusProvider } from "@hocuspocus/provider";
-// import Collaboration from "@tiptap/extension-collaboration";
-// import * as Y from "yjs";
+import { HocuspocusProvider } from "@hocuspocus/provider";
+import Collaboration from "@tiptap/extension-collaboration";
 
 import type { RouterOutputs } from "@/utils/api";
 import type { Optional } from "@/utils/types";
@@ -144,12 +143,6 @@ const activity = [
   },
 ];
 
-// // Set up the Hocuspocus WebSocket provider
-// const provider = new HocuspocusProvider({
-//   url: "ws://127.0.0.1:1234",
-//   name: "example-document",
-// });
-
 interface TaskEditSlideoverProps {
   open: boolean;
   setOpen: React.Dispatch<SetStateAction<boolean>>;
@@ -166,23 +159,29 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
   const { data: sessionData } = useSession();
 
   // TODO - temporary refetch of board data, to be moved to custom hook
-  const { refetch } = api.board.getBoardById.useQuery({
-    boardId: panel.board_id,
-  });
+  const { refetch: refetchBoardData, isRefetching } =
+    api.board.getBoardById.useQuery({
+      boardId: panel.board_id,
+    });
 
   // Mutation to toggle task completion
   const { mutate: toggleTask } = useToggleTaskStatus();
 
-  // Mutation to update task description
-  const { mutate: updateTaskDescription } =
-    api.task.updateTaskDescription.useMutation();
-
   // State to hold the live and debounced task description state
-  const [liveDescription, setLiveDescription, debouncedDescription] =
-    useDebouceQuery(task.task_description, 500);
+  const [_, setLiveDescription, debouncedDescription] = useDebouceQuery(
+    "",
+    500
+  );
 
-  // Loading state for saving the task description
-  const [savingDescription, setSavingDescription] = useState(false);
+  // State to hold the hocuspocus provider, setProvider is not used
+  const [provider, setProvider] = useState(() => {
+    const provider = new HocuspocusProvider({
+      url: "ws://127.0.0.1:1234",
+      name: `task.${task.id}`,
+    });
+
+    return provider;
+  });
 
   // Rich text editor for the task description
   const editor = useEditor({
@@ -190,11 +189,11 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
       Color.configure({ types: [TextStyle.name, ListItem.name] }),
       StarterKit.configure({
         // ... Configure the StarterKit as you wish
-        // history: false,
+        history: false,
       }),
-      // Collaboration.configure({
-      //   document: provider.document,
-      // }),
+      Collaboration.configure({
+        document: provider.document,
+      }),
     ],
     editorProps: {
       attributes: {
@@ -202,12 +201,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
           "prose max-w-none p-2 hover:outline outline-2 hover:outline-indigo-400 rounded mt-5 focus:outline-indigo-600",
       },
     },
-    content:
-      typeof liveDescription === "boolean" ||
-      typeof liveDescription === "number"
-        ? JSON.stringify(liveDescription)
-        : liveDescription,
-    onUpdate: ({ editor }) => setLiveDescription(editor.getJSON()),
+    onUpdate: ({ editor }) => setLiveDescription(editor.getText()),
   });
 
   // Effect to update the task description when the debounced description changes
@@ -215,21 +209,11 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
     // If the edit slideover is closed, don't update the task description
     if (!open) return;
 
-    // Mutation to update the task description
-    setSavingDescription(true);
-    updateTaskDescription(
-      {
-        editorId: sessionData?.user.id ?? "",
-        boardId: panel.board_id,
-        panelId: panel.id,
-        taskId: task.id,
-        description: JSON.stringify(debouncedDescription),
-      },
-      {
-        onSuccess: () => setSavingDescription(false),
-        onSettled: () => void refetch(),
-      }
-    );
+    let timeout = setTimeout(() => {
+      void refetchBoardData();
+    }, 1000);
+
+    return () => clearTimeout(timeout);
   }, [debouncedDescription]);
 
   return (
@@ -516,7 +500,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                     Description
                                   </h2>
                                   <span className="text-sm text-gray-500">
-                                    {savingDescription
+                                    {isRefetching
                                       ? "Saving..."
                                       : `Last edited ${formatDate(
                                           task.updated_at
