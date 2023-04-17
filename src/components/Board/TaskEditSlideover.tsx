@@ -20,7 +20,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import ListItem from "@tiptap/extension-list-item";
 import TextStyle from "@tiptap/extension-text-style";
-import { HocuspocusProvider } from "@hocuspocus/provider";
+import { HocuspocusProvider, WebSocketStatus } from "@hocuspocus/provider";
 import Collaboration from "@tiptap/extension-collaboration";
 import { env } from "env.mjs";
 
@@ -179,6 +179,12 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
     const provider = new HocuspocusProvider({
       url: env.NEXT_PUBLIC_HOCUSPOCUS_URL,
       name: `task.${task.id}`,
+      onConnect: () => {
+        console.log("Connected to Hocuspocus");
+      },
+      onStatus: (status) => {
+        console.log("Hocuspocus status", status.status);
+      },
     });
 
     return provider;
