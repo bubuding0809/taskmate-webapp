@@ -1,6 +1,6 @@
 //Done by Jansonn Lim 2102990
 import { NextApiRequest, NextApiResponse } from "next";
-import { tnc } from "../../server/info/tnc.json";
+import { info } from "../../server/info/tnc.json";
 
 export default (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "GET") {
@@ -8,7 +8,7 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   try {
-    res.status(200).json({ message: tnc });
+    res.status(200).json({ message: info });
   } catch (err) {
     console.log("error is: ", err);
   }
