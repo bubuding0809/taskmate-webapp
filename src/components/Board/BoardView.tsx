@@ -114,7 +114,7 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
     const channel = pusher.subscribe("public-board-" + bid);
     const presenceChannel = pusher.subscribe("presence-board-" + bid);
 
-    // Bind callbacks to presence channel
+    // * Bind callbacks to presence channel
     presenceChannel.bind(
       "pusher:subscription_succeeded",
       (members: PusherMembersType) => {
@@ -155,14 +155,16 @@ const BoardView: React.FC<BoardViewProps> = ({ bid }) => {
       }
     );
 
-    // Bind callbacks to event update channel
+    // * Bind callbacks to event update channel
     channel.bind("pusher:subscription_error", () => {
       console.log("subscription error");
     });
+
     channel.bind(
       "update-event",
       (data: { timeStamp: number; sender: string }) => {
         // If the update event is not from the current user, refetch board and tasks
+        console.log(data.sender, sessionData?.user.id);
         if (data.sender !== sessionData!.user.id) {
           void refetchBoard();
           void refetchTasks();

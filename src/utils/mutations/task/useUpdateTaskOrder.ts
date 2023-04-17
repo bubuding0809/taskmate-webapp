@@ -96,6 +96,18 @@ const useUpdateTaskOrder = () => {
       queryClient.setQueryData(taskMapQueryKey, newTaskMapData);
       queryClient.setQueryData(boardQueryKey, newBoardData);
 
+      // Hack to make sure query is not refetched before the mutation is complete
+      setTimeout(() => {
+        Promise.all([
+          queryClient.cancelQueries({
+            queryKey: boardQueryKey,
+          }),
+          queryClient.cancelQueries({
+            queryKey: taskMapQueryKey,
+          }),
+        ]);
+      }, 1);
+
       return { boardQueryKey, oldBoardData, taskMapQueryKey, oldTaskMapData };
     },
     onError: (_error, _variables, ctx) => {
