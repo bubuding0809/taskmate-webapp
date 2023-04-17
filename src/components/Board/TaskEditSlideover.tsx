@@ -10,6 +10,7 @@ import {
   TagIcon,
   UserCircleIcon as UserCircleIconMini,
 } from "@heroicons/react/20/solid";
+import Divider from "../custom/Divider";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
 import { classNames, formatDate } from "@/utils/helper";
 import { useSession } from "next-auth/react";
@@ -501,23 +502,45 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                               </aside>
 
                               {/* Description */}
-                              <div className="divide-y py-3 xl:pb-0 xl:pt-6">
+                              <div className="py-3 xl:pb-0 xl:pt-6">
                                 <hgroup className="flex items-center space-x-2 pb-4">
                                   <h2 className="text-lg font-medium text-gray-900">
                                     Description
                                   </h2>
                                   <span className="text-sm text-gray-500">
-                                    {isRefetching
-                                      ? "Saving..."
-                                      : `Last edited ${formatDate(
-                                          task.updated_at
-                                        )}`}
+                                    {/* Show editor status */}
+                                    {(() => {
+                                      if (provider.isConnected) {
+                                        return isRefetching
+                                          ? "Saving..."
+                                          : `Last edited ${formatDate(
+                                              task.updated_at
+                                            )}`;
+                                      } else {
+                                        return "Connecting to editor...";
+                                      }
+                                    })()}
                                   </span>
                                 </hgroup>
-                                <EditorContent
-                                  editor={editor}
-                                  spellCheck={false}
-                                />
+                                <Divider />
+                                {/* Show editor if connected to the provider */}
+                                {provider.isConnected ? (
+                                  <EditorContent
+                                    editor={editor}
+                                    spellCheck={false}
+                                  />
+                                ) : (
+                                  // Show skeleton loader if not connected to the provider
+                                  <div className="mt-5 animate-pulse rounded-md bg-gray-100 p-4">
+                                    <div className="h-4 w-3/4 rounded bg-gray-200" />
+                                    <div className="mt-2 h-4 w-2/4 rounded bg-gray-200" />
+                                    <div className="mt-2 h-4 w-3/5 rounded bg-gray-200" />
+                                    <div className="mt-2 h-4 rounded bg-gray-200" />
+                                    <div className="mt-2 h-4 rounded bg-gray-200" />
+                                    <div className="mt-2 h-4 rounded bg-gray-200" />
+                                    <div className="mt-2 h-4 rounded bg-gray-200" />
+                                  </div>
+                                )}
                               </div>
                             </div>
 
