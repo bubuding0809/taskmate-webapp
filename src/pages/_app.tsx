@@ -8,7 +8,7 @@ import { SessionProvider } from "next-auth/react";
 import { api } from "../utils/api";
 
 import "../styles/globals.css";
-import "animate.css";
+// import "animate.css";
 import { ReactElement, ReactNode } from "react";
 import { NextPage } from "next";
 import { ToastContextProvider } from "@/utils/context/ToastContext";
