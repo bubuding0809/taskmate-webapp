@@ -98,7 +98,7 @@ const useUpdateTaskOrder = () => {
 
       // Hack to make sure query is not refetched before the mutation is complete
       setTimeout(() => {
-        Promise.all([
+        void Promise.all([
           queryClient.cancelQueries({
             queryKey: boardQueryKey,
           }),
