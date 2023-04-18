@@ -63,6 +63,7 @@ const formatDistanceToNow = (
   }
 };
 
+// TODO - To be replaced with real data
 const activity = [
   {
     id: 1,
@@ -429,7 +430,11 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
 
                               {/* Description Section, only rendered when slideover is open */}
                               {open && (
-                                <DescriptionEditor task={task} panel={panel} />
+                                <DescriptionEditor
+                                  task={task}
+                                  panel={panel}
+                                  innerClassName="py-3 xl:pb-0 xl:pt-6"
+                                />
                               )}
                             </div>
 
