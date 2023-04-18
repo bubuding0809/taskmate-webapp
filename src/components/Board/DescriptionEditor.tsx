@@ -1,18 +1,21 @@
-import { HocuspocusProvider } from "@hocuspocus/provider";
+import { useSession } from "next-auth/react";
+import { classNames, formatDate } from "@/utils/helper";
+import { env } from "env.mjs";
 import { Divider, ListItem } from "@mui/material";
+import { RouterOutputs, api } from "@/utils/api";
+import React, { useEffect, useState } from "react";
+import useDebouceQuery from "@/utils/hooks/useDebounceQuery";
+import { HocuspocusProvider } from "@hocuspocus/provider";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 import Collaboration from "@tiptap/extension-collaboration";
 import Color from "@tiptap/extension-color";
 import TextStyle from "@tiptap/extension-text-style";
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import React, { useEffect, useState } from "react";
-import { env } from "env.mjs";
-import { RouterOutputs, api } from "@/utils/api";
-import { Optional } from "@/utils/types";
-import useDebouceQuery from "@/utils/hooks/useDebounceQuery";
-import { classNames, formatDate } from "@/utils/helper";
-import { useSession } from "next-auth/react";
-import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
+import Highlight from "@tiptap/extension-highlight";
+import Placeholder from "@tiptap/extension-placeholder";
+
+import type { Optional } from "@/utils/types";
 
 type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
@@ -68,7 +71,6 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
   // Rich text editor for the task description
   const editor = useEditor({
     extensions: [
-      Color.configure({ types: [TextStyle.name, ListItem.name] }),
       StarterKit.configure({
         // ... Configure the StarterKit as you wish
         history: false,
@@ -81,6 +83,18 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
         user: {
           name: sessionData?.user.name,
           color: caretColors[Math.floor(Math.random() * caretColors.length)],
+        },
+      }),
+      Color.configure({ types: [TextStyle.name, ListItem.name] }),
+      Highlight.configure({
+        multicolor: true,
+      }),
+      Placeholder.configure({
+        placeholder: ({ node }) => {
+          if (node.type.name === "heading") {
+            return "Add a title...";
+          }
+          return "Write something...";
         },
       }),
     ],
