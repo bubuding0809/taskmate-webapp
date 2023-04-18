@@ -10,20 +10,9 @@ import {
   TagIcon,
   UserCircleIcon as UserCircleIconMini,
 } from "@heroicons/react/20/solid";
-import Divider from "../custom/Divider";
+import DescriptionEditor from "./DescriptionEditor";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
 import { classNames, formatDate } from "@/utils/helper";
-import { useSession } from "next-auth/react";
-import useDebouceQuery from "@/utils/hooks/useDebounceQuery";
-import { api } from "@/utils/api";
-import { Color } from "@tiptap/extension-color";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import ListItem from "@tiptap/extension-list-item";
-import TextStyle from "@tiptap/extension-text-style";
-import { HocuspocusProvider } from "@hocuspocus/provider";
-import Collaboration from "@tiptap/extension-collaboration";
-import { env } from "env.mjs";
 
 import type { RouterOutputs } from "@/utils/api";
 import type { Optional } from "@/utils/types";
@@ -158,71 +147,8 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
   task,
   panel,
 }) => {
-  const { data: sessionData } = useSession();
-
-  // TODO - temporary refetch of board data, to be moved to custom hook
-  const { refetch: refetchBoardData, isRefetching } =
-    api.board.getBoardById.useQuery({
-      boardId: panel.board_id,
-    });
-
   // Mutation to toggle task completion
   const { mutate: toggleTask } = useToggleTaskStatus();
-
-  // State to hold the live and debounced task description state
-  const [_, setLiveDescription, debouncedDescription] = useDebouceQuery(
-    "",
-    500
-  );
-
-  // State to hold the hocuspocus provider, setProvider is not used
-  const [provider, setProvider] = useState(() => {
-    const provider = new HocuspocusProvider({
-      url: env.NEXT_PUBLIC_HOCUSPOCUS_URL,
-      name: `task.${task.id}`,
-      onConnect: () => {
-        console.log("Connected to Hocuspocus");
-      },
-      onStatus: (status) => {
-        console.log("Hocuspocus status", status.status);
-      },
-    });
-
-    return provider;
-  });
-
-  // Rich text editor for the task description
-  const editor = useEditor({
-    extensions: [
-      Color.configure({ types: [TextStyle.name, ListItem.name] }),
-      StarterKit.configure({
-        // ... Configure the StarterKit as you wish
-        history: false,
-      }),
-      Collaboration.configure({
-        document: provider.document,
-      }),
-    ],
-    editorProps: {
-      attributes: {
-        class:
-          "prose max-w-none p-2 hover:outline outline-2 hover:outline-indigo-400 rounded mt-5 focus:outline-indigo-600",
-      },
-    },
-    onUpdate: ({ editor }) => setLiveDescription(editor.getText()),
-  });
-
-  // Effect to update the task description when the debounced description changes
-  useEffect(() => {
-    // If the edit slideover is closed, don't update the task description
-    if (!open) return;
-
-    const timeout = setTimeout(() => {
-      void refetchBoardData();
-    }, 1000);
-
-    return () => clearTimeout(timeout);
-  }, [debouncedDescription]);
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -501,47 +427,10 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                 </div>
                               </aside>
 
-                              {/* Description */}
-                              <div className="py-3 xl:pb-0 xl:pt-6">
-                                <hgroup className="flex items-center space-x-2 pb-4">
-                                  <h2 className="text-lg font-medium text-gray-900">
-                                    Description
-                                  </h2>
-                                  <span className="text-sm text-gray-500">
-                                    {/* Show editor status */}
-                                    {(() => {
-                                      if (provider.isConnected) {
-                                        return isRefetching
-                                          ? "Saving..."
-                                          : `Last edited ${formatDate(
-                                              task.updated_at
-                                            )}`;
-                                      } else {
-                                        return "Connecting to editor...";
-                                      }
-                                    })()}
-                                  </span>
-                                </hgroup>
-                                <Divider />
-                                {/* Show editor if connected to the provider */}
-                                {provider.isConnected ? (
-                                  <EditorContent
-                                    editor={editor}
-                                    spellCheck={false}
-                                  />
-                                ) : (
-                                  // Show skeleton loader if not connected to the provider
-                                  <div className="mt-5 animate-pulse rounded-md bg-gray-100 p-4">
-                                    <div className="h-4 w-3/4 rounded bg-gray-200" />
-                                    <div className="mt-2 h-4 w-2/4 rounded bg-gray-200" />
-                                    <div className="mt-2 h-4 w-3/5 rounded bg-gray-200" />
-                                    <div className="mt-2 h-4 rounded bg-gray-200" />
-                                    <div className="mt-2 h-4 rounded bg-gray-200" />
-                                    <div className="mt-2 h-4 rounded bg-gray-200" />
-                                    <div className="mt-2 h-4 rounded bg-gray-200" />
-                                  </div>
-                                )}
-                              </div>
+                              {/* Description Section, only rendered when slideover is open */}
+                              {open && (
+                                <DescriptionEditor task={task} panel={panel} />
+                              )}
                             </div>
 
                             {/* Activity section */}
