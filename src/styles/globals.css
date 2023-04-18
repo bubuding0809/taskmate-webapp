@@ -55,6 +55,15 @@ body {
   /* Firefox */
 }
 
+/* Display a Placeholder only for the first line in an empty editor */
+.ProseMirror .is-empty::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
 /* Give a remote user a caret */
 .collaboration-cursor__caret {
   border-left: 1px solid #0d0d0d;
