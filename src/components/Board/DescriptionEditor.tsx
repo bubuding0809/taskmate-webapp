@@ -11,13 +11,24 @@ import { RouterOutputs, api } from "@/utils/api";
 import { Optional } from "@/utils/types";
 import useDebouceQuery from "@/utils/hooks/useDebounceQuery";
 import { classNames, formatDate } from "@/utils/helper";
-import { Doc } from "yjs";
 import { useSession } from "next-auth/react";
+import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 
 type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
 type Task = Optional<Panel["Task"][number], "subtasks">;
 
+const caretColors = [
+  "#958DF1",
+  "#F98181",
+  "#F59E0B",
+  "#FBBC88",
+  "#FAF594",
+  "#70CFF8",
+  "#94FADB",
+  "#B9F18D",
+  "#F9A8D4",
+];
 interface DescriptionEditorProps {
   task: Task;
   panel: Panel;
@@ -63,7 +74,14 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
         history: false,
       }),
       Collaboration.configure({
-        document: hocusProvider ? hocusProvider.document : new Doc(),
+        document: hocusProvider.document,
+      }),
+      CollaborationCursor.configure({
+        provider: hocusProvider,
+        user: {
+          name: sessionData?.user.name,
+          color: caretColors[Math.floor(Math.random() * caretColors.length)],
+        },
       }),
     ],
     editorProps: {
