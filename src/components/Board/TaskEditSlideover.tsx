@@ -226,8 +226,8 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                       <div className="py-8">
                         <div className="max-w-3xl px-4 sm:px-6 lg:px-8 xl:grid xl:max-w-5xl xl:grid-cols-3">
                           <div className="xl:col-span-2 xl:border-r xl:border-gray-200 xl:pr-8">
+                            {/* Title and meta info*/}
                             <div>
-                              {/* Title and meta info*/}
                               <div className="md:flex md:items-center md:justify-between md:space-x-4 xl:pb-6">
                                 <div>
                                   <h1 className="text-2xl font-bold text-gray-900">
@@ -427,30 +427,30 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                   </div>
                                 </div>
                               </aside>
-
-                              {/* Description Section, only rendered when slideover is open */}
-                              {open && (
-                                <DescriptionEditor
-                                  task={task}
-                                  panel={panel}
-                                  innerClassName="py-3 xl:pb-0 xl:pt-6"
-                                />
-                              )}
                             </div>
+
+                            {/* Description Section, only rendered when slideover is open */}
+                            {open && (
+                              <DescriptionEditor
+                                task={task}
+                                panel={panel}
+                                innerClassName="mt-4 xl:mt-6"
+                              />
+                            )}
 
                             {/* Activity section */}
                             <section
                               aria-labelledby="activity-title"
                               className="mt-8 xl:mt-10"
                             >
-                              <div className="divide-y divide-gray-200">
+                              <div className="">
                                 <h2
                                   id="activity-title"
-                                  className="pb-4 text-lg font-medium text-gray-900"
+                                  className="text-lg font-medium text-gray-900"
                                 >
                                   Activity
                                 </h2>
-                                <div className="pt-6">
+                                <div className="pt-4">
                                   {/* Activity feed*/}
                                   <div className="flow-root">
                                     <ul role="list" className="-mb-8">
