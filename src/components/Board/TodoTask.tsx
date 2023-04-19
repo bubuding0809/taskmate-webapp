@@ -84,19 +84,20 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
   // State to handle edit task slideover
   const [openEditTaskSlideover, setOpenEditTaskSlideover] = useState(false);
 
-  const descriptonText = useMemo(
-    () =>
-      generateText(task.task_description as Prisma.JsonObject, [
-        StarterKit,
-        Collaboration,
-        CollaborationCursor,
-        Color,
-        Highlight,
-        Placeholder,
-        Typography,
-      ]),
-    [task.task_description]
-  );
+  // Generate text from task description json
+  const descriptonText = useMemo(() => {
+    if (!task.task_description) return "";
+    return generateText(task.task_description as Prisma.JsonObject, [
+      StarterKit,
+      Collaboration,
+      CollaborationCursor,
+      Color,
+      Highlight,
+      Placeholder,
+      Typography,
+    ]);
+  }, [task.task_description]);
+
   return (
     <>
       <div
@@ -212,7 +213,7 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
           {/* Task details: description, time, etc... */}
           <div ref={parent} className="ml-6 flex flex-col items-start gap-1">
             {/* details */}
-            {task.task_details && (
+            {task.task_description && (
               <Tooltip
                 title="Details"
                 placement="right-start"

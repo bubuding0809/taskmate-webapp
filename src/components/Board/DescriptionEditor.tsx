@@ -72,6 +72,21 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
     extensions: [
       StarterKit.configure({
         // ... Configure the StarterKit as you wish
+        paragraph: {
+          HTMLAttributes: {
+            class: "my-4",
+          },
+        },
+        orderedList: {
+          HTMLAttributes: {
+            class: "my-2",
+          },
+        },
+        bulletList: {
+          HTMLAttributes: {
+            class: "my-2",
+          },
+        },
         history: false,
       }),
       Collaboration.configure({
