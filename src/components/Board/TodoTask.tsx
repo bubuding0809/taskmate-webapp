@@ -15,13 +15,14 @@ import { BpCheckBox } from "../custom/BpCheckBox";
 import { classNames, formatDate } from "@/utils/helper";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
 import useRemoveAssignee from "@/utils/mutations/task/useRemoveAssignee";
+import { generateText } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 import Highlight from "@tiptap/extension-highlight";
 import Typography from "@tiptap/extension-typography";
-import { generateText } from "@tiptap/react";
+import Color from "@tiptap/extension-color";
 
 import type {
   DraggableProvided,
@@ -29,7 +30,6 @@ import type {
 } from "react-beautiful-dnd";
 import type { RouterOutputs } from "@/utils/api";
 import type { Optional } from "@/utils/types";
-import Color from "@tiptap/extension-color";
 
 type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
@@ -86,8 +86,18 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
 
   // Generate text from task description json
   const descriptonText = useMemo(() => {
-    if (!task.task_description) return "";
-    return generateText(task.task_description as Prisma.JsonObject, [
+    // Make sure task description is json
+    if (
+      typeof task.task_description === "string" ||
+      typeof task.task_description === "number" ||
+      typeof task.task_description === "boolean" ||
+      task.task_description === null
+    ) {
+      return "";
+    }
+
+    // Else, generate text from json
+    return generateText(task.task_description, [
       StarterKit,
       Collaboration,
       CollaborationCursor,
