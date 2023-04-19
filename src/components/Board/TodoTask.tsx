@@ -1,11 +1,11 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
 import { useToastContext } from "@/utils/context/ToastContext";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import { Chip, Tooltip } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
-import { User } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import { PencilIcon, UserMinusIcon } from "@heroicons/react/20/solid";
 import autoAnimate from "@formkit/auto-animate";
 import TaskEditSlideover from "./TaskEditSlideover";
@@ -22,6 +22,8 @@ import type {
 } from "react-beautiful-dnd";
 import type { RouterOutputs } from "@/utils/api";
 import type { Optional } from "@/utils/types";
+import { generateText } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
 type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
@@ -76,6 +78,11 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
   // State to handle edit task slideover
   const [openEditTaskSlideover, setOpenEditTaskSlideover] = useState(false);
 
+  const descriptonText = useMemo(
+    () =>
+      generateText(task.task_description as Prisma.JsonObject, [StarterKit]),
+    [task.task_description]
+  );
   return (
     <>
       <div
@@ -212,7 +219,7 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
                     });
                   }}
                 >
-                  {task.task_details}
+                  {descriptonText}
                 </p>
               </Tooltip>
             )}
