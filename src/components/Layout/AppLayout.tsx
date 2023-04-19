@@ -201,7 +201,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
   // Bind key bindings to the document on mount
   useEffect(() => {
     // bind key down event to document
-    const keyShortcuts = (e: KeyboardEvent) => {
+    const onKeyDown = (e: KeyboardEvent) => {
       // if user presses cmd + b, toggle the sidebar
       if (e.metaKey && !e.shiftKey) {
         switch (e.key) {
@@ -229,10 +229,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, title }) => {
     };
 
     // bind key down event to document
-    window.document.addEventListener("keydown", keyShortcuts);
+    window.document.addEventListener("keydown", onKeyDown);
 
     // unbind key down event to document on unmount
-    return () => window.document.removeEventListener("keydown", keyShortcuts);
+    return () => window.document.removeEventListener("keydown", onKeyDown);
   }, []);
 
   // TODO - To be extracted to a separate file and optimized
