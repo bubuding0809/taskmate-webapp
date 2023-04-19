@@ -42,7 +42,14 @@ module.exports = {
       },
       boxShadow: {
         "solid-small": "3px 3px 0.5px #94a3b8",
-        "solid-medium": "5px 5px 0.5px #94a3b8",
+        "solid-medium": "4px 4px 0.5px #94a3b8",
+        "solid-large": "5px 5px 0.5px #94a3b8",
+        "solid-xlarge": "6px 6px 0.5px #94a3b8",
+        "solid-2xlarge": "7px 7px 0.5px #94a3b8",
+        "solid-3xlarge": "8px 8px 0.5px #94a3b8",
+        "solid-4xlarge": "9px 9px 0.5px #94a3b8",
+        "solid-5xlarge": "10px 10px 0.5px #94a3b8",
+        "solid-6xlarge": "11px 11px 0.5px #94a3b8",
       },
       animation: {
         fade: "fade 5s ",

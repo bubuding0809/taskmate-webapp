@@ -440,223 +440,213 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
 
                             {/* Activity section */}
                             <section
-                              aria-labelledby="activity-title"
-                              className="mt-8 xl:mt-10"
+                              aria-labelledby="task-activities"
+                              className="group mt-8 rounded-lg bg-white shadow focus-within:shadow-solid-medium xl:mt-10"
                             >
-                              <div className="">
-                                <h2
-                                  id="activity-title"
-                                  className="text-lg font-medium text-gray-900"
-                                >
-                                  Activity
-                                </h2>
-                                <div className="pt-4">
-                                  {/* Activity feed*/}
-                                  <div className="flow-root">
-                                    <ul role="list" className="-mb-8">
-                                      {activity.map((item, itemIdx) => (
-                                        <li key={item.id}>
-                                          <div className="relative pb-8">
-                                            {itemIdx !== activity.length - 1 ? (
-                                              <span
-                                                className="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200"
-                                                aria-hidden="true"
-                                              />
-                                            ) : null}
-                                            <div className="relative flex items-start space-x-3">
-                                              {item.type === "comment" ? (
-                                                <>
-                                                  <div className="relative">
-                                                    <img
-                                                      className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white"
-                                                      src={item.imageUrl}
-                                                      alt=""
-                                                    />
+                              <h2
+                                id="task-activities"
+                                className="rounded-lg rounded-b-none border-2 border-b-0 border-gray-800 bg-gray-800 px-2 py-1 text-lg font-medium text-white group-focus-within:border-indigo-700 group-focus-within:bg-indigo-700"
+                              >
+                                Activity
+                              </h2>
+                              <div className="rounded-lg rounded-t-none border-2 border-gray-800 p-4 group-focus-within:border-indigo-700">
+                                {/* Activity feed*/}
+                                <div className="flow-root">
+                                  <ul role="list" className="-mb-8">
+                                    {activity.map((item, itemIdx) => (
+                                      <li key={item.id}>
+                                        <div className="relative pb-8">
+                                          {itemIdx !== activity.length - 1 ? (
+                                            <span
+                                              className="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200"
+                                              aria-hidden="true"
+                                            />
+                                          ) : null}
+                                          <div className="relative flex items-start space-x-3">
+                                            {item.type === "comment" ? (
+                                              <>
+                                                <div className="relative">
+                                                  <img
+                                                    className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white"
+                                                    src={item.imageUrl}
+                                                    alt=""
+                                                  />
 
-                                                    <span className="absolute -bottom-0.5 -right-1 rounded-tl bg-white px-0.5 py-px">
-                                                      <ChatBubbleLeftEllipsisIcon
-                                                        className="h-5 w-5 text-gray-400"
+                                                  <span className="absolute -bottom-0.5 -right-1 rounded-tl bg-white px-0.5 py-px">
+                                                    <ChatBubbleLeftEllipsisIcon
+                                                      className="h-5 w-5 text-gray-400"
+                                                      aria-hidden="true"
+                                                    />
+                                                  </span>
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                  <div>
+                                                    <div className="text-sm">
+                                                      <a
+                                                        href={item.person.href}
+                                                        className="font-medium text-gray-900"
+                                                      >
+                                                        {item.person.name}
+                                                      </a>
+                                                    </div>
+                                                    <p className="mt-0.5 text-sm text-gray-500">
+                                                      Commented {item.date}
+                                                    </p>
+                                                  </div>
+                                                  <div className="mt-2 text-sm text-gray-700">
+                                                    <p>{item.comment}</p>
+                                                  </div>
+                                                </div>
+                                              </>
+                                            ) : item.type === "assignment" ? (
+                                              <>
+                                                <div>
+                                                  <div className="relative px-1">
+                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 ring-8 ring-white">
+                                                      <UserCircleIconMini
+                                                        className="h-5 w-5 text-gray-500"
                                                         aria-hidden="true"
                                                       />
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                                <div className="min-w-0 flex-1 py-1.5">
+                                                  <div className="text-sm text-gray-500">
+                                                    <a
+                                                      href={item.person.href}
+                                                      className="font-medium text-gray-900"
+                                                    >
+                                                      {item.person.name}
+                                                    </a>{" "}
+                                                    assigned{" "}
+                                                    <a
+                                                      href={item.assigned?.href}
+                                                      className="font-medium text-gray-900"
+                                                    >
+                                                      {item.assigned?.name}
+                                                    </a>{" "}
+                                                    <span className="whitespace-nowrap">
+                                                      {item.date}
                                                     </span>
                                                   </div>
-                                                  <div className="min-w-0 flex-1">
-                                                    <div>
-                                                      <div className="text-sm">
-                                                        <a
-                                                          href={
-                                                            item.person.href
-                                                          }
-                                                          className="font-medium text-gray-900"
-                                                        >
-                                                          {item.person.name}
-                                                        </a>
-                                                      </div>
-                                                      <p className="mt-0.5 text-sm text-gray-500">
-                                                        Commented {item.date}
-                                                      </p>
-                                                    </div>
-                                                    <div className="mt-2 text-sm text-gray-700">
-                                                      <p>{item.comment}</p>
+                                                </div>
+                                              </>
+                                            ) : (
+                                              <>
+                                                <div>
+                                                  <div className="relative px-1">
+                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 ring-8 ring-white">
+                                                      <TagIcon
+                                                        className="h-5 w-5 text-gray-500"
+                                                        aria-hidden="true"
+                                                      />
                                                     </div>
                                                   </div>
-                                                </>
-                                              ) : item.type === "assignment" ? (
-                                                <>
-                                                  <div>
-                                                    <div className="relative px-1">
-                                                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 ring-8 ring-white">
-                                                        <UserCircleIconMini
-                                                          className="h-5 w-5 text-gray-500"
-                                                          aria-hidden="true"
-                                                        />
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                  <div className="min-w-0 flex-1 py-1.5">
-                                                    <div className="text-sm text-gray-500">
+                                                </div>
+                                                <div className="min-w-0 flex-1 py-0">
+                                                  <div className="text-sm leading-8 text-gray-500">
+                                                    <span className="mr-0.5">
                                                       <a
                                                         href={item.person.href}
                                                         className="font-medium text-gray-900"
                                                       >
                                                         {item.person.name}
                                                       </a>{" "}
-                                                      assigned{" "}
-                                                      <a
-                                                        href={
-                                                          item.assigned?.href
-                                                        }
-                                                        className="font-medium text-gray-900"
-                                                      >
-                                                        {item.assigned?.name}
-                                                      </a>{" "}
-                                                      <span className="whitespace-nowrap">
-                                                        {item.date}
-                                                      </span>
-                                                    </div>
-                                                  </div>
-                                                </>
-                                              ) : (
-                                                <>
-                                                  <div>
-                                                    <div className="relative px-1">
-                                                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 ring-8 ring-white">
-                                                        <TagIcon
-                                                          className="h-5 w-5 text-gray-500"
-                                                          aria-hidden="true"
-                                                        />
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                  <div className="min-w-0 flex-1 py-0">
-                                                    <div className="text-sm leading-8 text-gray-500">
-                                                      <span className="mr-0.5">
-                                                        <a
-                                                          href={
-                                                            item.person.href
-                                                          }
-                                                          className="font-medium text-gray-900"
+                                                      added tags
+                                                    </span>{" "}
+                                                    <span className="mr-0.5">
+                                                      {item.tags?.map((tag) => (
+                                                        <Fragment
+                                                          key={tag.name}
                                                         >
-                                                          {item.person.name}
-                                                        </a>{" "}
-                                                        added tags
-                                                      </span>{" "}
-                                                      <span className="mr-0.5">
-                                                        {item.tags?.map(
-                                                          (tag) => (
-                                                            <Fragment
-                                                              key={tag.name}
-                                                            >
-                                                              <a
-                                                                href={tag.href}
-                                                                className="relative inline-flex items-center rounded-full px-2.5 py-1 text-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                                                              >
-                                                                <span className="absolute flex flex-shrink-0 items-center justify-center">
-                                                                  <span
-                                                                    className={classNames(
-                                                                      tag.color,
-                                                                      "h-1.5 w-1.5 rounded-full"
-                                                                    )}
-                                                                    aria-hidden="true"
-                                                                  />
-                                                                </span>
-                                                                <span className="ml-3 font-semibold text-gray-900">
-                                                                  {tag.name}
-                                                                </span>
-                                                              </a>{" "}
-                                                            </Fragment>
-                                                          )
-                                                        )}
-                                                      </span>
-                                                      <span className="whitespace-nowrap">
-                                                        {item.date}
-                                                      </span>
-                                                    </div>
+                                                          <a
+                                                            href={tag.href}
+                                                            className="relative inline-flex items-center rounded-full px-2.5 py-1 text-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                                                          >
+                                                            <span className="absolute flex flex-shrink-0 items-center justify-center">
+                                                              <span
+                                                                className={classNames(
+                                                                  tag.color,
+                                                                  "h-1.5 w-1.5 rounded-full"
+                                                                )}
+                                                                aria-hidden="true"
+                                                              />
+                                                            </span>
+                                                            <span className="ml-3 font-semibold text-gray-900">
+                                                              {tag.name}
+                                                            </span>
+                                                          </a>{" "}
+                                                        </Fragment>
+                                                      ))}
+                                                    </span>
+                                                    <span className="whitespace-nowrap">
+                                                      {item.date}
+                                                    </span>
                                                   </div>
-                                                </>
-                                              )}
-                                            </div>
+                                                </div>
+                                              </>
+                                            )}
                                           </div>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                  <div className="mt-6">
-                                    <div className="flex space-x-3">
-                                      <div className="flex-shrink-0">
-                                        <div className="relative">
-                                          <img
-                                            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white"
-                                            src="https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80"
-                                            alt=""
-                                          />
+                                        </div>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div className="mt-6">
+                                  <div className="flex space-x-3">
+                                    <div className="flex-shrink-0">
+                                      <div className="relative">
+                                        <img
+                                          className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white"
+                                          src="https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80"
+                                          alt=""
+                                        />
 
-                                          <span className="absolute -bottom-0.5 -right-1 rounded-tl bg-white px-0.5 py-px">
-                                            <ChatBubbleLeftEllipsisIcon
-                                              className="h-5 w-5 text-gray-400"
+                                        <span className="absolute -bottom-0.5 -right-1 rounded-tl bg-white px-0.5 py-px">
+                                          <ChatBubbleLeftEllipsisIcon
+                                            className="h-5 w-5 text-gray-400"
+                                            aria-hidden="true"
+                                          />
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <form action="#">
+                                        <div>
+                                          <label
+                                            htmlFor="comment"
+                                            className="sr-only"
+                                          >
+                                            Comment
+                                          </label>
+                                          <textarea
+                                            id="comment"
+                                            name="comment"
+                                            rows={3}
+                                            className="block w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:py-1.5 sm:text-sm sm:leading-6"
+                                            placeholder="Leave a comment"
+                                            defaultValue={""}
+                                          />
+                                        </div>
+                                        <div className="mt-6 flex items-center justify-end space-x-4">
+                                          <button
+                                            type="button"
+                                            className="inline-flex justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                                          >
+                                            <CheckCircleIcon
+                                              className="-ml-0.5 h-5 w-5 text-green-500"
                                               aria-hidden="true"
                                             />
-                                          </span>
+                                            Close issue
+                                          </button>
+                                          <button
+                                            type="submit"
+                                            className="inline-flex items-center justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 group-focus-within:bg-indigo-700"
+                                          >
+                                            Comment
+                                          </button>
                                         </div>
-                                      </div>
-                                      <div className="min-w-0 flex-1">
-                                        <form action="#">
-                                          <div>
-                                            <label
-                                              htmlFor="comment"
-                                              className="sr-only"
-                                            >
-                                              Comment
-                                            </label>
-                                            <textarea
-                                              id="comment"
-                                              name="comment"
-                                              rows={3}
-                                              className="block w-full rounded-md border-0 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-gray-900 sm:py-1.5 sm:text-sm sm:leading-6"
-                                              placeholder="Leave a comment"
-                                              defaultValue={""}
-                                            />
-                                          </div>
-                                          <div className="mt-6 flex items-center justify-end space-x-4">
-                                            <button
-                                              type="button"
-                                              className="inline-flex justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                                            >
-                                              <CheckCircleIcon
-                                                className="-ml-0.5 h-5 w-5 text-green-500"
-                                                aria-hidden="true"
-                                              />
-                                              Close issue
-                                            </button>
-                                            <button
-                                              type="submit"
-                                              className="inline-flex items-center justify-center rounded-md bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
-                                            >
-                                              Comment
-                                            </button>
-                                          </div>
-                                        </form>
-                                      </div>
+                                      </form>
                                     </div>
                                   </div>
                                 </div>

@@ -14,6 +14,7 @@ import Color from "@tiptap/extension-color";
 import TextStyle from "@tiptap/extension-text-style";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
+import Typography from "@tiptap/extension-typography";
 
 import type { Optional } from "@/utils/types";
 
@@ -58,14 +59,12 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
     });
 
   // State to hold the hocuspocus provider, setProvider is not used
-  const [hocusProvider] = useState(() => {
-    const provider = new HocuspocusProvider({
+  const [hocusProvider, setHocusProvider] = useState(() => {
+    return new HocuspocusProvider({
       url: env.NEXT_PUBLIC_HOCUSPOCUS_URL,
       name: `task.${task.id}`,
       token: sessionData?.user.id,
     });
-
-    return provider;
   });
 
   // Rich text editor for the task description
@@ -97,22 +96,16 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
           return "Write something...";
         },
       }),
+      Typography,
     ],
     editorProps: {
       attributes: {
         class:
-          "prose max-w-none p-2 hover:outline outline-2 hover:outline-indigo-400 rounded mt-5 focus:outline-indigo-600",
+          "prose max-w-none p-4 focus:outline-none border-2 border-gray-800 rounded-lg rounded-tl-none focus:bg-gray-50 focus:border-indigo-700 bg-white shadow focus:shadow-solid-medium",
       },
     },
     onUpdate: ({ editor }) => setLiveDescription(editor.getText()),
   });
-
-  // Make sure to destroy the provider when the component unmounts
-  useEffect(() => {
-    return () => {
-      hocusProvider.destroy();
-    };
-  }, []);
 
   // Effect to update the task description when the debounced description changes
   useEffect(() => {
@@ -124,9 +117,11 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
   }, [debouncedDescription]);
 
   return (
-    <div className={classNames(innerClassName)}>
-      <hgroup className="flex items-center space-x-2 pb-4">
-        <h2 className="text-lg font-medium text-gray-900">Description</h2>
+    <div className={classNames(innerClassName, "group")}>
+      <hgroup className="flex w-max items-center space-x-2">
+        <h2 className="rounded-lg rounded-b-none border-2 border-b-0 border-gray-800 bg-gray-800 py-1 px-2 text-lg font-medium text-white group-focus-within:border-indigo-700 group-focus-within:bg-indigo-700">
+          Description
+        </h2>
         <span className="text-sm text-gray-500">
           {/* Show editor status */}
           {(() => {
@@ -140,23 +135,29 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
           })()}
         </span>
       </hgroup>
-      <Divider />
+      {/* Show skeleton loader before provider is connected */}
       {hocusProvider.status === "connected" ? (
         <EditorContent editor={editor} spellCheck={false} />
       ) : (
-        // Show skeleton loader if not connected to the provider
-        <div className="mt-5 animate-pulse rounded-md bg-gray-100 p-4">
-          <div className="h-4 w-3/4 rounded bg-gray-200" />
-          <div className="mt-2 h-4 w-2/4 rounded bg-gray-200" />
-          <div className="mt-2 h-4 w-3/5 rounded bg-gray-200" />
-          <div className="mt-2 h-4 rounded bg-gray-200" />
-          <div className="mt-2 h-4 rounded bg-gray-200" />
-          <div className="mt-2 h-4 rounded bg-gray-200" />
-          <div className="mt-2 h-4 rounded bg-gray-200" />
-        </div>
+        <EditorSkeleton />
       )}
     </div>
   );
 };
 
+const EditorSkeleton: React.FC = () => {
+  return (
+    <div className="rounded-md rounded-tl-none border-2 border-gray-800 bg-gray-100 p-4">
+      <div className="animate-pulse">
+        <div className="h-4 w-3/4 rounded bg-gray-200" />
+        <div className="mt-2 h-4 w-2/4 rounded bg-gray-200" />
+        <div className="mt-2 h-4 w-3/5 rounded bg-gray-200" />
+        <div className="mt-2 h-4 rounded bg-gray-200" />
+        <div className="mt-2 h-4 rounded bg-gray-200" />
+        <div className="mt-2 h-4 rounded bg-gray-200" />
+        <div className="mt-2 h-4 rounded bg-gray-200" />
+      </div>
+    </div>
+  );
+};
 export default DescriptionEditor;
