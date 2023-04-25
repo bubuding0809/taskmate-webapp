@@ -16,8 +16,8 @@ import useClickAway from "@/utils/hooks/useClickAway";
 import { useSession } from "next-auth/react";
 import ConfirmationModal from "@/components/modal/ConfirmationModal";
 import BoardDropDownMenu from "@/components/layout/BoardDropDownMenu";
-import CircularProgressWithLabel from "../custom/CircularProgressWithLabel";
-import UserModal from "../modal/UserModal";
+import CircularProgressWithLabel from "@/components/custom/CircularProgressWithLabel";
+import UserModal from "@/components/modal/UserModal";
 
 import type { Board, Board_Collaborator, User } from "@prisma/client";
 import type {
