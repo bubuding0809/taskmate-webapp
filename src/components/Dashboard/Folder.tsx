@@ -1,12 +1,8 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
 import React, { useEffect, useRef, useState } from "react";
-import FolderDropDownMenu from "../layout/FolderDropDownMenu";
-import Board from "./Board";
 
-import type { FolderWithBoards } from "server/api/routers/folder";
 import Divider from "../custom/Divider";
-import ConfirmationModal from "../modal/ConfirmationModal";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import useRenameFolder from "@/utils/mutations/useRenameFolder";
 import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
@@ -18,6 +14,11 @@ import { Save } from "@mui/icons-material";
 import { nanoid } from "nanoid";
 import { classNames } from "@/utils/helper";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import ConfirmationModal from "@/components/modal/ConfirmationModal";
+import FolderDropDownMenu from "@/components/layout/FolderDropDownMenu";
+import Board from "@/components/dashboard/Board";
+
+import type { FolderWithBoards } from "server/api/routers/folder";
 
 interface FolderProps {
   folderItem: FolderWithBoards;
