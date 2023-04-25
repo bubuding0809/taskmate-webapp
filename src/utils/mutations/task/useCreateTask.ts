@@ -1,11 +1,9 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
 import { handlePusherUpdate } from "@/utils/pusher";
-import { useQueryClient } from "@tanstack/react-query";
-import { getQueryKey } from "@trpc/react-query";
-import _ from "lodash";
 import { useSession } from "next-auth/react";
 import { api } from "utils/api";
+import _ from "lodash";
 
 const useCreateTask = () => {
   const utils = api.useContext();
@@ -27,19 +25,6 @@ const useCreateTask = () => {
         taskAssignees,
         creatorId,
       } = task;
-
-      // Create query key for the board query
-      const boardQueryKey = getQueryKey(
-        api.board.getBoardById,
-        { boardId },
-        "query"
-      );
-
-      const taskMapQueryKey = getQueryKey(
-        api.board.getTasksMapByBoardId,
-        { boardId },
-        "query"
-      );
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       utils.board.getBoardById.cancel({ boardId });
