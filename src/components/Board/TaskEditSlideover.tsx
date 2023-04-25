@@ -12,8 +12,8 @@ import {
   UserMinusIcon,
   XMarkIcon,
 } from "@heroicons/react/20/solid";
-import UserModal from "../modal/UserModal";
-import DescriptionEditor from "./DescriptionEditor";
+import UserModal from "@/components/Modal/UserModal";
+import DescriptionEditor from "@/components/Board/DescriptionEditor";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
 import { classNames } from "@/utils/helper";
 
@@ -21,7 +21,7 @@ import { RouterOutputs, api } from "@/utils/api";
 import type { Optional } from "@/utils/types";
 import type { User } from "@prisma/client";
 import useRemoveAssignee from "@/utils/mutations/task/useRemoveAssignee";
-import AssigneeSelectPopover from "./AssigneeSelectPopover";
+import AssigneeSelectPopover from "@/components/Board/AssigneeSelectPopover";
 
 type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];

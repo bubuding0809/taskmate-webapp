@@ -13,7 +13,7 @@ import useUpdateBoardThumbnail from "@/utils/mutations/board/useUpdateBoardThumb
 import useUpdateBoardTitle from "@/utils/mutations/board/useUpdateBoardTitle";
 import { api } from "@/utils/api";
 import { classNames } from "@/utils/helper";
-import UserModal from "@/components/Modals/UserModal";
+import UserModal from "@/components/Modal/UserModal";
 import UserSearchPopover from "@/components/Dashboard/UserSearchPopover";
 
 import type { User } from "@prisma/client";

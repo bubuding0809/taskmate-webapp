@@ -27,7 +27,7 @@ import { User } from "@prisma/client";
 import { Tooltip } from "@mui/material";
 import UserSearchPopover from "../Dashboard/UserSearchPopover";
 import { classNames } from "@/utils/helper";
-import UserModal from "@/components/Modals/UserModal";
+import UserModal from "@/components/Modal/UserModal";
 import Spinner from "@/components/custom/Spinner";
 
 interface CreateBoardSliderOverProps {

@@ -1,6 +1,6 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import useRenameFolder from "@/utils/mutations/useRenameFolder";
@@ -13,7 +13,7 @@ import { Save } from "@mui/icons-material";
 import { nanoid } from "nanoid";
 import { classNames } from "@/utils/helper";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import ConfirmationModal from "@/components/modal/ConfirmationModal";
+import ConfirmationModal from "@/components/Modal/ConfirmationModal";
 import FolderDropDownMenu from "@/components/Layout/FolderDropDownMenu";
 import Board from "@/components/Dashboard/Board";
 import Divider from "@/components/custom/Divider";

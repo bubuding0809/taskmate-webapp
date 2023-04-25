@@ -2,7 +2,7 @@
 
 import { PlusIcon } from "@heroicons/react/20/solid";
 import { classNames } from "@/utils/helper";
-import TaskCreationModal from "../modal/TaskCreationModal";
+import TaskCreationModal from "@/components/Modal/TaskCreationModal";
 import { useState } from "react";
 import useUpdatePanelTitle from "@/utils/mutations/panel/useUpdatePanelTitle";
 import { IconButton, Tooltip } from "@mui/material";
