@@ -23,6 +23,26 @@ const useRemoveAssignee = () => {
         boardId,
       });
 
+      // Optimistically update to the new value
+      utils.board.getBoardById.setData({ boardId }, (prev) => {
+        // Clone the previous value
+        const newBoardData = _.cloneDeep(prev);
+
+        // Find the task
+        const task = newBoardData?.Panel.find(
+          (panel) => panel.id === panelId
+        )?.Task.find((task) => task.id === taskId);
+
+        // Remove the assignee
+        if (task) {
+          task.Task_Assign_Rel = task.Task_Assign_Rel.filter(
+            (assignee) => assignee.user_id !== assigneeId
+          );
+        }
+
+        return newBoardData;
+      });
+
       return { oldBoardData };
     },
     onError: (_error, _variables, ctx) => {
