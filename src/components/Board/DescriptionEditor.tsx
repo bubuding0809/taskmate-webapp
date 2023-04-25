@@ -1,9 +1,9 @@
 import { useSession } from "next-auth/react";
 import { classNames, formatDate } from "@/utils/helper";
 import { env } from "env.mjs";
-import { Divider, ListItem } from "@mui/material";
+import { ListItem } from "@mui/material";
 import { RouterOutputs, api } from "@/utils/api";
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import useDebouceQuery from "@/utils/hooks/useDebounceQuery";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import { EditorContent, useEditor } from "@tiptap/react";
@@ -37,12 +37,14 @@ interface DescriptionEditorProps {
   task: Task;
   panel: Panel;
   innerClassName?: string;
+  close: () => void;
 }
 
 const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
   task,
   panel,
   innerClassName = "",
+  close,
 }) => {
   const { data: sessionData } = useSession();
 
@@ -64,6 +66,11 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
       url: env.NEXT_PUBLIC_HOCUSPOCUS_URL,
       name: `task.${task.id}`,
       token: sessionData?.user.id,
+      onDisconnect: () => {
+        // Close the editor when the connection is lost
+        // This is a hacky way to prevent duplication of data by editor when the connection is lost
+        close();
+      },
     });
   });
 
@@ -121,6 +128,14 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
     },
     onUpdate: ({ editor }) => setLiveDescription(editor.getText()),
   });
+
+  // Effect to destroy the connection to websocket server when the component unmounts
+  // This prevents a client from having multiple unnecessary connections to the server
+  useEffect(() => {
+    return () => {
+      hocusProvider.destroy();
+    };
+  }, []);
 
   // Effect to update the task description when the debounced description changes
   useEffect(() => {

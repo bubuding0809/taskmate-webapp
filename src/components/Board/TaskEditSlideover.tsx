@@ -508,6 +508,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                 task={task}
                                 panel={panel}
                                 innerClassName="mt-4 xl:mt-6"
+                                close={() => setOpen(false)}
                               />
                             )}
 
