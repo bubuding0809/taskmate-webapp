@@ -1,13 +1,6 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
-import {
-  Dispatch,
-  Fragment,
-  MouseEventHandler,
-  SetStateAction,
-  useMemo,
-  useState,
-} from "react";
+import { Dispatch, Fragment, SetStateAction, useMemo, useState } from "react";
 import { Combobox, Popover, Transition } from "@headlessui/react";
 import { UsersIcon } from "@heroicons/react/20/solid";
 import {
@@ -17,11 +10,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { classNames } from "@/utils/helper";
 import { api } from "@/utils/api";
-import { Board, Board_Collaborator, Panel, Task, User } from "@prisma/client";
 import useDebouceQuery from "@/utils/hooks/useDebounceQuery";
 import { useSession } from "next-auth/react";
 import useAddCollaborators from "@/utils/mutations/collaborator/useAddCollaborators";
 
+import type { User } from "@prisma/client";
 interface UserSearchPopoverProps {
   setPopOverOpen?: Dispatch<SetStateAction<boolean>>;
   newBoardForm?: {

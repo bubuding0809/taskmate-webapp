@@ -4,19 +4,19 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { UserMinusIcon } from "@heroicons/react/24/solid";
 import { IconButton, Tooltip } from "@mui/material";
-import { User } from "@prisma/client";
-import UserModal from "../modal/UserModal";
-import UserSearchPopover from "@/components/dashboard/UserSearchPopover";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
-import { api } from "@/utils/api";
 import { Save } from "@mui/icons-material";
+import { api } from "@/utils/api";
 import { classNames } from "@/utils/helper";
 import useClickAway from "@/utils/hooks/useClickAway";
 import useRemoveCollaborators from "@/utils/mutations/collaborator/useRemoveCollaborators";
 import useUpdateBoardThumbnail from "@/utils/mutations/board/useUpdateBoardThumbnail";
 import useUpdateBoardTitle from "@/utils/mutations/board/useUpdateBoardTitle";
+import UserModal from "@/components/modal/UserModal";
+import UserSearchPopover from "@/components/dashboard/UserSearchPopover";
 
+import type { User } from "@prisma/client";
 import type { EmojiType } from "@/utils/types";
 
 interface BoardHeaderProps {
