@@ -15,6 +15,7 @@ import { useSession } from "next-auth/react";
 import useAddCollaborators from "@/utils/mutations/collaborator/useAddCollaborators";
 
 import type { User } from "@prisma/client";
+
 interface UserSearchPopoverProps {
   setPopOverOpen?: Dispatch<SetStateAction<boolean>>;
   newBoardForm?: {

@@ -7,14 +7,14 @@ import { IconButton, Tooltip } from "@mui/material";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { Save } from "@mui/icons-material";
-import { api } from "@/utils/api";
-import { classNames } from "@/utils/helper";
 import useClickAway from "@/utils/hooks/useClickAway";
 import useRemoveCollaborators from "@/utils/mutations/collaborator/useRemoveCollaborators";
 import useUpdateBoardThumbnail from "@/utils/mutations/board/useUpdateBoardThumbnail";
 import useUpdateBoardTitle from "@/utils/mutations/board/useUpdateBoardTitle";
 import UserModal from "@/components/modal/UserModal";
 import UserSearchPopover from "@/components/dashboard/UserSearchPopover";
+import { api } from "@/utils/api";
+import { classNames } from "@/utils/helper";
 
 import type { User } from "@prisma/client";
 import type { EmojiType } from "@/utils/types";

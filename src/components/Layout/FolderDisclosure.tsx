@@ -15,7 +15,7 @@ import useClickAway from "@/utils/hooks/useClickAway";
 import autoAnimate from "@formkit/auto-animate";
 import BoardDisclosure from "./BoardDisclosure";
 import { FolderWithBoards } from "server/api/routers/folder";
-import ConfirmationModal from "@/components/layout/ConfirmationModal";
+import ConfirmationModal from "@/components/modal/ConfirmationModal";
 import { CheckCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
 import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
 import { api } from "@/utils/api";

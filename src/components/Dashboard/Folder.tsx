@@ -6,7 +6,7 @@ import Board from "./Board";
 
 import type { FolderWithBoards } from "server/api/routers/folder";
 import Divider from "../custom/Divider";
-import ConfirmationModal from "../layout/ConfirmationModal";
+import ConfirmationModal from "../modal/ConfirmationModal";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import useRenameFolder from "@/utils/mutations/useRenameFolder";
 import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
