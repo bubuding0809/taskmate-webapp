@@ -13,8 +13,8 @@ import useUpdateBoardThumbnail from "@/utils/mutations/board/useUpdateBoardThumb
 import useUpdateBoardTitle from "@/utils/mutations/board/useUpdateBoardTitle";
 import { api } from "@/utils/api";
 import { classNames } from "@/utils/helper";
-import UserModal from "@/components/modal/UserModal";
-import UserSearchPopover from "@/components/dashboard/UserSearchPopover";
+import UserModal from "@/components/Modals/UserModal";
+import UserSearchPopover from "@/components/Dashboard/UserSearchPopover";
 
 import type { User } from "@prisma/client";
 import type { EmojiType } from "@/utils/types";

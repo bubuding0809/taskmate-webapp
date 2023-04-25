@@ -25,10 +25,10 @@ import { useSession } from "next-auth/react";
 import { api } from "@/utils/api";
 import { User } from "@prisma/client";
 import { Tooltip } from "@mui/material";
-import UserModal from "../modal/UserModal";
-import UserSearchPopover from "../dashboard/UserSearchPopover";
+import UserSearchPopover from "../Dashboard/UserSearchPopover";
 import { classNames } from "@/utils/helper";
-import Spinner from "../custom/Spinner";
+import UserModal from "@/components/Modals/UserModal";
+import Spinner from "@/components/custom/Spinner";
 
 interface CreateBoardSliderOverProps {
   open: boolean;

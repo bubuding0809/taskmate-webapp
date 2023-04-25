@@ -1,6 +1,6 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
-import React, { useRef, useState, useEffect, CSSProperties } from "react";
+import React, { useRef, useEffect } from "react";
 import { Collapse, IconButton, Typography } from "@mui/material";
 import { TransitionGroup } from "react-transition-group";
 import { Divider } from "@mui/material";
@@ -13,7 +13,7 @@ import {
   DraggingStyle,
   NotDraggingStyle,
 } from "react-beautiful-dnd";
-import { Task } from "@/components/board/Task";
+import { Task } from "@/components/Board/Task";
 import autoAnimate from "@formkit/auto-animate";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";

@@ -14,8 +14,8 @@ import { nanoid } from "nanoid";
 import { classNames } from "@/utils/helper";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import ConfirmationModal from "@/components/modal/ConfirmationModal";
-import FolderDropDownMenu from "@/components/layout/FolderDropDownMenu";
-import Board from "@/components/dashboard/Board";
+import FolderDropDownMenu from "@/components/Layout/FolderDropDownMenu";
+import Board from "@/components/Dashboard/Board";
 import Divider from "@/components/custom/Divider";
 
 import type { FolderWithBoards } from "server/api/routers/folder";

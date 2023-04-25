@@ -14,10 +14,10 @@ import useDeleteBoard from "@/utils/mutations/useDeleteBoard";
 import { useToastContext } from "@/utils/context/ToastContext";
 import useClickAway from "@/utils/hooks/useClickAway";
 import { useSession } from "next-auth/react";
-import ConfirmationModal from "@/components/modal/ConfirmationModal";
-import BoardDropDownMenu from "@/components/layout/BoardDropDownMenu";
+import ConfirmationModal from "@/components/Modals/ConfirmationModal";
+import BoardDropDownMenu from "@/components/Layout/BoardDropDownMenu";
 import CircularProgressWithLabel from "@/components/custom/CircularProgressWithLabel";
-import UserModal from "@/components/modal/UserModal";
+import UserModal from "@/components/Modals/UserModal";
 
 import type { Board, Board_Collaborator, User } from "@prisma/client";
 import type {

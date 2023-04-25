@@ -1,8 +1,8 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
 import Link from "next/link";
-import BoardDropDownMenu from "./BoardDropDownMenu";
-import ConfirmationModal from "@/components/modal/ConfirmationModal";
+import BoardDropDownMenu from "@/components/Layout/BoardDropDownMenu";
+import ConfirmationModal from "@/components/Modals/ConfirmationModal";
 import { api } from "@/utils/api";
 import { useRef, useEffect, useState } from "react";
 import { classNames, trimChar } from "../../utils/helper";

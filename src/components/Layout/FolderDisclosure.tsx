@@ -3,7 +3,7 @@
 import { Disclosure } from "@headlessui/react";
 import { useRef, useEffect, useState } from "react";
 import { classNames } from "../../utils/helper";
-import DropDownMenu from "./FolderDropDownMenu";
+import FolderDropDownMenu from "@/components/Layout/FolderDropDownMenu";
 import useRenameFolder from "@/utils/mutations/useRenameFolder";
 import {
   Draggable,
@@ -13,9 +13,9 @@ import {
 } from "react-beautiful-dnd";
 import useClickAway from "@/utils/hooks/useClickAway";
 import autoAnimate from "@formkit/auto-animate";
-import BoardDisclosure from "./BoardDisclosure";
+import BoardDisclosure from "@/components/Layout/BoardDisclosure";
 import { FolderWithBoards } from "server/api/routers/folder";
-import ConfirmationModal from "@/components/modal/ConfirmationModal";
+import ConfirmationModal from "@/components/Modals/ConfirmationModal";
 import { CheckCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
 import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
 import { api } from "@/utils/api";
@@ -182,7 +182,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
                         menuButtonVisible ? "visible" : "invisible"
                       )}
                     >
-                      <DropDownMenu
+                      <FolderDropDownMenu
                         setDropDownMenuOpen={setDropDownMenuOpen}
                         setFolderRenameInputVisible={
                           setFolderRenameInputVisible

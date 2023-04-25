@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
-import { TaskView } from "@/components/board/TaskView";
+import { TaskView } from "@/components/Board/TaskView";
 
 import type {
   PanelWithTasks,

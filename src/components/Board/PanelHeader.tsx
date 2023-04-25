@@ -8,7 +8,7 @@ import useUpdatePanelTitle from "@/utils/mutations/panel/useUpdatePanelTitle";
 import { IconButton, Tooltip } from "@mui/material";
 import { Save } from "@mui/icons-material";
 import { AntSwitch } from "@/components/custom/AntSwitch";
-import { PanelMenu } from "@/components/board/PanelMenu";
+import { PanelMenu } from "@/components/Board/PanelMenu";
 
 import type { PanelWithTasks } from "server/api/routers/board";
 import type { DraggableProvided } from "react-beautiful-dnd";

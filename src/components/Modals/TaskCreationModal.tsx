@@ -12,7 +12,7 @@ import { useSession } from "next-auth/react";
 import { User } from "@prisma/client";
 import { Tooltip } from "@mui/material";
 import UserModal from "@/components/modal/UserModal";
-import AssigneeSelectPopover from "../board/AssigneeSelectPopover";
+import AssigneeSelectPopover from "../Board/AssigneeSelectPopover";
 
 interface TaskCreationModalProps {
   open: boolean;

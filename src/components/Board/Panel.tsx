@@ -9,8 +9,8 @@ import {
 } from "react-beautiful-dnd";
 import autoAnimate from "@formkit/auto-animate";
 import { Paper, Divider } from "@mui/material";
-import { PanelHeader } from "@/components/board/PanelHeader";
-import { TaskList } from "@/components/board/TaskList";
+import { PanelHeader } from "@/components/Board/PanelHeader";
+import { TaskList } from "@/components/Board/TaskList";
 
 import type { PanelWithTasks } from "server/api/routers/board";
 

@@ -14,7 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { DocumentTextIcon, FolderIcon } from "@heroicons/react/20/solid";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import FolderDisclosure from "./FolderDisclosure";
+import FolderDisclosure from "@/components/Layout/FolderDisclosure";
 import Head from "next/head";
 import { signOut, useSession } from "next-auth/react";
 import {
@@ -23,14 +23,14 @@ import {
   Droppable,
   resetServerContext,
 } from "react-beautiful-dnd";
-import CreateBoardSlideOver from "./CreateBoardSliderOver";
+import CreateBoardSlideOver from "@/components/Layout/CreateBoardSliderOver";
 import useCreateFolder from "@/utils/mutations/useCreateFolder";
 import useUpdateFolderOrder from "@/utils/mutations/useUpdateFolderOrder";
 import useUpdateBoardOrder from "@/utils/mutations/useUpdateBoardOrder";
 import useAddBoardToFolder from "@/utils/mutations/useAddBoardToFolder";
-import BoardDisclosure from "./BoardDisclosure";
+import BoardDisclosure from "@/components/Layout/BoardDisclosure";
 import useUpdateNestedBoardOrder from "@/utils/mutations/useUpdateNestedBoardOrder";
-import BreadCrumbs from "./BreadCrumbs";
+import BreadCrumbs from "@/components/Layout/BreadCrumbs";
 import { api } from "@/utils/api";
 import { nanoid } from "nanoid";
 import { useDebounceBool } from "@/utils/hooks/useDebounceBool";
@@ -40,7 +40,7 @@ import Loader from "../custom/Loader";
 import Image from "next/image";
 
 import type { DragStart, DropResult } from "react-beautiful-dnd";
-import type { BreadCrumbType } from "./BreadCrumbs";
+import type { BreadCrumbType } from "@/components/Layout/BreadCrumbs";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon },

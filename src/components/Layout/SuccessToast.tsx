@@ -1,6 +1,6 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect } from "react";
 import { Transition } from "@headlessui/react";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { XMarkIcon } from "@heroicons/react/20/solid";

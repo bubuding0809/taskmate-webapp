@@ -2,19 +2,19 @@
 
 import type { NextPageWithLayout } from "../_app";
 import { ReactElement, useEffect, useRef, useState } from "react";
-import AppLayout from "../../components/layout/AppLayout";
+import AppLayout from "../../components/Layout/AppLayout";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { api } from "@/utils/api";
 
-import Folder from "@/components/dashboard/Folder";
+import Folder from "@/components/Dashboard/Folder";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import Board from "@/components/dashboard/Board";
+import Board from "@/components/Dashboard/Board";
 import { nanoid } from "nanoid";
 import useCreateBoard from "@/utils/mutations/useCreateBoard";
 import { DocumentPlusIcon, FolderPlusIcon } from "@heroicons/react/20/solid";
 import useCreateFolder from "@/utils/mutations/useCreateFolder";
-import CreateBoardSlideOver from "@/components/layout/CreateBoardSliderOver";
+import CreateBoardSlideOver from "@/components/Layout/CreateBoardSliderOver";
 
 const DashboardPage: NextPageWithLayout = () => {
   const router = useRouter();

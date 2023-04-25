@@ -2,11 +2,11 @@
 
 import type { NextPageWithLayout } from "../_app";
 import { ReactElement, useEffect, useRef, useState } from "react";
-import AppLayout from "../../components/layout/AppLayout";
+import AppLayout from "../../components/Layout/AppLayout";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { api } from "@/utils/api";
-import Board from "@/components/dashboard/Board";
+import Board from "@/components/Dashboard/Board";
 
 const CollaborationPage: NextPageWithLayout = () => {
   const router = useRouter();
