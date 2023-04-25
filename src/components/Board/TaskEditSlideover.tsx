@@ -1,6 +1,6 @@
 import { Fragment, SetStateAction, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { ChevronDoubleRightIcon } from "@heroicons/react/24/outline";
+import { Dialog, Popover, Transition } from "@headlessui/react";
+import { ChevronDoubleRightIcon, PlusIcon } from "@heroicons/react/24/outline";
 import {
   BellIcon,
   CalendarIcon,
@@ -10,6 +10,7 @@ import {
   TagIcon,
   UserCircleIcon as UserCircleIconMini,
   UserMinusIcon,
+  UserIcon,
   XMarkIcon,
 } from "@heroicons/react/20/solid";
 import UserModal from "@/components/Modal/UserModal";
@@ -391,6 +392,20 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                         bid={panel.board_id}
                                         task={task}
                                         innerClassName="absolute -left-4 top-10"
+                                        PopoverButton={() => (
+                                          <Popover.Button
+                                            type="button"
+                                            className="inline-flex flex-shrink-0 items-center justify-center space-x-1 rounded-full border-gray-200 bg-white p-1 pr-2 text-sm text-gray-400 outline-dashed outline-2 -outline-offset-1 hover:border-gray-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                          >
+                                            <UserIcon
+                                              className="h-6 w-6 rounded-full border bg-gray-100"
+                                              aria-hidden="true"
+                                            />
+                                            <span className="">
+                                              Assign user
+                                            </span>
+                                          </Popover.Button>
+                                        )}
                                       />
 
                                       {/* Current assignees */}

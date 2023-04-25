@@ -15,7 +15,6 @@ import useAddAssignees from "@/utils/mutations/task/useAddAssignees";
 type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
 type Task = Optional<Panel["Task"][number], "subtasks">;
-
 interface UserSearchPopoverProps {
   setPopOverOpen?: Dispatch<SetStateAction<boolean>>;
   newTaskForm?: {
@@ -39,6 +38,7 @@ interface UserSearchPopoverProps {
   bid: string;
   task?: Task;
   innerClassName?: string;
+  PopoverButton?: React.FC;
 }
 
 // Maximum number of collaborators allowed
@@ -51,6 +51,7 @@ const AssigneeSelectPopover: React.FC<UserSearchPopoverProps> = ({
   bid,
   task,
   innerClassName,
+  PopoverButton = DefaultPopoverButton,
 }) => {
   // Query to get board data
   const { data: boardQueryData } = api.board.getBoardById.useQuery({
@@ -137,14 +138,7 @@ const AssigneeSelectPopover: React.FC<UserSearchPopoverProps> = ({
 
   return (
     <Popover className="relative h-8">
-      <Popover.Button
-        type="button"
-        className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 border-dashed border-gray-200 bg-white text-gray-400 hover:border-gray-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-      >
-        <span className="sr-only">Add team member</span>
-        <PlusIcon className="h-5 w-5" aria-hidden="true" />
-      </Popover.Button>
-
+      <PopoverButton />
       <Transition
         as={Fragment}
         enter="transition ease-out duration-200"
@@ -310,3 +304,15 @@ const AssigneeSelectPopover: React.FC<UserSearchPopoverProps> = ({
 };
 
 export default AssigneeSelectPopover;
+
+const DefaultPopoverButton: React.FC = () => {
+  return (
+    <Popover.Button
+      type="button"
+      className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 border-dashed border-gray-200 bg-white text-gray-400 hover:border-gray-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+    >
+      <span className="sr-only">Add team member</span>
+      <PlusIcon className="h-5 w-5" aria-hidden="true" />
+    </Popover.Button>
+  );
+};
