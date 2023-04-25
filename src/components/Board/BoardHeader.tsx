@@ -11,10 +11,10 @@ import useClickAway from "@/utils/hooks/useClickAway";
 import useRemoveCollaborators from "@/utils/mutations/collaborator/useRemoveCollaborators";
 import useUpdateBoardThumbnail from "@/utils/mutations/board/useUpdateBoardThumbnail";
 import useUpdateBoardTitle from "@/utils/mutations/board/useUpdateBoardTitle";
-import UserModal from "@/components/modal/UserModal";
-import UserSearchPopover from "@/components/dashboard/UserSearchPopover";
 import { api } from "@/utils/api";
 import { classNames } from "@/utils/helper";
+import UserModal from "@/components/modal/UserModal";
+import UserSearchPopover from "../dashboard/UserSearchPopover";
 
 import type { User } from "@prisma/client";
 import type { EmojiType } from "@/utils/types";

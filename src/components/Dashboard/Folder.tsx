@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
-import Divider from "../custom/Divider";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import useRenameFolder from "@/utils/mutations/useRenameFolder";
 import useDeleteFolder from "@/utils/mutations/useDeleteFolder";
@@ -17,6 +16,7 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import ConfirmationModal from "@/components/modal/ConfirmationModal";
 import FolderDropDownMenu from "@/components/layout/FolderDropDownMenu";
 import Board from "@/components/dashboard/Board";
+import Divider from "@/components/custom/Divider";
 
 import type { FolderWithBoards } from "server/api/routers/folder";
 
