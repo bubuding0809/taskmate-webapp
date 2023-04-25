@@ -5,16 +5,17 @@ import { Combobox, Popover, Transition } from "@headlessui/react";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { classNames } from "@/utils/helper";
 import { api } from "@/utils/api";
+import Spinner from "../custom/Spinner";
+import useAddAssignees from "@/utils/mutations/task/useAddAssignees";
 
 import type { User } from "@prisma/client";
 import type { Optional } from "@/utils/types";
 import type { RouterOutputs } from "@/utils/api";
-import Spinner from "../custom/Spinner";
-import useAddAssignees from "@/utils/mutations/task/useAddAssignees";
 
 type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
 type Task = Optional<Panel["Task"][number], "subtasks">;
+
 interface UserSearchPopoverProps {
   setPopOverOpen?: Dispatch<SetStateAction<boolean>>;
   newTaskForm?: {
