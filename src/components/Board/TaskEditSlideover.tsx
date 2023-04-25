@@ -1,4 +1,4 @@
-import { Fragment, SetStateAction, useEffect, useState } from "react";
+import { Fragment, SetStateAction, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { ChevronDoubleRightIcon } from "@heroicons/react/24/outline";
 import {
@@ -15,13 +15,13 @@ import {
 import UserModal from "@/components/Modal/UserModal";
 import DescriptionEditor from "@/components/Board/DescriptionEditor";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
-import { classNames } from "@/utils/helper";
-
-import { RouterOutputs, api } from "@/utils/api";
-import type { Optional } from "@/utils/types";
-import type { User } from "@prisma/client";
 import useRemoveAssignee from "@/utils/mutations/task/useRemoveAssignee";
 import AssigneeSelectPopover from "@/components/Board/AssigneeSelectPopover";
+import { classNames } from "@/utils/helper";
+
+import type { RouterOutputs } from "@/utils/api";
+import type { Optional } from "@/utils/types";
+import type { User } from "@prisma/client";
 
 type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
@@ -427,7 +427,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                           <button
                                             className="rounded-full hover:bg-gray-50 active:bg-gray-100"
                                             onClick={() => {
-                                              unassignUser({
+                                              void unassignUser({
                                                 boardId: panel.board_id,
                                                 panelId: panel.id,
                                                 taskId: task.id,
@@ -845,7 +845,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                         type="button"
                                         className="flex justify-center rounded-md bg-white px-2.5 py-1 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                                         onClick={() => {
-                                          unassignUser({
+                                          void unassignUser({
                                             boardId: panel.board_id,
                                             panelId: panel.id,
                                             taskId: task.id,
