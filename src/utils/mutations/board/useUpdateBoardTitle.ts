@@ -14,7 +14,7 @@ const useUpdateBoardTitle = () => {
       const { boardId, title, userId } = variables;
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      utils.board.getBoardById.cancel({ boardId });
+      await utils.board.getBoardById.cancel({ boardId });
 
       // Snapshot the previous value for boards
       const oldBoardData = utils.board.getBoardById.getData({ boardId });
@@ -41,18 +41,20 @@ const useUpdateBoardTitle = () => {
         ctx!.oldBoardData
       );
     },
-    onSettled: async (_data, _error, variables, ctx) => {
+    onSettled: (_data, _error, variables, ctx) => {
       // Sender update to pusher
       handlePusherUpdate({
         bid: variables.boardId,
         sender: sessionData!.user.id,
       });
       // Always refetch query after error or success to make sure the server state is correct
-      utils.board.getBoardById.invalidate({ boardId: variables.boardId });
-      utils.board.getUserBoardWithoutFolder.invalidate({
+      void utils.board.getBoardById.invalidate({ boardId: variables.boardId });
+      void utils.board.getUserBoardWithoutFolder.invalidate({
         userId: variables.userId,
       });
-      utils.folder.getAllUserFolders.invalidate({ userId: variables.userId });
+      void utils.folder.getAllUserFolders.invalidate({
+        userId: variables.userId,
+      });
     },
   });
 };

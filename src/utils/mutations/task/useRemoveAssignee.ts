@@ -14,7 +14,7 @@ const useRemoveAssignee = () => {
       const { boardId, assigneeId, panelId, taskId } = variables;
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      utils.board.getBoardById.cancel({
+      await utils.board.getBoardById.cancel({
         boardId,
       });
 
@@ -34,7 +34,7 @@ const useRemoveAssignee = () => {
         ctx!.oldBoardData
       );
     },
-    onSettled: async (_data, _error, variables, ctx) => {
+    onSettled: (_data, _error, variables, ctx) => {
       // Sender update to pusher
       handlePusherUpdate({
         bid: variables.boardId,
@@ -42,7 +42,7 @@ const useRemoveAssignee = () => {
       });
 
       // Always refetch query after error or success to make sure the server state is correct
-      utils.board.getBoardById.invalidate({
+      void utils.board.getBoardById.invalidate({
         boardId: variables.boardId,
       });
     },

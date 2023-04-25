@@ -27,8 +27,10 @@ const useCreateTask = () => {
       } = task;
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      utils.board.getBoardById.cancel({ boardId });
-      utils.board.getTasksMapByBoardId.cancel({ boardId });
+      await Promise.all([
+        utils.board.getBoardById.cancel({ boardId }),
+        utils.board.getTasksMapByBoardId.cancel({ boardId }),
+      ]);
 
       // Snapshot the previous value for boards
       const oldBoardData = utils.board.getBoardById.getData({
@@ -113,7 +115,7 @@ const useCreateTask = () => {
         ctx!.oldTaskMapData
       );
     },
-    onSettled: async (_data, _error, variables) => {
+    onSettled: (_data, _error, variables) => {
       // Sender update to pusher
       handlePusherUpdate({
         bid: variables.boardId,
@@ -121,8 +123,8 @@ const useCreateTask = () => {
       });
 
       // Always refetch query after error or success to make sure the server state is correct
-      utils.board.getBoardById.invalidate({ boardId: variables.boardId });
-      utils.board.getTasksMapByBoardId.invalidate({
+      void utils.board.getBoardById.invalidate({ boardId: variables.boardId });
+      void utils.board.getTasksMapByBoardId.invalidate({
         boardId: variables.boardId,
       });
     },

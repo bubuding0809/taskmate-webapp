@@ -14,7 +14,7 @@ const useRemoveCollaborators = () => {
       const { boardId, userIds } = variables;
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      utils.board.getBoardById.cancel({ boardId });
+      await utils.board.getBoardById.cancel({ boardId });
 
       // Snapshot the previous value for boards
       const oldBoardData = utils.board.getBoardById.getData({
@@ -30,7 +30,7 @@ const useRemoveCollaborators = () => {
         ctx!.oldBoardData
       );
     },
-    onSettled: async (_data, _error, variables, ctx) => {
+    onSettled: (_data, _error, variables, ctx) => {
       // Sender update to pusher
       handlePusherUpdate({
         bid: variables.boardId,
@@ -38,7 +38,7 @@ const useRemoveCollaborators = () => {
       });
 
       // Always refetch query after error or success to make sure the server state is correct
-      utils.board.getBoardById.invalidate({ boardId: variables.boardId });
+      void utils.board.getBoardById.invalidate({ boardId: variables.boardId });
     },
   });
 };
