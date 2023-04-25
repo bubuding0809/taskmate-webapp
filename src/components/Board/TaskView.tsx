@@ -13,7 +13,7 @@ import {
   DraggingStyle,
   NotDraggingStyle,
 } from "react-beautiful-dnd";
-import { TodoTask } from "./TodoTask";
+import { Task } from "@/components/board/Task";
 import autoAnimate from "@formkit/auto-animate";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -21,7 +21,7 @@ import { PanelWithTasks, TaskWithSubtasks } from "server/api/routers/board";
 import { classNames } from "@/utils/helper";
 import useToggleRevealSubtasks from "@/utils/mutations/task/useToggleRevealSubtasks";
 
-interface TodoItemProps {
+interface TaskViewProps {
   taskListType: "active" | "completed";
   task: TaskWithSubtasks;
   panelItem: PanelWithTasks;
@@ -30,14 +30,14 @@ interface TodoItemProps {
   style?: DraggingStyle | NotDraggingStyle;
 }
 
-export const TodoItem: React.FC<TodoItemProps> = ({
+export const TaskView: React.FC<TaskViewProps> = ({
   taskListType,
   task,
   panelItem,
   provided,
   snapshot,
   style,
-}: TodoItemProps) => {
+}: TaskViewProps) => {
   const parent = useRef(null);
   useEffect(() => {
     parent.current && autoAnimate(parent.current);
@@ -73,11 +73,10 @@ export const TodoItem: React.FC<TodoItemProps> = ({
       style={style}
     >
       {/* Render parent task here */}
-      <TodoTask
+      <Task
         task={task}
         panelItem={panelItem}
         provided={provided ?? undefined}
-        handleRemoveDateTime={() => alert("yet to be implemented")}
       />
 
       {/* sub tasks */}
@@ -143,14 +142,11 @@ export const TodoItem: React.FC<TodoItemProps> = ({
                                     }}
                                   />
                                 )}
-                                <TodoTask
+                                <Task
                                   task={subtask}
                                   panelItem={panelItem}
                                   provided={provided}
                                   snapshot={snapshot}
-                                  handleRemoveDateTime={() =>
-                                    console.log("yet to be implemented")
-                                  }
                                 />
                               </div>
                             );

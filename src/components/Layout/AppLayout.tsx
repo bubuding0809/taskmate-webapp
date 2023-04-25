@@ -14,7 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { DocumentTextIcon, FolderIcon } from "@heroicons/react/20/solid";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import FolderDisclosure from "../../components/Layout/FolderDisclosure";
+import FolderDisclosure from "./FolderDisclosure";
 import Head from "next/head";
 import { signOut, useSession } from "next-auth/react";
 import {

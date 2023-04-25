@@ -1,7 +1,7 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
 import React, { useEffect, useState } from "react";
-import Panel from "@/components/Board/Panel";
+import Panel from "@/components/board/Panel";
 import { PlusIcon, UserMinusIcon } from "@heroicons/react/24/outline";
 import { nanoid } from "nanoid";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";

@@ -11,8 +11,8 @@ import useCreateTask from "@/utils/mutations/task/useCreateTask";
 import { useSession } from "next-auth/react";
 import { User } from "@prisma/client";
 import { Tooltip } from "@mui/material";
-import UserModal from "@/components/Dashboard/UserModal";
-import AssigneeSelectPopover from "../AssigneeSelectPopover";
+import UserModal from "@/components/modal/UserModal";
+import AssigneeSelectPopover from "../board/AssigneeSelectPopover";
 
 interface TaskCreationModalProps {
   open: boolean;
@@ -321,6 +321,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                               bid={bid}
                               newTaskForm={newTaskForm}
                               setNewTaskForm={setNewTaskForm}
+                              innerClassName="fixed bottom-40 left-8"
                             />
                           </div>
                         </div>

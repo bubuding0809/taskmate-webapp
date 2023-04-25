@@ -2,8 +2,8 @@
 
 import type { NextPageWithLayout } from "../_app";
 import { ReactElement } from "react";
-import AppLayout from "@/components/Layout/AppLayout";
-import BoardView from "@/components/Board/BoardView";
+import AppLayout from "@/components/layout/AppLayout";
+import BoardView from "@/components/board/BoardView";
 import { useRouter } from "next/router";
 
 const UserBoardPage: NextPageWithLayout = () => {

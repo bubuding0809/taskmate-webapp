@@ -409,6 +409,26 @@ export const taskRouter = createTRPCRouter({
       });
     }),
 
+  // Mutation to add assignees to a task
+  addAssignees: protectedProcedure
+    .input(
+      z.object({
+        boardId: z.string(),
+        panelId: z.string(),
+        taskId: z.string(),
+        assigneeIds: z.array(z.string()),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Connect the assignees to the task and create the task relationship
+      return await ctx.prisma.task_Assign_Rel.createMany({
+        data: input.assigneeIds.map((assigneeId) => ({
+          task_id: input.taskId,
+          user_id: assigneeId,
+        })),
+      });
+    }),
+
   // Mutation to remove a assignee from a task
   removeAssignee: protectedProcedure
     .input(

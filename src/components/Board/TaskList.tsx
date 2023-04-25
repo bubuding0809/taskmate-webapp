@@ -1,27 +1,27 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
-import { TodoItem } from "./TodoItem";
+import { TaskView } from "@/components/board/TaskView";
 
 import type {
   PanelWithTasks,
   TaskWithSubtasks,
 } from "server/api/routers/board";
 
-interface TodoListProps {
+interface TaskListProps {
   taskListType: "active" | "completed";
   panelItem: PanelWithTasks;
   tasks: TaskWithSubtasks[];
   isItemCombineEnabled: boolean;
 }
 
-export const TodoList: React.FC<TodoListProps> = ({
+export const TaskList: React.FC<TaskListProps> = ({
   taskListType,
   panelItem,
   tasks,
   isItemCombineEnabled,
-}: TodoListProps) => {
+}: TaskListProps) => {
   // * Do not make the list droppable if it is a completed list
   if (taskListType === "completed") {
     return (
@@ -29,7 +29,7 @@ export const TodoList: React.FC<TodoListProps> = ({
         {tasks.length ? (
           // Only diplays tasks parent tasks in the list, subtasks will be nested under their parent
           tasks.map((task, index) => (
-            <TodoItem
+            <TaskView
               key={task.id}
               taskListType={taskListType}
               task={task}
@@ -88,7 +88,7 @@ export const TodoList: React.FC<TodoListProps> = ({
                 >
                   {(provided, snapshot) => {
                     return (
-                      <TodoItem
+                      <TaskView
                         taskListType={taskListType}
                         task={task}
                         style={provided.draggableProps.style}

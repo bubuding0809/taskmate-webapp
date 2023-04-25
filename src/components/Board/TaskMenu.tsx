@@ -15,15 +15,15 @@ import type { Task } from "@prisma/client";
 import type { TaskDetailed } from "server/api/routers/board";
 import { EllipsisHorizontalIcon } from "@heroicons/react/20/solid";
 
-interface TodoTaskMenuProps {
+interface TaskMenuProps {
   task: TaskDetailed | Task;
   panelItem: PanelWithTasks;
 }
 
-export const TodoTaskMenu: React.FC<TodoTaskMenuProps> = ({
+export const TaskMenu: React.FC<TaskMenuProps> = ({
   task,
   panelItem,
-}: TodoTaskMenuProps) => {
+}: TaskMenuProps) => {
   // Anchor ref to handle closing and opening of menu
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);

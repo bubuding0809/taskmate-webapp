@@ -9,13 +9,19 @@ import {
   ClockIcon,
   TagIcon,
   UserCircleIcon as UserCircleIconMini,
+  UserMinusIcon,
+  XMarkIcon,
 } from "@heroicons/react/20/solid";
+import UserModal from "../modal/UserModal";
 import DescriptionEditor from "./DescriptionEditor";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
-import { classNames, formatDate } from "@/utils/helper";
+import { classNames } from "@/utils/helper";
 
-import type { RouterOutputs } from "@/utils/api";
+import { RouterOutputs, api } from "@/utils/api";
 import type { Optional } from "@/utils/types";
+import type { User } from "@prisma/client";
+import useRemoveAssignee from "@/utils/mutations/task/useRemoveAssignee";
+import AssigneeSelectPopover from "./AssigneeSelectPopover";
 
 type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
@@ -148,8 +154,16 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
   task,
   panel,
 }) => {
+  // State to track assignee modal state
+  const [assigneeModalOpen, setAssigneeModalOpen] = useState(false);
+  const [currAssignee, setCurrAssignee] = useState<User | null>(null);
+
   // Mutation to toggle task completion
   const { mutate: toggleTask } = useToggleTaskStatus();
+
+  // Mutation to remove user from task
+  const { mutateAsync: unassignUser, isLoading: isRemovingAssignee } =
+    useRemoveAssignee();
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -173,7 +187,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-4xl">
                   <div className="overlay flex h-full flex-col border-l bg-white shadow-md">
                     {/* Header */}
-                    <div className="sticky top-0 z-10 border-y bg-white px-4 py-2 shadow-sm sm:px-6">
+                    <div className="sticky top-0 z-20 border-y bg-white px-4 py-2 shadow-sm sm:px-6">
                       <div className="flex items-center justify-between">
                         <Dialog.Title className="sr-only text-base font-semibold leading-6 text-gray-900">
                           Edit task
@@ -276,7 +290,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                 </div>
                               </div>
 
-                              {/* Inline items from sidebar, only visible in xl and above */}
+                              {/* Inline items from sidebar, only visible in screen xl and above */}
                               <aside className="mt-8 xl:hidden">
                                 <h2 className="sr-only">Details</h2>
                                 <div className="space-y-5">
@@ -361,29 +375,73 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                     </span>
                                   </div>
                                 </div>
+
+                                {/* Assignees */}
                                 <div className="mt-6 space-y-8 border-t border-gray-200 py-6">
                                   <div>
                                     <h2 className="text-sm font-medium text-gray-500">
                                       Assignees
                                     </h2>
-                                    <ul role="list" className="mt-3 space-y-3">
-                                      <li className="flex justify-start">
-                                        <a
-                                          href="#"
-                                          className="flex items-center space-x-3"
+                                    <ul
+                                      role="list"
+                                      className="mt-3 flex flex-wrap items-center gap-2"
+                                    >
+                                      {/* Popover to add more assignees */}
+                                      <AssigneeSelectPopover
+                                        bid={panel.board_id}
+                                        task={task}
+                                        innerClassName="absolute -left-4 top-10"
+                                      />
+
+                                      {/* Current assignees */}
+                                      {task.Task_Assign_Rel.map((assignee) => (
+                                        <li
+                                          key={assignee.user_id}
+                                          className="flex items-center justify-start space-x-2 rounded-full border p-1 shadow-sm"
                                         >
-                                          <div className="flex-shrink-0">
-                                            <img
-                                              className="h-5 w-5 rounded-full"
-                                              src="https://images.unsplash.com/photo-1520785643438-5bf77931f493?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80"
-                                              alt=""
+                                          <button
+                                            className="flex items-center space-x-2 rounded-full"
+                                            onClick={() => {
+                                              // Set curr assignee details and open modal
+                                              setCurrAssignee(assignee.User);
+                                              setAssigneeModalOpen(true);
+                                            }}
+                                          >
+                                            {/* Assignee profile image */}
+                                            <div className="flex-shrink-0 rounded-full">
+                                              <img
+                                                className="h-6 w-6 rounded-full"
+                                                src={assignee.User.image ?? ""}
+                                                alt={`${
+                                                  assignee.User.name ?? "user"
+                                                } profile image`}
+                                              />
+                                            </div>
+
+                                            {/* Assignee name */}
+                                            <div className="text-sm font-medium text-gray-900">
+                                              {assignee.User.name ?? "user"}
+                                            </div>
+                                          </button>
+
+                                          <button
+                                            className="rounded-full hover:bg-gray-50 active:bg-gray-100"
+                                            onClick={() => {
+                                              unassignUser({
+                                                boardId: panel.board_id,
+                                                panelId: panel.id,
+                                                taskId: task.id,
+                                                assigneeId: assignee.user_id,
+                                              });
+                                            }}
+                                          >
+                                            <XMarkIcon
+                                              className="h-5 w-5 text-gray-400"
+                                              aria-hidden="true"
                                             />
-                                          </div>
-                                          <div className="text-sm font-medium text-gray-900">
-                                            Eduardo Benz
-                                          </div>
-                                        </a>
-                                      </li>
+                                          </button>
+                                        </li>
+                                      ))}
                                     </ul>
                                   </div>
                                   <div>
@@ -715,7 +773,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                 </span>
                               </div>
 
-                              {/* Created on */}
+                              {/* Created on datetime */}
                               <div className="flex items-center space-x-2">
                                 <CalendarIcon
                                   className="h-5 w-5 text-gray-400"
@@ -749,23 +807,56 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                   Assignees
                                 </h2>
                                 <ul role="list" className="mt-3 space-y-3">
-                                  <li className="flex justify-start">
-                                    <a
-                                      href="#"
-                                      className="flex items-center space-x-3"
+                                  <AssigneeSelectPopover
+                                    bid={panel.board_id}
+                                    task={task}
+                                    innerClassName="absolute -right-6 top-10"
+                                  />
+                                  {task.Task_Assign_Rel.map((assignee) => (
+                                    <li
+                                      key={assignee.user_id}
+                                      className="group flex justify-between"
                                     >
-                                      <div className="flex-shrink-0">
-                                        <img
-                                          className="h-5 w-5 rounded-full"
-                                          src="https://images.unsplash.com/photo-1520785643438-5bf77931f493?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80"
-                                          alt=""
-                                        />
-                                      </div>
-                                      <div className="text-sm font-medium text-gray-900">
-                                        Eduardo Benz
-                                      </div>
-                                    </a>
-                                  </li>
+                                      {/* Assignee details */}
+                                      <button
+                                        className="flex items-center space-x-3"
+                                        onClick={() => {
+                                          // Set curr assignee details and open modal
+                                          setCurrAssignee(assignee.User);
+                                          setAssigneeModalOpen(true);
+                                        }}
+                                      >
+                                        <div className="flex-shrink-0">
+                                          <img
+                                            className="h-6 w-6 rounded-full"
+                                            src={assignee.User.image ?? ""}
+                                            alt={`${
+                                              assignee.User.name ?? "user"
+                                            } profile image`}
+                                          />
+                                        </div>
+                                        <div className="text-sm font-medium text-gray-900">
+                                          {assignee.User.name ?? "user"}
+                                        </div>
+                                      </button>
+
+                                      {/* Remove assignee button */}
+                                      <button
+                                        type="button"
+                                        className="flex justify-center rounded-md bg-white px-2.5 py-1 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                        onClick={() => {
+                                          unassignUser({
+                                            boardId: panel.board_id,
+                                            panelId: panel.id,
+                                            taskId: task.id,
+                                            assigneeId: assignee.user_id,
+                                          });
+                                        }}
+                                      >
+                                        remove
+                                      </button>
+                                    </li>
+                                  ))}
                                 </ul>
                               </div>
 
@@ -819,6 +910,30 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
               </Transition.Child>
             </div>
           </div>
+
+          {/* User modal */}
+          <UserModal
+            open={assigneeModalOpen}
+            setOpen={setAssigneeModalOpen}
+            user={currAssignee}
+            actions={[
+              {
+                callback: async () => {
+                  // Remove assignee from task
+                  await unassignUser({
+                    boardId: panel.board_id,
+                    panelId: panel.id,
+                    taskId: task.id,
+                    assigneeId: currAssignee?.id ?? "",
+                  });
+                  return true;
+                },
+                icon: UserMinusIcon,
+                loading: isRemovingAssignee,
+                name: "Unassign",
+              },
+            ]}
+          />
         </div>
       </Dialog>
     </Transition.Root>

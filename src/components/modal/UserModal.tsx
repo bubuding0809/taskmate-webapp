@@ -43,7 +43,15 @@ const UserModal: React.FC<UserModalProps> = ({
 }) => {
   return (
     <Transition.Root show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={setOpen}>
+      <Dialog
+        as="div"
+        className="relative z-50"
+        onClose={(val) => {
+          // Prevent closing modal when actions are being processed
+          if (actions !== undefined && actions[0]?.loading) return;
+          setOpen(val);
+        }}
+      >
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"

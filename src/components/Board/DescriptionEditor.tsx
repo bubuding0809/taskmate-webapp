@@ -59,7 +59,7 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
     });
 
   // State to hold the hocuspocus provider, setProvider is not used
-  const [hocusProvider, setHocusProvider] = useState(() => {
+  const [hocusProvider] = useState(() => {
     return new HocuspocusProvider({
       url: env.NEXT_PUBLIC_HOCUSPOCUS_URL,
       name: `task.${task.id}`,

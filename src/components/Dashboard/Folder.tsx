@@ -1,12 +1,12 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
 import React, { useEffect, useRef, useState } from "react";
-import FolderDropDownMenu from "../Layout/FolderDropDownMenu";
+import FolderDropDownMenu from "../layout/FolderDropDownMenu";
 import Board from "./Board";
 
 import type { FolderWithBoards } from "server/api/routers/folder";
 import Divider from "../custom/Divider";
-import ConfirmationModal from "../Layout/ConfirmationModal";
+import ConfirmationModal from "../layout/ConfirmationModal";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import useRenameFolder from "@/utils/mutations/useRenameFolder";
 import useDeleteFolder from "@/utils/mutations/useDeleteFolder";

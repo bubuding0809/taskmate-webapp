@@ -5,13 +5,15 @@ import { handlePusherUpdate } from "@/utils/pusher";
 import { useSession } from "next-auth/react";
 import { api } from "utils/api";
 
-const useRemoveAssignee = () => {
-  const utils = api.useContext();
+const useAddAssignees = () => {
+  // const queryClient = useQueryClient();
   const { data: sessionData } = useSession();
 
-  return api.task.removeAssignee.useMutation({
+  const utils = api.useContext();
+
+  return api.task.addAssignees.useMutation({
     onMutate: async (variables) => {
-      const { boardId, assigneeId, panelId, taskId } = variables;
+      const { boardId, assigneeIds, panelId, taskId } = variables;
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       utils.board.getBoardById.cancel({
@@ -22,6 +24,9 @@ const useRemoveAssignee = () => {
       const oldBoardData = utils.board.getBoardById.getData({
         boardId,
       });
+
+      // Optimistically update to the new value
+      // const newBoardData = _.cloneDeep(oldBoardData);
 
       return { oldBoardData };
     },
@@ -49,4 +54,4 @@ const useRemoveAssignee = () => {
   });
 };
 
-export default useRemoveAssignee;
+export default useAddAssignees;

@@ -78,7 +78,7 @@ const useCreateTask = () => {
         subtasks: [],
         is_reveal_subtasks: false,
         Task_Assign_Rel: [],
-        task_description: {},
+        task_description: { type: "doc" },
         created_at: new Date(),
         updated_at: new Date(),
         creator_id: creatorId,

@@ -5,8 +5,8 @@ import { useSession } from "next-auth/react";
 import { UserMinusIcon } from "@heroicons/react/24/solid";
 import { IconButton, Tooltip } from "@mui/material";
 import { User } from "@prisma/client";
-import UserModal from "../Dashboard/UserModal";
-import UserSearchPopover from "../Dashboard/UserSearchPopover";
+import UserModal from "../modal/UserModal";
+import UserSearchPopover from "../dashboard/UserSearchPopover";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { api } from "@/utils/api";
@@ -218,7 +218,7 @@ const BoardHeader: React.FC<BoardHeaderProps> = ({
             </div>
           </form>
         ) : (
-          <Tooltip title="Double click to edit board name">
+          <Tooltip title="Double-click to edit board name">
             <h3
               className="cursor-pointer truncate text-2xl font-semibold text-gray-900"
               onDoubleClick={() => {

@@ -5,12 +5,12 @@ import React, { useRef, useState, useEffect, useMemo } from "react";
 import { Chip, Tooltip } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
-import { Prisma, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { PencilIcon, UserMinusIcon } from "@heroicons/react/20/solid";
 import autoAnimate from "@formkit/auto-animate";
 import TaskEditSlideover from "./TaskEditSlideover";
-import UserModal from "../Dashboard/UserModal";
-import { TodoTaskMenu } from "./TodoTaskMenu";
+import UserModal from "../modal/UserModal";
+import { TaskMenu } from "./TaskMenu";
 import { BpCheckBox } from "../custom/BpCheckBox";
 import { classNames, formatDate } from "@/utils/helper";
 import useToggleTaskStatus from "@/utils/mutations/task/useToggleTaskStatus";
@@ -35,12 +35,11 @@ type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
 type Task = Optional<Panel["Task"][number], "subtasks">;
 
-interface TodoTaskProps {
+interface TaskProps {
   task: Task;
   panelItem: Panel;
   provided?: DraggableProvided;
   snapshot?: DraggableStateSnapshot;
-  handleRemoveDateTime: (taskId: string, panelId: string) => void;
 }
 
 // Style for dragged task
@@ -50,12 +49,11 @@ const draggedStyle = (snapshot: DraggableStateSnapshot | undefined): string => {
     : "";
 };
 
-export const TodoTask: React.FC<TodoTaskProps> = ({
+export const Task: React.FC<TaskProps> = ({
   task,
   panelItem,
   provided,
   snapshot,
-  handleRemoveDateTime,
 }) => {
   const addToast = useToastContext();
 
@@ -119,7 +117,6 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
       >
-        {/* todo item content */}
         <div className="mr-4 flex w-full flex-col items-stretch">
           {/* CheckBox and task title */}
           <div
@@ -163,7 +160,7 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
                     <PencilIcon className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </Tooltip>
-                <TodoTaskMenu task={task} panelItem={panelItem} />
+                <TaskMenu task={task} panelItem={panelItem} />
               </span>
             )}
           </div>
@@ -248,6 +245,7 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
                 </p>
               </Tooltip>
             )}
+
             {/* due date */}
             {task.due_datetime && (
               <Chip
@@ -259,11 +257,6 @@ export const TodoTask: React.FC<TodoTaskProps> = ({
                 size="small"
                 label={formatDate(task.due_datetime)}
                 icon={<CalendarMonthIcon />}
-                onDelete={
-                  task.is_completed
-                    ? undefined
-                    : () => handleRemoveDateTime(task.id, panelItem.id)
-                }
               />
             )}
           </div>

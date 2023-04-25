@@ -2,22 +2,23 @@
 
 import { Dispatch, Fragment, SetStateAction, useMemo, useState } from "react";
 import { Combobox, Popover, Transition } from "@headlessui/react";
-import { UsersIcon } from "@heroicons/react/20/solid";
-import {
-  MagnifyingGlassIcon,
-  PlusIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { classNames } from "@/utils/helper";
 import { api } from "@/utils/api";
-import { Board, Board_Collaborator, Panel, Task, User } from "@prisma/client";
-import useDebouceQuery from "@/utils/hooks/useDebounceQuery";
-import { useSession } from "next-auth/react";
-import useAddCollaborators from "@/utils/mutations/collaborator/useAddCollaborators";
+
+import type { User } from "@prisma/client";
+import type { Optional } from "@/utils/types";
+import type { RouterOutputs } from "@/utils/api";
+import Spinner from "../custom/Spinner";
+import useAddAssignees from "@/utils/mutations/task/useAddAssignees";
+
+type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
+type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
+type Task = Optional<Panel["Task"][number], "subtasks">;
 
 interface UserSearchPopoverProps {
   setPopOverOpen?: Dispatch<SetStateAction<boolean>>;
-  newTaskForm: {
+  newTaskForm?: {
     task_title: string;
     task_description: string;
     task_start_dt: string;
@@ -25,7 +26,7 @@ interface UserSearchPopoverProps {
     task_due_dt: string;
     task_assignedUsers: User[];
   };
-  setNewTaskForm: React.Dispatch<
+  setNewTaskForm?: React.Dispatch<
     React.SetStateAction<{
       task_title: string;
       task_description: string;
@@ -36,8 +37,11 @@ interface UserSearchPopoverProps {
     }>
   >;
   bid: string;
+  task?: Task;
+  innerClassName?: string;
 }
 
+// Maximum number of collaborators allowed
 const MAX_COLLABORATORS = 5;
 
 const AssigneeSelectPopover: React.FC<UserSearchPopoverProps> = ({
@@ -45,6 +49,8 @@ const AssigneeSelectPopover: React.FC<UserSearchPopoverProps> = ({
   setNewTaskForm,
   setPopOverOpen,
   bid,
+  task,
+  innerClassName,
 }) => {
   // Query to get board data
   const { data: boardQueryData } = api.board.getBoardById.useQuery({
@@ -53,6 +59,10 @@ const AssigneeSelectPopover: React.FC<UserSearchPopoverProps> = ({
 
   // State for selected users that will be added to the collaborator list
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+
+  // Mutation to add assignees to the task
+  const { mutateAsync: addAssignees, isLoading: addAssigneesLoading } =
+    useAddAssignees();
 
   // Filter out users that are already in the collaborator list and the current user
   const filteredUsersData = useMemo(() => {
@@ -68,41 +78,58 @@ const AssigneeSelectPopover: React.FC<UserSearchPopoverProps> = ({
 
     // Filter out users that are already being assigned to the task
     return availableUsers.filter((user) => {
-      const isAlreadyAssigned = newTaskForm.task_assignedUsers.some(
-        (collaborator) => collaborator.id === user.id
+      // If the task is being created, check if the user is already in the new task form
+      if (newTaskForm) {
+        return !newTaskForm.task_assignedUsers.some(
+          (collaborator) => collaborator.id === user.id
+        );
+      }
+
+      // If the task is being edited, check if the user is already assigned to the task
+      return !task!.Task_Assign_Rel.some(
+        (assigned) => assigned.user_id === user.id
       );
-      return !isAlreadyAssigned;
     });
-  }, [newTaskForm, boardQueryData]);
+  }, [newTaskForm, boardQueryData, task]);
 
   // Call back function to add selected users to the collaborator list
-  const handleAddSelectedUsers = (
+  const handleAddSelectedUsers = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.preventDefault();
     e.stopPropagation();
 
-    setNewTaskForm((prev) => {
-      // Get the IDs of the current users
-      const currentUsers = prev.task_assignedUsers.map((user) => user.id);
+    if (setNewTaskForm) {
+      setNewTaskForm((prev) => {
+        // Get the IDs of the current users
+        const currentUsers = prev.task_assignedUsers.map((user) => user.id);
 
-      // Get the IDs of the new users to be added, filter out duplicates that are already in current users
-      const newUsers = selectedUsers.filter(
-        (user) => user && !currentUsers.includes(user.id)
-      );
+        // Get the IDs of the new users to be added, filter out duplicates that are already in current users
+        const newUsers = selectedUsers.filter(
+          (user) => user && !currentUsers.includes(user.id)
+        );
 
-      // Make sure the total number of collaborators doesn't exceed 10
-      if (currentUsers.length + newUsers.length > MAX_COLLABORATORS) {
-        alert(`You can't have more than ${MAX_COLLABORATORS} assignees.`);
-        return prev;
-      }
+        // Make sure the total number of collaborators doesn't exceed 10
+        if (currentUsers.length + newUsers.length > MAX_COLLABORATORS) {
+          alert(`You can't have more than ${MAX_COLLABORATORS} assignees.`);
+          return prev;
+        }
 
-      // Add the new users to the collaborator list
-      return {
-        ...prev,
-        task_assignedUsers: [...prev.task_assignedUsers, ...newUsers],
-      };
-    });
+        // Add the new users to the collaborator list
+        return {
+          ...prev,
+          task_assignedUsers: [...prev.task_assignedUsers, ...newUsers],
+        };
+      });
+    } else {
+      // Add the new users to the task
+      await addAssignees({
+        boardId: bid,
+        panelId: task!.panel_id,
+        taskId: task!.id,
+        assigneeIds: selectedUsers.map((user) => user.id),
+      });
+    }
 
     // Clear the selected users
     setSelectedUsers([]);
@@ -127,11 +154,16 @@ const AssigneeSelectPopover: React.FC<UserSearchPopoverProps> = ({
         leaveFrom="opacity-100 translate-y-0"
         leaveTo="opacity-0 translate-y-1"
       >
-        <Popover.Panel className="absolute -left-[129px] bottom-10 z-10 flex w-screen max-w-max px-4">
+        <Popover.Panel
+          className={classNames(
+            innerClassName ?? "",
+            "z-10 flex w-screen max-w-max px-4"
+          )}
+        >
           {({ close, open }) => {
             setPopOverOpen && setPopOverOpen(open);
             return (
-              <div className="max-w-[26rem] flex-auto overflow-hidden rounded-3xl bg-white text-sm leading-6 shadow-lg ring-1 ring-gray-900/5">
+              <div className="z-10 max-w-[26rem] flex-auto overflow-hidden rounded-3xl bg-white text-sm leading-6 shadow-lg ring-1 ring-gray-900/5">
                 {/* Popover body */}
                 <div className="p-4">
                   <Combobox
@@ -246,17 +278,26 @@ const AssigneeSelectPopover: React.FC<UserSearchPopoverProps> = ({
                 {/* Popover footer */}
                 <div className="grid grid-cols-1 divide-x divide-gray-900/5 bg-gray-50">
                   <button
+                    disabled={addAssigneesLoading}
                     className="flex items-center justify-center gap-x-2.5 p-3 font-semibold text-gray-900 hover:bg-gray-100 disabled:bg-indigo-300 disabled:text-white"
-                    onClick={(e) => {
-                      handleAddSelectedUsers(e);
-                      close();
-                    }}
+                    onClick={(e) =>
+                      handleAddSelectedUsers(e).then(() => close())
+                    }
                   >
-                    <PlusIcon
-                      className="h-5 w-5 flex-none text-gray-400"
-                      aria-hidden="true"
-                    />
-                    Invite selected people
+                    {addAssigneesLoading ? (
+                      <>
+                        <Spinner />
+                        Assigning
+                      </>
+                    ) : (
+                      <>
+                        <PlusIcon
+                          className="h-5 w-5 flex-none text-gray-400"
+                          aria-hidden="true"
+                        />
+                        Assign selected
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

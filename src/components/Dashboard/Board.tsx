@@ -2,16 +2,16 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import UserModal from "./UserModal";
+import UserModal from "../modal/UserModal";
 import { Tooltip } from "@mui/material";
 import { api } from "@/utils/api";
 import { useRouter } from "next/router";
 import { nanoid } from "nanoid";
 import useCreatePanel from "@/utils/mutations/panel/useCreatePanel";
 import CircularProgressWithLabel from "../custom/CircularProgressWithLabel";
-import BoardDropDownMenu from "../Layout/BoardDropDownMenu";
+import BoardDropDownMenu from "../layout/BoardDropDownMenu";
 import { classNames, trimChar } from "@/utils/helper";
-import ConfirmationModal from "../Layout/ConfirmationModal";
+import ConfirmationModal from "../layout/ConfirmationModal";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import useRenameBoard from "@/utils/mutations/useRenameBoard";
 import useDeleteBoard from "@/utils/mutations/useDeleteBoard";
