@@ -1,49 +1,45 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
 import { handlePusherUpdate } from "@/utils/pusher";
-import { useQueryClient } from "@tanstack/react-query";
-import { getQueryKey } from "@trpc/react-query";
-import _ from "lodash";
 import { useSession } from "next-auth/react";
-import { BoardWithPanelsAndTasksAndCollaborators } from "server/api/routers/board";
 import { api } from "utils/api";
+import _ from "lodash";
 
 const useUpdateBoardThumbnail = () => {
-  const queryClient = useQueryClient();
+  const utils = api.useContext();
   const { data: sessionData } = useSession();
 
   return api.board.updateBoardThumbnail.useMutation({
     onMutate: async (variables) => {
       const { boardId, thumbnail, userId } = variables;
 
-      // Create query key for the board query
-      const queryKey = getQueryKey(
-        api.board.getBoardById,
-        { boardId },
-        "query"
-      );
-
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries({
-        queryKey: queryKey,
-      });
+      utils.board.getBoardById.cancel({ boardId });
 
       // Snapshot the previous value for boards
-      const oldBoardData = queryClient.getQueryData(
-        queryKey
-      ) as BoardWithPanelsAndTasksAndCollaborators;
-
-      // Optimistically update to the new value
-      queryClient.setQueryData(queryKey, {
-        ...oldBoardData,
-        thumbnail_image: thumbnail,
+      const oldBoardData = utils.board.getBoardById.getData({
+        boardId,
       });
 
-      return { queryKey, oldBoardData };
+      // Optimistically update to the new value
+      if (oldBoardData) {
+        utils.board.getBoardById.setData(
+          { boardId },
+          {
+            ...oldBoardData,
+            thumbnail_image: thumbnail,
+          }
+        );
+      }
+
+      return { oldBoardData };
     },
-    onError: (_error, _variables, ctx) => {
+    onError: (_error, variables, ctx) => {
       // If the mutation fails, use the context returned from onMutate to roll back
-      queryClient.setQueryData(ctx!.queryKey, ctx!.oldBoardData);
+      utils.board.getBoardById.setData(
+        { boardId: variables.boardId },
+        ctx!.oldBoardData
+      );
     },
     onSettled: async (_data, _error, variables, ctx) => {
       // Sender update to pusher
@@ -52,25 +48,11 @@ const useUpdateBoardThumbnail = () => {
         sender: sessionData!.user.id,
       });
       // Always refetch query after error or success to make sure the server state is correct
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ctx?.queryKey,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: getQueryKey(
-            api.board.getUserBoardWithoutFolder,
-            { userId: variables.userId },
-            "query"
-          ),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: getQueryKey(
-            api.folder.getAllUserFolders,
-            { userId: variables.userId },
-            "query"
-          ),
-        }),
-      ]);
+      utils.board.getBoardById.invalidate({ boardId: variables.boardId });
+      utils.board.getUserBoardWithoutFolder.invalidate({
+        userId: variables.userId,
+      });
+      utils.folder.getAllUserFolders.invalidate({ userId: variables.userId });
     },
   });
 };

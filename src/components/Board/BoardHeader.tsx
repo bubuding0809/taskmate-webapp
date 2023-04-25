@@ -6,7 +6,7 @@ import { UserMinusIcon } from "@heroicons/react/24/solid";
 import { IconButton, Tooltip } from "@mui/material";
 import { User } from "@prisma/client";
 import UserModal from "../modal/UserModal";
-import UserSearchPopover from "../dashboard/UserSearchPopover";
+import UserSearchPopover from "@/components/dashboard/UserSearchPopover";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import { api } from "@/utils/api";

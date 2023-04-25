@@ -41,13 +41,6 @@ export type BoardWithPanelsAndTasks = Board & {
   Panel: PanelWithTasks[];
 };
 
-export type BoardWithPanelsAndTasksAndCollaborators = Board & {
-  Panel: PanelWithTasks[];
-  Board_Collaborator: {
-    User: User;
-  };
-};
-
 export const boardRouter = createTRPCRouter({
   // Query to get board by id
   getBoardById: publicProcedure

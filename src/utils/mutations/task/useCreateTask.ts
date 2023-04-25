@@ -5,12 +5,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getQueryKey } from "@trpc/react-query";
 import _ from "lodash";
 import { useSession } from "next-auth/react";
-import type { BoardWithPanelsAndTasks } from "server/api/routers/board";
-import { TaskDetailed } from "server/api/routers/board";
 import { api } from "utils/api";
 
 const useCreateTask = () => {
-  const queryClient = useQueryClient();
+  const utils = api.useContext();
   const { data: sessionData } = useSession();
 
   return api.task.createTask.useMutation({
@@ -44,22 +42,17 @@ const useCreateTask = () => {
       );
 
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries({
-        queryKey: boardQueryKey,
-      });
-      await queryClient.cancelQueries({
-        queryKey: taskMapQueryKey,
-      });
+      utils.board.getBoardById.cancel({ boardId });
+      utils.board.getTasksMapByBoardId.cancel({ boardId });
 
       // Snapshot the previous value for boards
-      const oldBoardData = queryClient.getQueryData(
-        boardQueryKey
-      ) as BoardWithPanelsAndTasks;
+      const oldBoardData = utils.board.getBoardById.getData({
+        boardId,
+      });
 
-      const oldTaskMapData = queryClient.getQueryData(taskMapQueryKey) as Map<
-        string,
-        TaskDetailed
-      >;
+      const oldTaskMapData = utils.board.getTasksMapByBoardId.getData({
+        boardId,
+      });
 
       const newBoardData = _.cloneDeep(oldBoardData);
       const newTaskMapData = _.cloneDeep(oldTaskMapData);
@@ -84,42 +77,58 @@ const useCreateTask = () => {
         creator_id: creatorId,
       };
 
-      // Add the new task to the task map
-      newTaskMapData.set(taskId, {
-        ...newTask,
-        Attachment: [],
-        Task_Activity: [],
-      });
+      if (newBoardData && newTaskMapData) {
+        // Add the new task to the task map
+        newTaskMapData.set(taskId, {
+          ...newTask,
+          Attachment: [],
+          Task_Activity: [],
+        });
 
-      // Locate the panel that the task is being added to, and add the task to the beginning of the array
-      newBoardData.Panel.find((panel) => panel.id === panelId)!.Task.unshift({
-        ...newTask,
-        Creator: {
-          id: creatorId,
-          name: "",
-          email: "",
-          board_order: "",
-          emailVerified: null,
-          image: "",
-          folder_order: "",
-          password: "",
-          status_message: "",
-        },
-        parentTask: parentTaskId ? newTaskMapData.get(parentTaskId)! : null,
-      });
+        // Locate the panel that the task is being added to, and add the task to the beginning of the array
+        newBoardData.Panel.find((panel) => panel.id === panelId)?.Task.unshift({
+          ...newTask,
+          Creator: {
+            id: creatorId,
+            name: "",
+            email: "",
+            board_order: "",
+            emailVerified: null,
+            image: "",
+            folder_order: "",
+            password: "",
+            status_message: "",
+          },
+          parentTask: parentTaskId ? newTaskMapData.get(parentTaskId)! : null,
+        });
 
-      // Optimistically update to the new value
-      queryClient.setQueryData(taskMapQueryKey, newTaskMapData);
-      queryClient.setQueryData(boardQueryKey, newBoardData);
+        // Optimistically update to the new value
+        utils.board.getBoardById.setData({ boardId: boardId }, newBoardData);
+        utils.board.getTasksMapByBoardId.setData(
+          { boardId: boardId },
+          newTaskMapData
+        );
+      }
 
-      return { boardQueryKey, oldBoardData, taskMapQueryKey, oldTaskMapData };
+      return { oldBoardData, oldTaskMapData };
     },
-    onError: (_error, _variables, ctx) => {
+    onError: (_error, variables, ctx) => {
       // If the mutation fails, use the context returned from onMutate to roll back
-      queryClient.setQueryData(ctx!.boardQueryKey, ctx!.oldBoardData);
-      queryClient.setQueriesData(ctx!.taskMapQueryKey, ctx!.oldTaskMapData);
+      utils.board.getBoardById.setData(
+        {
+          boardId: variables.boardId,
+        },
+        ctx!.oldBoardData
+      );
+
+      utils.board.getTasksMapByBoardId.setData(
+        {
+          boardId: variables.boardId,
+        },
+        ctx!.oldTaskMapData
+      );
     },
-    onSettled: async (_data, _error, variables, ctx) => {
+    onSettled: async (_data, _error, variables) => {
       // Sender update to pusher
       handlePusherUpdate({
         bid: variables.boardId,
@@ -127,11 +136,9 @@ const useCreateTask = () => {
       });
 
       // Always refetch query after error or success to make sure the server state is correct
-      await queryClient.invalidateQueries({
-        queryKey: ctx?.boardQueryKey,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ctx?.taskMapQueryKey,
+      utils.board.getBoardById.invalidate({ boardId: variables.boardId });
+      utils.board.getTasksMapByBoardId.invalidate({
+        boardId: variables.boardId,
       });
     },
   });

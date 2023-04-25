@@ -1,43 +1,34 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
 import { handlePusherUpdate } from "@/utils/pusher";
-import { useQueryClient } from "@tanstack/react-query";
-import { getQueryKey } from "@trpc/react-query";
-import _ from "lodash";
 import { useSession } from "next-auth/react";
-import { BoardWithPanelsAndTasksAndCollaborators } from "server/api/routers/board";
 import { api } from "utils/api";
+import _ from "lodash";
 
 const useRemoveCollaborators = () => {
-  const queryClient = useQueryClient();
+  const utils = api.useContext();
   const { data: sessionData } = useSession();
 
   return api.collaborator.removeCollaborators.useMutation({
     onMutate: async (variables) => {
       const { boardId, userIds } = variables;
 
-      // Create query key for the board query
-      const queryKey = getQueryKey(
-        api.board.getBoardById,
-        { boardId },
-        "query"
-      );
-
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries({
-        queryKey: queryKey,
-      });
+      utils.board.getBoardById.cancel({ boardId });
 
       // Snapshot the previous value for boards
-      const oldBoardData = queryClient.getQueryData(
-        queryKey
-      ) as BoardWithPanelsAndTasksAndCollaborators;
+      const oldBoardData = utils.board.getBoardById.getData({
+        boardId,
+      });
 
-      return { queryKey, oldBoardData };
+      return { oldBoardData };
     },
-    onError: (_error, _variables, ctx) => {
+    onError: (_error, variables, ctx) => {
       // If the mutation fails, use the context returned from onMutate to roll back
-      queryClient.setQueryData(ctx!.queryKey, ctx!.oldBoardData);
+      utils.board.getBoardById.setData(
+        { boardId: variables.boardId },
+        ctx!.oldBoardData
+      );
     },
     onSettled: async (_data, _error, variables, ctx) => {
       // Sender update to pusher
@@ -47,9 +38,7 @@ const useRemoveCollaborators = () => {
       });
 
       // Always refetch query after error or success to make sure the server state is correct
-      await queryClient.invalidateQueries({
-        queryKey: ctx?.queryKey,
-      });
+      utils.board.getBoardById.invalidate({ boardId: variables.boardId });
     },
   });
 };
