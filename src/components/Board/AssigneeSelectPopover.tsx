@@ -138,7 +138,7 @@ const AssigneeSelectPopover: React.FC<UserSearchPopoverProps> = ({
   };
 
   return (
-    <Popover className="relative h-8">
+    <Popover className="relative flex">
       <PopoverButton />
       <Transition
         as={Fragment}

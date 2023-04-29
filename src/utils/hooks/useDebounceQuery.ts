@@ -2,9 +2,13 @@
 
 import { Dispatch, useEffect, useState } from "react";
 
-type UseDebounceType = <T>(value: T, delay?: number) => [T, Dispatch<T>, T];
+type UseDebounceType = <T>(
+  value: T,
+  delay?: number,
+  onDebouncedChange?: (value: T) => void
+) => [T, Dispatch<T>, T];
 
-const useDebouceQuery: UseDebounceType = (value, delay) => {
+const useDebouceQuery: UseDebounceType = (value, delay, onDebouncedChange) => {
   const [liveValue, setLiveValue] = useState(value);
   const [debouncedValue, setDebouncedValue] = useState(liveValue);
 
@@ -17,6 +21,11 @@ const useDebouceQuery: UseDebounceType = (value, delay) => {
       clearTimeout(handler);
     };
   }, [liveValue, delay]);
+
+  // Callback to execute when debounced value changes
+  useEffect(() => {
+    onDebouncedChange && onDebouncedChange(debouncedValue);
+  }, [debouncedValue]);
 
   return [liveValue, setLiveValue, debouncedValue] as [
     typeof liveValue,

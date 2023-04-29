@@ -1,6 +1,9 @@
 import { Fragment, SetStateAction, useState } from "react";
 import { Dialog, Popover, Transition } from "@headlessui/react";
-import { ChevronDoubleRightIcon, PlusIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronDoubleRightIcon,
+  ExclamationCircleIcon,
+} from "@heroicons/react/24/outline";
 import {
   BellIcon,
   CalendarIcon,
@@ -10,8 +13,8 @@ import {
   TagIcon,
   UserCircleIcon as UserCircleIconMini,
   UserMinusIcon,
-  UserIcon,
   XMarkIcon,
+  UserPlusIcon,
 } from "@heroicons/react/20/solid";
 import UserModal from "@/components/Modal/UserModal";
 import DescriptionEditor from "@/components/Board/DescriptionEditor";
@@ -20,9 +23,13 @@ import useRemoveAssignee from "@/utils/mutations/task/useRemoveAssignee";
 import AssigneeSelectPopover from "@/components/Board/AssigneeSelectPopover";
 import { classNames } from "@/utils/helper";
 
-import type { RouterOutputs } from "@/utils/api";
+import { RouterOutputs } from "@/utils/api";
 import type { Optional } from "@/utils/types";
 import type { User } from "@prisma/client";
+import { Tooltip } from "@mui/material";
+import useDebouceQuery from "@/utils/hooks/useDebounceQuery";
+import useUpdateTitle from "@/utils/mutations/task/useUpdateTitle";
+import { useToastContext } from "@/utils/context/ToastContext";
 
 type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
@@ -155,6 +162,8 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
   task,
   panel,
 }) => {
+  const addToast = useToastContext();
+
   // State to track assignee modal state
   const [assigneeModalOpen, setAssigneeModalOpen] = useState(false);
   const [currAssignee, setCurrAssignee] = useState<User | null>(null);
@@ -162,13 +171,33 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
   // Mutation to toggle task completion
   const { mutate: toggleTask } = useToggleTaskStatus();
 
+  // Mutation to update task title
+  const { mutate: updateTaskTitle } = useUpdateTitle();
+
   // Mutation to remove user from task
   const { mutateAsync: unassignUser, isLoading: isRemovingAssignee } =
     useRemoveAssignee();
 
+  // Debounced string state for task title
+  const [liveTaskTitle, setLiveTaskTitle] = useDebouceQuery(
+    task.task_title ?? "",
+    500,
+    // Callback to update task title when debounced value changes
+    (value) => {
+      if (value.trim() !== task.task_title) {
+        updateTaskTitle({
+          boardId: panel.board_id,
+          panelId: panel.id,
+          taskId: task.id,
+          title: value,
+        });
+      }
+    }
+  );
+
   return (
     <Transition.Root show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={setOpen}>
+      <Dialog as="div" className="relative z-40" onClose={setOpen}>
         {/* Overlay */}
         <div className="fixed inset-0" />
 
@@ -244,10 +273,32 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                             {/* Title and meta info*/}
                             <div>
                               <div className="md:flex md:items-center md:justify-between md:space-x-4 xl:pb-6">
-                                <div>
-                                  <h1 className="text-2xl font-bold text-gray-900">
-                                    {task.task_title}
-                                  </h1>
+                                <div className="flex-1">
+                                  <Tooltip
+                                    title="Edit task title"
+                                    placement="right"
+                                  >
+                                    <input
+                                      className="w-full cursor-pointer text-ellipsis bg-transparent text-2xl font-bold text-gray-900 outline-offset-2 focus:cursor-text focus:outline-indigo-600"
+                                      value={liveTaskTitle ?? ""}
+                                      placeholder="Enter task title"
+                                      onChange={({ target: { value } }) =>
+                                        setLiveTaskTitle(value)
+                                      }
+                                      // Prevent losing focus if task title is empty
+                                      onBlur={(e) => {
+                                        if (!liveTaskTitle?.trim()) {
+                                          addToast({
+                                            title: "Task title is required",
+                                            description:
+                                              "You must enter a task title before saving",
+                                            icon: ExclamationCircleIcon,
+                                          });
+                                          e.target.focus();
+                                        }
+                                      }}
+                                    />
+                                  </Tooltip>
                                   <p className="mt-2 text-sm text-gray-500">
                                     Created by{" "}
                                     <a
@@ -277,7 +328,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                     )}
                                   </p>
                                 </div>
-                                <div className="mt-4 flex space-x-3 md:mt-0">
+                                <div className="mt-4 flex space-x-3 md:mt-0 md:self-start">
                                   <button
                                     type="button"
                                     className="inline-flex justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
@@ -395,14 +446,14 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                         PopoverButton={() => (
                                           <Popover.Button
                                             type="button"
-                                            className="inline-flex flex-shrink-0 items-center justify-center space-x-1 rounded-full border-gray-200 bg-white p-1 pr-2 text-sm text-gray-400 outline-dashed outline-2 -outline-offset-1 hover:border-gray-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                            className="inline-flex flex-shrink-0 items-center justify-center space-x-2 rounded-full border border-dashed bg-white p-1 pr-2 text-sm text-gray-400 shadow-sm hover:border-gray-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                           >
-                                            <UserIcon
-                                              className="h-6 w-6 rounded-full border bg-gray-100"
+                                            <UserPlusIcon
+                                              className="h-6 w-6 rounded-full border border-dashed bg-gray-100"
                                               aria-hidden="true"
                                             />
-                                            <span className="">
-                                              Assign user
+                                            <span className="text-sm font-medium">
+                                              Add assignee
                                             </span>
                                           </Popover.Button>
                                         )}
@@ -434,9 +485,9 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                             </div>
 
                                             {/* Assignee name */}
-                                            <div className="text-sm font-medium text-gray-900">
+                                            <span className="text-sm font-medium text-gray-900">
                                               {assignee.User.name ?? "user"}
-                                            </div>
+                                            </span>
                                           </button>
 
                                           <button
@@ -512,7 +563,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                               />
                             )}
 
-                            {/* Activity section */}
+                            {/* TODO - Activity section */}
                             <section
                               aria-labelledby="task-activities"
                               className="group mt-8 rounded-lg bg-white shadow focus-within:shadow-solid-medium xl:mt-10"
@@ -827,6 +878,20 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                     bid={panel.board_id}
                                     task={task}
                                     innerClassName="absolute -right-6 top-10"
+                                    PopoverButton={() => (
+                                      <Popover.Button
+                                        type="button"
+                                        className="inline-flex flex-shrink-0 items-center justify-center space-x-2 text-sm text-gray-400 hover:text-gray-500"
+                                      >
+                                        <UserPlusIcon
+                                          className="h-6 w-6 rounded-full border border-dashed bg-gray-100"
+                                          aria-hidden="true"
+                                        />
+                                        <span className="text-sm font-medium">
+                                          Add assignee
+                                        </span>
+                                      </Popover.Button>
+                                    )}
                                   />
                                   {task.Task_Assign_Rel.map((assignee) => (
                                     <li
@@ -835,7 +900,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                     >
                                       {/* Assignee details */}
                                       <button
-                                        className="flex items-center space-x-3"
+                                        className="flex items-center space-x-2"
                                         onClick={() => {
                                           // Set curr assignee details and open modal
                                           setCurrAssignee(assignee.User);

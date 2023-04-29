@@ -451,15 +451,14 @@ export const taskRouter = createTRPCRouter({
       });
     }),
 
-  // Mutation to update task description
-  updateTaskDescription: protectedProcedure
+  // Mutation to update a task's title
+  updateTitle: protectedProcedure
     .input(
       z.object({
         boardId: z.string(),
         panelId: z.string(),
         taskId: z.string(),
-        description: z.string(),
-        editorId: z.string(),
+        title: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -468,10 +467,7 @@ export const taskRouter = createTRPCRouter({
           id: input.taskId,
         },
         data: {
-          task_description:
-            (JSON.parse(input.description) as Prisma.JsonObject) ??
-            Prisma.DbNull,
-          updated_at: new Date(),
+          task_title: input.title,
         },
       });
     }),

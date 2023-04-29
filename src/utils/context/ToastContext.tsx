@@ -82,7 +82,7 @@ export const ToastContextProvider: React.FC<ToastContextProviderProps> = ({
                 key={index}
                 className={classNames(
                   toastPosition,
-                  "pointer-events-auto w-full max-w-sm rounded-lg bg-white p-4 shadow-lg ring-1 ring-black ring-opacity-5"
+                  "pointer-events-auto z-50 w-full max-w-sm rounded-lg bg-white p-4 shadow-lg ring-1 ring-black ring-opacity-5"
                 )}
               >
                 <div className="flex items-start">

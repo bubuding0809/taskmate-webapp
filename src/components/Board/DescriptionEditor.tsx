@@ -68,8 +68,8 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
       token: sessionData?.user.id,
       onDisconnect: () => {
         // Close the editor when the connection is lost
-        // This is a hacky way to prevent duplication of data by editor when the connection is lost
-        close();
+        // - This is a hacky way to prevent duplication of data by editor when the connection is lost
+        // close();
       },
     });
   });
