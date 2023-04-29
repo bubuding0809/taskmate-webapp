@@ -587,17 +587,21 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                             {/* Datetime sensitive section */}
                             <section
                               aria-labelledby="task-datetime"
-                              className="rounded-lg bg-white shadow"
+                              className="group rounded-lg bg-white shadow focus-within:shadow-solid-md"
                             >
                               <h2
                                 id="task-datetime"
-                                className="rounded-lg rounded-b-none border-2 border-b-0 border-gray-800 bg-gray-800 px-2 py-1 text-lg font-medium text-white"
+                                className="rounded-lg rounded-b-none border-2 border-b-0 border-gray-800 bg-gray-800 px-2 py-1 text-lg font-medium text-white group-focus-within:border-indigo-600 group-focus-within:bg-indigo-600"
                               >
                                 Date &amp; Time
                               </h2>
-                              <div className="flex flex-col rounded-lg rounded-t-none border-2 border-t-0 border-gray-800 bg-white px-4 py-5 sm:p-6">
+                              <div className="flex flex-col rounded-lg rounded-t-none border-2 border-t-0 border-gray-800 bg-white px-4 py-5 group-focus-within:border-indigo-600 sm:p-6">
+                                {/* Task due datetime */}
                                 <div>
-                                  <label htmlFor="task-due-datetime">
+                                  <label
+                                    htmlFor="task-due-datetime"
+                                    className="cursor-pointer"
+                                  >
                                     <span className="block text-sm font-medium text-gray-700">
                                       Due date-time
                                     </span>
@@ -607,7 +611,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                       type="datetime-local"
                                       name="task-due-datetime"
                                       id="task-due-datetime"
-                                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                      className="block w-full cursor-text rounded-md border-gray-300 shadow-sm focus:ring-indigo-600 sm:text-sm"
                                       value={liveTaskDueDate}
                                       onChange={(e) =>
                                         setLiveTaskDueDate(e.target.value)
@@ -631,7 +635,7 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                             {/* TODO - Activity section */}
                             <section
                               aria-labelledby="task-activities"
-                              className="group mt-8 rounded-lg bg-white shadow focus-within:shadow-solid-medium xl:mt-10"
+                              className="group mt-8 rounded-lg bg-white shadow focus-within:shadow-solid-md xl:mt-10"
                             >
                               <h2
                                 id="task-activities"

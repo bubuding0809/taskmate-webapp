@@ -46,7 +46,7 @@ interface TaskProps {
 // Style for dragged task
 const draggedStyle = (snapshot: DraggableStateSnapshot | undefined): string => {
   return snapshot?.isDragging
-    ? "rounded border-3 border-slate-700 bg-slate-50/80 shadow-solid-small"
+    ? "rounded border-3 border-slate-700 bg-slate-50/80 shadow-solid-sm"
     : "";
 };
 

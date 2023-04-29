@@ -85,7 +85,7 @@ const FolderDisclosure: React.FC<FolderDisclosureProps> = ({
       key={folderItem.id}
       className={classNames(
         snapshot.isDragging &&
-          "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-small shadow-gray-900",
+          "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-sm shadow-gray-900",
         "rounded-md border border-dashed border-gray-200 bg-gray-600/10"
       )}
       onMouseEnter={() => setMenuButtonVisible(true)}

@@ -66,7 +66,7 @@ export const TaskView: React.FC<TaskViewProps> = ({
       className={classNames(
         task.is_completed ? "bg-gray-300" : "bg-white",
         snapshot?.isDragging
-          ? "border-3 border-slate-700 bg-slate-50/80 shadow-solid-small"
+          ? "border-3 border-slate-700 bg-slate-50/80 shadow-solid-sm"
           : "border",
         "flex flex-col rounded p-1 shadow hover:shadow-inner"
       )}

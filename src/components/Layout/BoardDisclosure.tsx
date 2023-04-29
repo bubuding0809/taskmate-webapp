@@ -130,7 +130,7 @@ const BoardDisclosure: React.FC<BoardDisclosureProps> = ({
           className={classNames(
             sidebarExpanded ? "justify-between" : "justify-center",
             snapshot.isDragging &&
-              "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-small shadow-gray-900",
+              "rounded border-3 border-slate-400 bg-slate-50/80 bg-slate-700 shadow-solid-sm shadow-gray-900",
             !!snapshot.combineWith && "bg-emerald-400/50",
             "group flex w-full items-center rounded-md px-2 py-1 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
           )}

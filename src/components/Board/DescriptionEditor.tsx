@@ -123,7 +123,7 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
     editorProps: {
       attributes: {
         class:
-          "prose max-w-none p-4 focus:outline-none border-2 border-gray-800 rounded-lg rounded-tl-none focus:bg-gray-50 focus:border-indigo-700 bg-white shadow focus:shadow-solid-medium",
+          "prose max-w-none p-4 focus:outline-none border-2 border-gray-800 rounded-lg rounded-tl-none focus:bg-gray-50 focus:border-indigo-700 bg-white shadow focus:shadow-solid-md",
       },
     },
     onUpdate: ({ editor }) => setLiveDescription(editor.getText()),

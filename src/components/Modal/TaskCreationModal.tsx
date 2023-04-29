@@ -142,7 +142,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg border-2 border-gray-400 bg-white text-left shadow-solid-medium shadow-slate-800/50 transition-all sm:my-8 sm:w-full sm:max-w-lg">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg border-2 border-gray-400 bg-white text-left shadow-solid-md shadow-slate-800/50 transition-all sm:my-8 sm:w-full sm:max-w-lg">
                 {/* Header */}
                 <div className="bg-gray-50 px-4 py-6 sm:px-6">
                   <div className="flex items-start justify-between space-x-3">
