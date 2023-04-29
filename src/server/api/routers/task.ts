@@ -471,4 +471,25 @@ export const taskRouter = createTRPCRouter({
         },
       });
     }),
+
+  // Mutation to update a task's due date
+  updateDueDatetime: protectedProcedure
+    .input(
+      z.object({
+        boardId: z.string(),
+        panelId: z.string(),
+        taskId: z.string(),
+        dueDate: z.date(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.prisma.task.update({
+        where: {
+          id: input.taskId,
+        },
+        data: {
+          due_datetime: input.dueDate,
+        },
+      });
+    }),
 });

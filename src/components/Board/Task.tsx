@@ -23,6 +23,7 @@ import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 import Highlight from "@tiptap/extension-highlight";
 import Typography from "@tiptap/extension-typography";
 import Color from "@tiptap/extension-color";
+import { ClockIcon } from "@heroicons/react/20/solid";
 
 import type {
   DraggableProvided,
@@ -249,14 +250,22 @@ export const Task: React.FC<TaskProps> = ({
             {/* due date */}
             {task.due_datetime && (
               <Chip
-                sx={{
-                  color: "text.secondary",
-                  paddingLeft: "5px",
-                }}
                 variant="outlined"
                 size="small"
                 label={formatDate(task.due_datetime)}
-                icon={<CalendarMonthIcon />}
+                icon={<ClockIcon className="h-5 w-5" />}
+                color={(() => {
+                  const today = new Date();
+                  const dueDate = new Date(task.due_datetime);
+
+                  // If due date is today, show warning color else if due date is in the past, show error color
+                  if (dueDate.getDate() === today.getDate()) {
+                    return "warning";
+                  } else if (dueDate < today) {
+                    return "error";
+                  }
+                  return "default";
+                })()}
               />
             )}
           </div>

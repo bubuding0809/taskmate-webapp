@@ -30,6 +30,8 @@ import { Tooltip } from "@mui/material";
 import useDebouceQuery from "@/utils/hooks/useDebounceQuery";
 import useUpdateTitle from "@/utils/mutations/task/useUpdateTitle";
 import { useToastContext } from "@/utils/context/ToastContext";
+import moment from "moment";
+import useUpdateDueDatetime from "@/utils/mutations/task/useUpdateDueDatetime";
 
 type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
@@ -75,6 +77,15 @@ const formatDistanceToNow = (
   } else {
     return `${diffInYears} year${options?.addSuffix ? "s" : ""}`;
   }
+};
+
+// Helper to convert date to datetime string
+const convertDateToString = (
+  date: Date | null | undefined,
+  format?: string
+) => {
+  if (!date) return "";
+  return moment(date).format(format ?? "YYYY-MM-DDTHH:mm");
 };
 
 // TODO - To be replaced with real data
@@ -168,28 +179,48 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
   const [assigneeModalOpen, setAssigneeModalOpen] = useState(false);
   const [currAssignee, setCurrAssignee] = useState<User | null>(null);
 
+  // Mutation to remove user from task
+  const { mutateAsync: unassignUser, isLoading: isRemovingAssignee } =
+    useRemoveAssignee();
+
   // Mutation to toggle task completion
   const { mutate: toggleTask } = useToggleTaskStatus();
 
   // Mutation to update task title
   const { mutate: updateTaskTitle } = useUpdateTitle();
 
-  // Mutation to remove user from task
-  const { mutateAsync: unassignUser, isLoading: isRemovingAssignee } =
-    useRemoveAssignee();
+  // Mutation to update task due date
+  const { mutate: updateTaskDueDatetime } = useUpdateDueDatetime();
 
   // Debounced string state for task title
   const [liveTaskTitle, setLiveTaskTitle] = useDebouceQuery(
     task.task_title ?? "",
     500,
     // Callback to update task title when debounced value changes
-    (value) => {
-      if (value.trim() !== task.task_title) {
+    (title) => {
+      if (title.trim() !== task.task_title) {
         updateTaskTitle({
           boardId: panel.board_id,
           panelId: panel.id,
           taskId: task.id,
-          title: value,
+          title: title,
+        });
+      }
+    }
+  );
+
+  // Debounced string state for task due date
+  const [liveTaskDueDate, setLiveTaskDueDate] = useDebouceQuery(
+    convertDateToString(task.due_datetime),
+    500,
+    // Callback to update task due date when debounced value changes
+    (dateString) => {
+      if (dateString !== convertDateToString(task.due_datetime)) {
+        updateTaskDueDatetime({
+          boardId: panel.board_id,
+          panelId: panel.id,
+          taskId: task.id,
+          dueDate: new Date(dateString),
         });
       }
     }
@@ -552,6 +583,40 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                                 </div>
                               </aside>
                             </div>
+
+                            {/* Datetime sensitive section */}
+                            <section
+                              aria-labelledby="task-datetime"
+                              className="rounded-lg bg-white shadow"
+                            >
+                              <h2
+                                id="task-datetime"
+                                className="rounded-lg rounded-b-none border-2 border-b-0 border-gray-800 bg-gray-800 px-2 py-1 text-lg font-medium text-white"
+                              >
+                                Date &amp; Time
+                              </h2>
+                              <div className="flex flex-col rounded-lg rounded-t-none border-2 border-t-0 border-gray-800 bg-white px-4 py-5 sm:p-6">
+                                <div>
+                                  <label htmlFor="task-due-datetime">
+                                    <span className="block text-sm font-medium text-gray-700">
+                                      Due date-time
+                                    </span>
+                                  </label>
+                                  <div className="mt-1">
+                                    <input
+                                      type="datetime-local"
+                                      name="task-due-datetime"
+                                      id="task-due-datetime"
+                                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                      value={liveTaskDueDate}
+                                      onChange={(e) =>
+                                        setLiveTaskDueDate(e.target.value)
+                                      }
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </section>
 
                             {/* Description Section, only rendered when slideover is open */}
                             {open && (
