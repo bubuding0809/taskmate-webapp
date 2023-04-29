@@ -231,7 +231,7 @@ export const Task: React.FC<TaskProps> = ({
                   className="text-start text-sm leading-snug text-gray-500 line-clamp-5"
                   onClick={() => {
                     // Copy task details to clipboard
-                    void navigator.clipboard.writeText(task.task_details ?? "");
+                    void navigator.clipboard.writeText(descriptonText);
 
                     // Show toast
                     addToast({
