@@ -1,18 +1,26 @@
 /* DONE BY: Ding RuoQian 2100971 */
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Fragment, useRef, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { nanoid } from "nanoid";
-
-import type { PanelWithTasks } from "server/api/routers/board";
 import useCreateTask from "@/utils/mutations/task/useCreateTask";
 import { useSession } from "next-auth/react";
 import { User } from "@prisma/client";
 import { Tooltip } from "@mui/material";
 import UserModal from "@/components/Modal/UserModal";
 import AssigneeSelectPopover from "../Board/AssigneeSelectPopover";
+import { EditorContent, JSONContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Color from "@tiptap/extension-color";
+import TextStyle from "@tiptap/extension-text-style";
+import ListItem from "@tiptap/extension-list-item";
+import Highlight from "@tiptap/extension-highlight";
+import Placeholder from "@tiptap/extension-placeholder";
+import Typography from "@tiptap/extension-typography";
+
+import type { PanelWithTasks } from "server/api/routers/board";
 
 interface TaskCreationModalProps {
   open: boolean;
@@ -35,18 +43,65 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   // State for the new task form
   const [newTaskForm, setNewTaskForm] = useState<{
     task_title: string;
-    task_description: string;
+    task_description: JSONContent;
     task_start_dt: string;
     task_end_dt: string;
     task_due_dt: string;
     task_assignedUsers: User[];
   }>({
     task_title: "",
-    task_description: "",
+    task_description: {},
     task_start_dt: "",
     task_end_dt: "",
     task_due_dt: "",
     task_assignedUsers: [],
+  });
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        // ... Configure the StarterKit as you wish
+        // paragraph: {
+        //   HTMLAttributes: {
+        //     class: "my-4",
+        //   },
+        // },
+        orderedList: {
+          HTMLAttributes: {
+            class: "my-2",
+          },
+        },
+        bulletList: {
+          HTMLAttributes: {
+            class: "my-2",
+          },
+        },
+      }),
+      Color.configure({ types: [TextStyle.name, ListItem.name] }),
+      Highlight.configure({
+        multicolor: true,
+      }),
+      Placeholder.configure({
+        placeholder: ({ node }) => {
+          if (node.type.name === "heading") {
+            return "Add a title...";
+          }
+          return "Write something...";
+        },
+      }),
+      Typography,
+    ],
+    editorProps: {
+      attributes: {
+        class:
+          "prose prose-sm max-w-none p-2 border border-gray-300 rounded-md focus:bg-gray-50 bg-white focus:outline-indigo-600",
+      },
+    },
+    onUpdate: ({ editor }) =>
+      setNewTaskForm((prev) => ({
+        ...prev,
+        task_description: editor.getJSON(),
+      })),
   });
 
   // Mutation to create a new task
@@ -55,6 +110,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   // State for whether the user modal is open
   const [openUserModal, setOpenUserModal] = useState(false);
 
+  // Callback to handle changes made to the task creation form
   const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -62,6 +118,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     setNewTaskForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Callback to handle submission of the task creation form
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const {
@@ -90,7 +147,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       taskId: newTaskId,
       postTaskOrder: postTaskOrder,
       title: task_title,
-      details: task_description,
+      description: JSON.stringify(task_description),
       startDate: task_start_dt.length > 0 ? new Date(task_start_dt) : null,
       endDate: task_end_dt.length > 0 ? new Date(task_end_dt) : null,
       dueDate: task_due_dt.length > 0 ? new Date(task_due_dt) : null,
@@ -103,12 +160,17 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     //reset newEntry form
     setNewTaskForm({
       task_title: "",
-      task_description: "",
+      task_description: {},
       task_start_dt: "",
       task_end_dt: "",
       task_due_dt: "",
       task_assignedUsers: [],
     });
+
+    //reset editor
+    editor?.chain().focus().clearContent().run();
+
+    console.log(newTaskForm);
   };
 
   return (
@@ -212,7 +274,8 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                           </label>
                         </div>
                         <div className="sm:col-span-2">
-                          <textarea
+                          <EditorContent editor={editor} spellCheck={false} />
+                          {/* <textarea
                             name="task_description"
                             id="task_description"
                             rows={3}
@@ -220,7 +283,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                             placeholder="Write a few sentences about the task."
                             value={newTaskForm.task_description}
                             onChange={handleFormChange}
-                          />
+                          /> */}
                         </div>
                       </div>
 
@@ -340,7 +403,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                           // Clear the form
                           setNewTaskForm({
                             task_title: "",
-                            task_description: "",
+                            task_description: {},
                             task_start_dt: "",
                             task_end_dt: "",
                             task_due_dt: "",

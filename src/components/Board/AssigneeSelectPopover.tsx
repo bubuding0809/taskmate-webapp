@@ -11,6 +11,7 @@ import useAddAssignees from "@/utils/mutations/task/useAddAssignees";
 import type { User } from "@prisma/client";
 import type { Optional } from "@/utils/types";
 import type { RouterOutputs } from "@/utils/api";
+import type { JSONContent } from "@tiptap/react";
 
 type ExtractPanel<T> = T extends { Panel: infer U } ? U : never;
 type Panel = ExtractPanel<RouterOutputs["board"]["getBoardById"]>[number];
@@ -20,7 +21,7 @@ interface UserSearchPopoverProps {
   setPopOverOpen?: Dispatch<SetStateAction<boolean>>;
   newTaskForm?: {
     task_title: string;
-    task_description: string;
+    task_description: JSONContent;
     task_start_dt: string;
     task_end_dt: string;
     task_due_dt: string;
@@ -29,7 +30,7 @@ interface UserSearchPopoverProps {
   setNewTaskForm?: React.Dispatch<
     React.SetStateAction<{
       task_title: string;
-      task_description: string;
+      task_description: JSONContent;
       task_start_dt: string;
       task_end_dt: string;
       task_due_dt: string;

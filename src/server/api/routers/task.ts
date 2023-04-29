@@ -2,8 +2,7 @@
 /* DONE BY: Amri Sazali 2102350 */
 
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
-import { Prisma } from "@prisma/client";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 const TASK_ORDER_STEP = 100;
 
@@ -17,7 +16,7 @@ export const taskRouter = createTRPCRouter({
         taskId: z.string(),
         postTaskOrder: z.number(),
         title: z.string(),
-        details: z.string().nullable(),
+        description: z.string().nullable(),
         startDate: z.date().nullable(),
         endDate: z.date().nullable(),
         dueDate: z.date().nullable(),
@@ -46,7 +45,9 @@ export const taskRouter = createTRPCRouter({
               ? Math.floor(input.postTaskOrder / 2)
               : TASK_ORDER_STEP,
             task_title: input.title,
-            task_details: input.details,
+            task_description: input.description
+              ? JSON.parse(input.description)
+              : null,
             start_datetime: input.startDate,
             end_datetime: input.endDate,
             due_datetime: input.dueDate,
@@ -86,7 +87,9 @@ export const taskRouter = createTRPCRouter({
             ? Math.floor(input.postTaskOrder / 2)
             : TASK_ORDER_STEP,
           task_title: input.title,
-          task_details: input.details,
+          task_description: input.description
+            ? JSON.parse(input.description)
+            : null,
           start_datetime: input.startDate,
           end_datetime: input.endDate,
           due_datetime: input.dueDate,

@@ -168,7 +168,7 @@ export const Task: React.FC<TaskProps> = ({
 
           {/* Task assignees */}
           {task.Task_Assign_Rel && task.Task_Assign_Rel.length > 0 && (
-            <div className="ml-5 flex items-center">
+            <div className="ml-6 flex items-center">
               <div className="flex space-x-1 overflow-hidden p-1">
                 {task.Task_Assign_Rel?.map(({ User: user }) => (
                   <Tooltip

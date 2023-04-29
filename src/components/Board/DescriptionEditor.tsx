@@ -1,9 +1,8 @@
 import { useSession } from "next-auth/react";
 import { classNames, formatDate } from "@/utils/helper";
 import { env } from "env.mjs";
-import { ListItem } from "@mui/material";
 import { RouterOutputs, api } from "@/utils/api";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import useDebouceQuery from "@/utils/hooks/useDebounceQuery";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import { EditorContent, useEditor } from "@tiptap/react";
@@ -11,6 +10,7 @@ import StarterKit from "@tiptap/starter-kit";
 import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 import Collaboration from "@tiptap/extension-collaboration";
 import Color from "@tiptap/extension-color";
+import ListItem from "@tiptap/extension-list-item";
 import TextStyle from "@tiptap/extension-text-style";
 import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
