@@ -591,11 +591,11 @@ const TaskEditSlideover: React.FC<TaskEditSlideoverProps> = ({
                             >
                               <h2
                                 id="task-datetime"
-                                className="rounded-lg rounded-b-none border-2 border-b-0 border-gray-800 bg-gray-800 px-2 py-1 text-lg font-medium text-white group-focus-within:border-indigo-600 group-focus-within:bg-indigo-600"
+                                className="rounded-lg rounded-b-none border-2 border-b-0 border-gray-800 bg-gray-800 px-2 py-1 text-lg font-medium text-white group-focus-within:border-indigo-700 group-focus-within:bg-indigo-600"
                               >
                                 Date &amp; Time
                               </h2>
-                              <div className="flex flex-col rounded-lg rounded-t-none border-2 border-t-0 border-gray-800 bg-white px-4 py-5 group-focus-within:border-indigo-600 sm:p-6">
+                              <div className="flex flex-col rounded-lg rounded-t-none border-2 border-t-0 border-gray-800 bg-white px-4 py-5 group-focus-within:border-indigo-700 sm:p-6">
                                 {/* Task due datetime */}
                                 <div>
                                   <label
