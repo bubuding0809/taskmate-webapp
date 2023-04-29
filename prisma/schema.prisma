@@ -204,7 +204,6 @@ model Tag {
 model Task {
     id                 String            @id @default(dbgenerated("(uuid())"))
     task_title         String?
-    task_details       String?           @db.VarChar(500)
     task_description   Json?             @db.Json
     order              Int               @default(dbgenerated("(0)"))
     start_datetime     DateTime?         @db.DateTime(0)

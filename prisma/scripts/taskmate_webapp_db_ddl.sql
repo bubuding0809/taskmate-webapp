@@ -100,7 +100,7 @@ create table if not exists Panel (
 create table if not exists Task (
     id varchar(191) DEFAULT(UUID()) PRIMARY KEY,
     task_title varchar(191),
-    task_details varchar(500),
+    task_description JSON,
     order INTEGER,
     start_datetime datetime,
     end_datetime datetime,
