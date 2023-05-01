@@ -48,7 +48,7 @@ export const taskRouter = createTRPCRouter({
             task_title: input.title,
             task_description: input.description
               ? (JSON.parse(input.description) as Prisma.JsonObject)
-              : Prisma.JsonNull,
+              : undefined,
             start_datetime: input.startDate,
             end_datetime: input.endDate,
             due_datetime: input.dueDate,
@@ -90,7 +90,7 @@ export const taskRouter = createTRPCRouter({
           task_title: input.title,
           task_description: input.description
             ? (JSON.parse(input.description) as Prisma.JsonObject)
-            : Prisma.JsonNull,
+            : undefined,
           start_datetime: input.startDate,
           end_datetime: input.endDate,
           due_datetime: input.dueDate,
