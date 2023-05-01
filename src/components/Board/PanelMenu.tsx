@@ -5,7 +5,6 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { Typography, Button, Tooltip } from "@mui/material";
 import { Clear, Delete } from "@mui/icons-material";
-import { BoardType } from "../../utils/types";
 import { MoreHoriz } from "@mui/icons-material";
 import type { PanelWithTasks } from "server/api/routers/board";
 import useDeletePanel from "@/utils/mutations/panel/useDeletePanel";
