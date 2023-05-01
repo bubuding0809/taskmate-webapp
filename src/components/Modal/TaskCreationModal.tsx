@@ -7,11 +7,10 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { nanoid } from "nanoid";
 import useCreateTask from "@/utils/mutations/task/useCreateTask";
 import { useSession } from "next-auth/react";
-import { User } from "@prisma/client";
 import { Tooltip } from "@mui/material";
 import UserModal from "@/components/Modal/UserModal";
 import AssigneeSelectPopover from "../Board/AssigneeSelectPopover";
-import { EditorContent, JSONContent, useEditor } from "@tiptap/react";
+import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Color from "@tiptap/extension-color";
 import TextStyle from "@tiptap/extension-text-style";
@@ -20,7 +19,9 @@ import Highlight from "@tiptap/extension-highlight";
 import Placeholder from "@tiptap/extension-placeholder";
 import Typography from "@tiptap/extension-typography";
 
+import type { User } from "@prisma/client";
 import type { PanelWithTasks } from "server/api/routers/board";
+import { NewTaskFormType } from "@/utils/types";
 
 interface TaskCreationModalProps {
   open: boolean;
@@ -41,16 +42,9 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   const [currUser, setCurrUser] = useState<User | null>(null);
 
   // State for the new task form
-  const [newTaskForm, setNewTaskForm] = useState<{
-    task_title: string;
-    task_description: JSONContent;
-    task_start_dt: string;
-    task_end_dt: string;
-    task_due_dt: string;
-    task_assignedUsers: User[];
-  }>({
+  const [newTaskForm, setNewTaskForm] = useState<NewTaskFormType>({
     task_title: "",
-    task_description: {},
+    task_description: null,
     task_start_dt: "",
     task_end_dt: "",
     task_due_dt: "",
@@ -131,7 +125,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
 
     // Ensure that the todoMessage is not empty
     if (!task_title.trim()) {
-      alert("Enter a task mate");
+      alert("Enter a task... mate, LOL.");
       return;
     }
 
@@ -147,7 +141,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       taskId: newTaskId,
       postTaskOrder: postTaskOrder,
       title: task_title,
-      description: JSON.stringify(task_description),
+      description: task_description ? JSON.stringify(task_description) : null,
       startDate: task_start_dt.length > 0 ? new Date(task_start_dt) : null,
       endDate: task_end_dt.length > 0 ? new Date(task_end_dt) : null,
       dueDate: task_due_dt.length > 0 ? new Date(task_due_dt) : null,
@@ -160,7 +154,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     //reset newEntry form
     setNewTaskForm({
       task_title: "",
-      task_description: {},
+      task_description: null,
       task_start_dt: "",
       task_end_dt: "",
       task_due_dt: "",
@@ -169,8 +163,6 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
 
     //reset editor
     editor?.chain().focus().clearContent().run();
-
-    console.log(newTaskForm);
   };
 
   return (
@@ -403,7 +395,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                           // Clear the form
                           setNewTaskForm({
                             task_title: "",
-                            task_description: {},
+                            task_description: { type: "doc" },
                             task_start_dt: "",
                             task_end_dt: "",
                             task_due_dt: "",
